@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.ingame";
+option java_outer_classname = "ingame";
+option java_multiple_files = false;
+
+import "_Character.proto";
+
+message SS2C_ENTER_GAME_SERVER_NOT {
+  uint32 port = 1;
+  string ip = 2;
+  string sessionId = 3;
+  string accountId = 4;
+  uint32 isReconnect = 5;
+  .DC.Packet.SACCOUNT_NICKNAME nickName = 6;
+}
+
+message SC2S_AUTO_MATCH_REG_REQ {
+  enum MODE {
+    NONE = 0;
+    REGISTER = 1;
+    CANCEL = 2;
+  }
+
+  uint32 mode = 1;
+  uint32 region = 2;
+  uint32 difficultyType = 3;
+}
+
+message SS2C_AUTO_MATCH_REG_RES {
+  enum RESULT {
+    NONE = 0;
+    SUCCESS = 1;
+    FAIL = 2;
+    FAIL_ALREADY_TRYING = 3;
+    FAIL_NO_READY_PARTY_MEMBER = 4;
+    FAIL_REGION_SELECT = 5;
+    FAIL_SERVER_DISABLE = 6;
+    FAIL_SHORTAGE_ENTRANCE_FEE = 7;
+    FAIL_SOLO_ONLY = 8;
+    FAIL_SHORTAGE_LEVEL = 9;
+  }
+
+  uint32 result = 1;
+}
+
+message SC2S_GAME_ENTER_COMPLETE_NOT {
+  uint32 isSuccess = 1;
+}
+
+message SS2C_AUTO_MATCH_REG_TEAM_NOT {
+  uint32 result = 1;
+  uint32 mode = 2;
+}
+
+message SC2S_RECONNECT_INGAME_REQ {
+  uint32 isRefusal = 1;
+  .DC.Packet.SACCOUNT_NICKNAME nickName = 2;
+}
+
+message SS2C_RECONNECT_INGAME_RES {
+  uint32 result = 1;
+  string serviceUrl = 2;
+}
+
+message SS2C_FLOOR_MATCHMAKED_NOT {
+  uint32 port = 1;
+  string ip = 2;
+  string sessionId = 3;
+}
+

@@ -1,0 +1,327 @@
+syntax = "proto3";
+
+package DC.Packet.Defines;
+
+option java_package = "com.packets.defines";
+option java_outer_classname = "Defines";
+option java_multiple_files = false;
+
+message Define_Account {
+  enum LengthText {
+    NONE = 0;
+    MIN = 2;
+    MAX = 20;
+  }
+
+  enum CurrencyType {
+    CURRENCY_NONE = 0;
+    ADVENTURE = 1;
+  }
+
+  enum LoginType {
+    LOGIN_TYPE_NONE = 0;
+    STEAM = 1;
+    EPIC = 2;
+    IRONMACE = 3;
+  }
+
+}
+
+message Define_Character {
+  enum LengthNickName {
+    NONE = 0;
+    MIN = 2;
+    MAX = 20;
+  }
+
+  enum Limit {
+    NONE_Limit = 0;
+    MAX_COUNT = 8;
+  }
+
+}
+
+message Define_Party {
+  enum MemberCountLimit {
+    NONE = 0;
+    MAX = 3;
+    MIN = 1;
+  }
+
+}
+
+message Define_Item {
+  enum InventoryId {
+    NONE = 0;
+    CHEST = 1;
+    BAG = 2;
+    EQUIPMENT = 3;
+    STORAGE = 4;
+    MAX = 5;
+  }
+
+}
+
+message Define_Equipment {
+  enum SlotId {
+    NONE = 0;
+    HEAD = 1;
+    CHEST = 2;
+    HANDS = 3;
+    LEGS = 4;
+    FOOT = 5;
+    BELT_A = 6;
+    BELT_B = 7;
+    UTILITY_A_1 = 8;
+    UTILITY_B_1 = 9;
+    PRIMARY_A = 10;
+    SECONDARY_A = 11;
+    PRIMARY_B = 12;
+    SECONDARY_B = 13;
+    UTILITY_A_2 = 14;
+    UTILITY_A_3 = 15;
+    UTILITY_B_2 = 16;
+    UTILITY_B_3 = 17;
+    SOULHEART = 18;
+    NECKLACE = 19;
+    RING_A = 20;
+    RING_B = 21;
+    BACK = 22;
+  }
+
+}
+
+message Define_Message {
+  enum LoopFlag {
+    NONE = 0;
+    BEGIN = 1;
+    PROGRESS = 2;
+    END = 3;
+  }
+
+  enum UpdateFlag {
+    NONE_UPDATE_FLAG = 0;
+    INSERT = 1;
+    UPDATE = 2;
+    DELETE = 3;
+  }
+
+  enum SelectFlag {
+    NONE_SELECT_FLAG = 0;
+    OK = 1;
+    CANCEL = 2;
+  }
+
+}
+
+message Define_Match {
+  enum Match_Region {
+    NONE = 0;
+    US_WEST = 1;
+    US_EAST = 2;
+    EU_CENTRAL = 3;
+    KR = 4;
+    SINGAPORE = 5;
+    SYDNEY = 6;
+    SAOPAULO = 7;
+    TOKYO = 8;
+  }
+
+}
+
+message Define_Game {
+  enum AdvPointType {
+    NONE = 0;
+    PLAYER_KILL = 1;
+    DUNGEON_DOWN = 2;
+    MONSTER_KILL = 3;
+    PROPS_INTERACTION = 4;
+    ITEM_ACHEIVE = 5;
+  }
+
+  enum DifficultyType {
+    NONE_MODE = 0;
+    NORMAL = 1;
+    HIGH_ROLLER = 2;
+    GOBLIN = 3;
+    RUINS = 4;
+  }
+
+  enum Floor {
+    NONE_FLOOR = 0;
+    FLOOR_2F = 2;
+    FLOOR_3F = 3;
+  }
+
+}
+
+message Define_Common {
+  enum MetaLocation {
+    NONE = 0;
+    INGAME = 1;
+    PLAY = 2;
+    LEADERBOARD = 3;
+    LOADOUT = 4;
+    MERCHANT = 5;
+    TRADE = 6;
+    CLASS = 7;
+    CHARACTER_SELECT = 8;
+    OFFLINE = 9;
+    CUSTOMIZE = 10;
+    SHOP = 11;
+    RECRUIT = 12;
+  }
+
+  enum ServerLocation {
+    NONE_LOCATION = 0;
+    LOCAL = 1;
+    QA = 2;
+    PLAY_TEST = 3;
+    NA = 4;
+  }
+
+}
+
+message Define_Class {
+  enum Type {
+    NONE_TYPE = 0;
+    PERK = 1;
+    SKILL = 2;
+    SPELL = 3;
+  }
+
+  enum Move {
+    NONE_MOVE = 0;
+    EQUIP = 1;
+    UN_EQUIP = 2;
+  }
+
+}
+
+message Define_Chat {
+  enum Type {
+    NONE_TYPE = 0;
+    NORMAL = 1;
+    WHISPER = 2;
+  }
+
+  enum RoomType {
+    ROOM_TYPE_WEAPON = 0;
+    ROOM_TYPE_ARMOR = 1;
+    ROOM_TYPE_UTILITY = 2;
+    ROOM_TYPE_ETC = 3;
+  }
+
+}
+
+message Define_Trade {
+  enum Requirement_Type {
+    NONE_REQUIREMENT_TYPE = 0;
+    MINIMUM_LEVEL = 1;
+    MINIMUM_REINCARNATION_LEVEL = 2;
+    INITIATION_FEE = 3;
+    MONTHLY_DUES = 4;
+    COST_PER_TRADE = 5;
+  }
+
+}
+
+message Operate {
+  enum Nation {
+    NONE_NATION = 0;
+    NATION_KR = 1;
+    NATION_EN = 2;
+  }
+
+  enum Policy {
+    NONE_POLICY = 0;
+    POLICY_CHAT_LENGTH_MAX = 1;
+    POLICY_TRADE_CHANNEL_CHAT_RESEND_TIME_MS = 2;
+    POLICY_TRADE_CHANNEL_CHAT_MAX_LINE = 3;
+    POLICY_BLOCK_CHARACTER_MAX_LIMIT = 4;
+    POLICY_CHAT_RESEND_MS = 5;
+    POLICY_CHAT_MAX_LINE = 6;
+    POLICY_HIGH_ROLLER_ENTRANCE_FEE = 7;
+    POLICY_MATCH_CANCEL_TIME_MS = 8;
+    POLICY_GATHERING_HALL_CHAT_RESEND_MS = 9;
+    POLICY_GATHERING_HALL_CHAT_MAX_LINE = 10;
+    POLICY_GATHERING_HALL_JOIN_MIN_LEVEL = 11;
+    POLICY_HIGH_ROLLER_ENTRANCE_MIN_LEVEL = 12;
+  }
+
+}
+
+message Define_Hack {
+  enum Policy {
+    NONE_GAME_HACK_POLICY = 0;
+    GAME_HACK_POLICY_KICK = 1;
+    GAME_HACK_POLICY_BLOCK = 2;
+    GAME_HACK_POLICY_KICK_AND_BLOCK = 3;
+  }
+
+  enum banType {
+    NONE_BAN_TYPE = 0;
+    CHEATER = 1;
+    INAPPROPRIATE_NAME = 2;
+    ETC = 3;
+  }
+
+}
+
+message Define_Report {
+  enum Category {
+    NONE_CATEGORY = 0;
+    CHEATER = 1;
+    INAPPROPRIATE_CHARACTER_NAME = 2;
+    STREAM_SNIPING = 3;
+    DIRTY_CHATTING = 4;
+  }
+
+}
+
+message Define_Log {
+  enum Level {
+    NONE_LEVEL = 0;
+    FATAL = 1;
+    ERROR = 2;
+    WARNING = 3;
+    DISPLAY = 4;
+    LOG = 5;
+    VERBOSE = 6;
+    VERY_VERBOSE = 7;
+  }
+
+}
+
+message Define_Karma {
+  enum Action {
+    NONE_KARMA_ACTION = 0;
+    PRAISE = 1;
+    PUNISH = 2;
+    FORGIVE = 3;
+    PUNISH_TEAM_KILLER = 4;
+  }
+
+  enum Status {
+    NONE_KARMA_STATUS = 0;
+    NORMAL = 1;
+    TEAM_KILLER = 2;
+  }
+
+}
+
+message Define_Coupon {
+  enum Type {
+    NONE_TYPE = 0;
+    MADRINAS = 1;
+  }
+
+}
+
+enum CharacterGenderType {
+  NONE = 0;
+  MAN = 1;
+  WOMAN = 2;
+  UNISEX = 3;
+}
+

@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.karma";
+option java_outer_classname = "karma";
+option java_multiple_files = false;
+
+import "_Character.proto";
+
+message SKARMA_CHARACTER_INFO {
+  string accountId = 1;
+  string characterId = 2;
+  .DC.Packet.SACCOUNT_NICKNAME nickName = 3;
+  string characterClass = 4;
+  uint32 gender = 5;
+  uint32 isVote = 6;
+  uint32 karmaAction = 7;
+  uint32 karmaStatus = 8;
+}
+
+message SKARMA_MOST_RECENT_MATCH_INFO {
+  uint32 matchIdx = 1;
+  repeated .DC.Packet.SKARMA_CHARACTER_INFO characterInfos = 2;
+}
+
+message SC2S_KARMA_REPORT_LIST_REQ {
+}
+
+message SS2C_KARMA_REPORT_LIST_RES {
+  repeated .DC.Packet.SKARMA_MOST_RECENT_MATCH_INFO matchInfos = 1;
+  uint32 currentTicketCount = 2;
+  uint32 collectionStepCount = 3;
+  uint32 maxCollectionCount = 4;
+  uint32 maxTicketCount = 5;
+}
+
+message SC2S_KARMA_REPORT_ACTION_REQ {
+  uint32 matchIdx = 1;
+  string accountId = 2;
+  string characterId = 3;
+  uint32 action = 4;
+}
+
+message SS2C_KARMA_REPORT_ACTION_RES {
+  uint32 result = 1;
+  uint32 matchIdx = 2;
+  .DC.Packet.SKARMA_CHARACTER_INFO updateCharacterInfo = 3;
+  uint32 currentTicketCount = 4;
+  uint32 collectionStepCount = 5;
+  uint32 maxCollectionCount = 6;
+  uint32 maxTicketCount = 7;
+}
+
+message SS2C_KARMA_RATING_UPDATE_NOT {
+  int32 updateKarmaRating = 1;
+  string accountId = 2;
+  string characterId = 3;
+}
+

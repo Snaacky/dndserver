@@ -1,0 +1,161 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.inventory";
+option java_outer_classname = "inventory";
+option java_multiple_files = false;
+
+import "_Item.proto";
+
+message SC2S_INVENTORY_INFO_REQ {
+}
+
+message SS2C_INVENTORY_INFO_RES {
+  enum RESULT_INVENTORY_INFO_INFO {
+    NONE = 0;
+    OK_SEND_DATA = 1;
+    OK_NOT_CHANGE = 2;
+    FAIL = 3;
+  }
+
+  uint32 result = 1;
+  repeated .DC.Packet.SItem inventoryItems = 2;
+}
+
+message SC2S_INVENTORY_ALL_UPDATE_REQ {
+  repeated .DC.Packet.SItem inventoryItems = 1;
+}
+
+message SS2C_INVENTORY_ALL_UPDATE_RES {
+  enum RESULT_INVENTORY_UPDATE {
+    NONE = 0;
+    OK = 1;
+    FAIL = 2;
+  }
+
+  uint32 result = 1;
+  repeated .DC.Packet.SItem inventoryItems = 2;
+}
+
+message SINVENTORY_ITEM_REQ_INFO {
+  uint64 uniqueId = 1;
+  uint32 inventoryId = 2;
+  uint32 slotId = 3;
+}
+
+message SC2S_INVENTORY_MOVE_REQ {
+  .DC.Packet.SINVENTORY_ITEM_REQ_INFO srcInfo = 1;
+  uint32 dstInventoryId = 2;
+  uint32 dstSlotId = 3;
+}
+
+message SS2C_INVENTORY_MOVE_RES {
+}
+
+message SC2S_INVENTORY_MERGE_REQ {
+  .DC.Packet.SINVENTORY_ITEM_REQ_INFO srcInfo = 1;
+  .DC.Packet.SINVENTORY_ITEM_REQ_INFO dstInfo = 2;
+}
+
+message SS2C_INVENTORY_MERGE_RES {
+}
+
+message INVENTORY_SWAP_DST_INFO {
+  .DC.Packet.SINVENTORY_ITEM_REQ_INFO dstInfo = 1;
+  uint32 newSlotId = 2;
+  uint32 newInventoryId = 3;
+}
+
+message SC2S_INVENTORY_SWAP_REQ {
+  .DC.Packet.SINVENTORY_ITEM_REQ_INFO srcInfo = 1;
+  .DC.Packet.SINVENTORY_ITEM_REQ_INFO dstInfo = 2;
+  repeated .DC.Packet.INVENTORY_SWAP_DST_INFO swapInfos = 3;
+}
+
+message SS2C_INVENTORY_SWAP_RES {
+}
+
+message SC2S_INVENTORY_SPLIT_MOVE_REQ {
+  .DC.Packet.SINVENTORY_ITEM_REQ_INFO srcInfo = 1;
+  uint32 count = 2;
+  uint32 dstInventoryId = 3;
+  uint32 dstSlotId = 4;
+}
+
+message SS2C_INVENTORY_SPLIT_MOVE_RES {
+  uint64 newUniqueId = 1;
+  uint32 newInventoryId = 2;
+  uint32 newSlotId = 3;
+}
+
+message SC2S_INVENTORY_SPLIT_MERGE_REQ {
+  .DC.Packet.SINVENTORY_ITEM_REQ_INFO srcInfo = 1;
+  .DC.Packet.SINVENTORY_ITEM_REQ_INFO dstInfo = 2;
+  uint32 count = 3;
+}
+
+message SS2C_INVENTORY_SPLIT_MERGE_RES {
+}
+
+message SC2S_INVENTORY_SPLIT_SWAP_REQ {
+  .DC.Packet.SINVENTORY_ITEM_REQ_INFO srcInfo = 1;
+  .DC.Packet.SINVENTORY_ITEM_REQ_INFO dstInfo = 2;
+  uint32 count = 3;
+  uint32 newSlotId = 4;
+  uint32 newInventoryId = 5;
+}
+
+message SS2C_INVENTORY_SPLIT_SWAP_RES {
+  uint64 newUniqueId = 1;
+  uint32 newInventoryId = 2;
+  uint32 newSlotId = 3;
+}
+
+message SC2S_INVENTORY_TWO_HANDED_WEAPON_SWAP_REQ {
+  .DC.Packet.SINVENTORY_ITEM_REQ_INFO srcInfo = 1;
+  .DC.Packet.SINVENTORY_ITEM_REQ_INFO dstInfo = 2;
+  uint32 newSlotId = 3;
+  uint32 newInventoryId = 4;
+}
+
+message SS2C_INVENTORY_TWO_HANDED_WEAPON_SWAP_RES {
+}
+
+message SC2S_INVENTORY_SINGLE_UPDATE_REQ {
+  uint32 singleUpdateFlag = 1;
+  repeated .DC.Packet.SItem oldItem = 2;
+  repeated .DC.Packet.SItem newItem = 3;
+}
+
+message SS2C_INVENTORY_SINGLE_UPDATE_RES {
+  enum RESULT_INVENTORY_SINGLE_UPDATE {
+    NONE = 0;
+    OK = 1;
+    FAIL = 2;
+    FAIL_VALID_CHECK_OLD_ITEM = 3;
+    FAIL_VALID_CHECK_NEW_ITEM = 4;
+    FAIL_CHECK_LOGIC_LOG = 5;
+  }
+
+  uint32 result = 1;
+  repeated .DC.Packet.SItem oldItem = 2;
+  repeated .DC.Packet.SItem newItem = 3;
+}
+
+message SC2S_STORAGE_INFO_REQ {
+  uint32 isRefresh = 1;
+}
+
+message SS2C_STORAGE_INFO_RES {
+  enum RESULT_STORAGE_INFO {
+    NONE = 0;
+    OK_SEND_DATA = 1;
+    OK_NOT_CHANGE = 2;
+    FAIL = 3;
+  }
+
+  uint32 result = 1;
+  repeated .DC.Packet.SItem storageItems = 2;
+}
+

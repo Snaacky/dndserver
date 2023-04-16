@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.lobby";
+option java_outer_classname = "lobby";
+option java_multiple_files = false;
+
+import "_Character.proto";
+import "_Item.proto";
+
+message SC2S_CHARACTER_SELECT_ENTER_REQ {
+}
+
+message SS2C_CHARACTER_SELECT_ENTER_RES {
+  uint32 result = 1;
+}
+
+message SC2S_LOBBY_CHARACTER_INFO_REQ {
+}
+
+message SS2C_LOBBY_CHARACTER_INFO_RES {
+  uint32 result = 1;
+  .DC.Packet.SCHARACTER_INFO characterDataBase = 2;
+}
+
+message SC2S_OPEN_LOBBY_MAP_REQ {
+}
+
+message SS2C_OPEN_LOBBY_MAP_RES {
+}
+
+message SC2S_LOBBY_REGION_SELECT_REQ {
+  uint32 region = 1;
+}
+
+message SS2C_LOBBY_REGION_SELECT_RES {
+  uint32 result = 1;
+  uint32 region = 2;
+}
+
+message SC2S_LOBBY_ENTER_FROM_GAME_REQ {
+}
+
+message SS2C_LOBBY_ENTER_FROM_GAME_RES {
+  uint32 result = 1;
+}
+
+message SC2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ {
+  uint32 gameDifficultyTypeIndex = 1;
+}
+
+message SS2C_LOBBY_GAME_DIFFICULTY_SELECT_RES {
+  uint32 result = 1;
+  uint32 gameDifficultyTypeIndex = 2;
+}
+
+message SACCOUNT_CURRENCY_INFO {
+  uint32 currencyType = 1;
+  uint32 currencyValue = 2;
+}
+
+message SS2C_LOBBY_ACCOUNT_CURRENCY_LIST_NOT {
+  repeated .DC.Packet.SACCOUNT_CURRENCY_INFO currencyInfos = 1;
+}
+
+message SS2C_LOBBY_CHARACTER_LOBBY_EMOTE_NOT {
+  repeated .DC.Packet.SCUSTOMIZE_LOBBY_EMOTE lobbyEmoteList = 1;
+}
+
+message SREPORT_PUNISH_INFO {
+  .DC.Packet.SACCOUNT_NICKNAME nickname = 1;
+}
+
+message SS2C_LOBBY_REPORT_PUNISH_LIST_NOT {
+  repeated .DC.Packet.SREPORT_PUNISH_INFO infos = 1;
+}
+
+message SC2S_LOBBY_ENTER_COUPON_CODE_REQ {
+  string code = 1;
+}
+
+message SS2C_LOBBY_ENTER_COUPON_CODE_RES {
+  uint32 result = 1;
+}
+

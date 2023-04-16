@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.ironMace";
+option java_outer_classname = "IronMace";
+option java_multiple_files = false;
+
+message IronMace_Login {
+  string loginId = 1;
+  string password = 2;
+}
+
+message IronMace_Login_Res {
+  enum IronMace_Login_Result {
+    NONE = 0;
+    SUCCESS = 1;
+    FAIL_NOT_FOUND_ACCOUNT = 100;
+    FAIL_WRONG_PASSWORD = 101;
+  }
+
+  uint32 result = 1;
+  string errorMessage = 2;
+}
+
+message IronMace_Token {
+  string loginId = 1;
+  string password = 2;
+}
+
+message IronMace_Token_Res {
+  string token = 2;
+}
+

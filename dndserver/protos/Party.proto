@@ -1,0 +1,165 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.party";
+option java_outer_classname = "party";
+option java_multiple_files = false;
+
+import "_Chat.proto";
+import "_Character.proto";
+import "_Item.proto";
+
+message SC2S_PARTY_INVITE_REQ {
+  .DC.Packet.SACCOUNT_NICKNAME findNickName = 1;
+  string findAccountId = 2;
+  string findCharacterId = 3;
+}
+
+message SS2C_PARTY_INVITE_RES {
+  uint32 result = 1;
+}
+
+message SS2C_PARTY_INVITE_NOT {
+  .DC.Packet.SACCOUNT_NICKNAME InviteeNickName = 1;
+  string InviteeAccountId = 2;
+  string InviteeCharacterId = 3;
+}
+
+message SC2S_PARTY_INVITE_ANSWER_REQ {
+  uint32 inviteResult = 1;
+  string returnAccountId = 2;
+}
+
+message SS2C_PARTY_INVITE_ANSWER_RES {
+  uint32 result = 1;
+}
+
+message SS2C_PARTY_INVITE_ANSWER_RESULT_NOT {
+  .DC.Packet.SACCOUNT_NICKNAME nickName = 1;
+  uint32 inviteResult = 2;
+}
+
+message SC2S_PARTY_EXIT_REQ {
+}
+
+message SS2C_PARTY_EXIT_RES {
+  uint32 result = 1;
+}
+
+message SS2C_PARTY_MEMBER_INFO_NOT {
+  repeated .DC.Packet.SCHARACTER_PARTY_INFO playPartyUserInfoData = 1;
+}
+
+message SC2S_PARTY_READY_REQ {
+  uint32 isReady = 1;
+}
+
+message SS2C_PARTY_READY_RES {
+  uint32 result = 1;
+}
+
+message SS2C_PARTY_EQUIP_ITEM_CHANGE_NOT {
+  string accountId = 1;
+  string characterId = 2;
+  repeated .DC.Packet.SItem oldItems = 3;
+  repeated .DC.Packet.SItem newItems = 4;
+}
+
+message SS2C_PARTY_REGION_CHANGE_NOT {
+  uint32 region = 1;
+}
+
+message SS2C_PARTY_LOCATION_UPDATE_NOT {
+  string accountId = 1;
+  string characterId = 2;
+  uint32 updateLocation = 3;
+}
+
+message SS2C_PARTY_CHARACTER_SKIN_LIST_NOT {
+  string accountId = 1;
+  string characterId = 2;
+  repeated string characterSkinIdList = 3;
+}
+
+message SS2C_PARTY_CHARACTER_SKIN_CHANGE_NOT {
+  string accountId = 1;
+  string characterId = 2;
+  string oldCharacterSkinId = 3;
+  string newCharacterSkinId = 4;
+}
+
+message SS2C_PARTY_ITEM_SKIN_LIST_NOT {
+  string accountId = 1;
+  string characterId = 2;
+  repeated string itemSkinIdList = 3;
+}
+
+message SS2C_PARTY_ITEM_SKIN_CHANGE_NOT {
+  string accountId = 1;
+  string characterId = 2;
+  string oldItemSkinId = 3;
+  string newItemSkinId = 4;
+}
+
+message SS2C_PARTY_GAME_DIFFICULTY_CHANGE_NOT {
+  uint32 gameDifficultyTypeIndex = 1;
+}
+
+message SC2S_PARTY_MEMBER_KICK_REQ {
+  string accountId = 1;
+  string characterId = 2;
+}
+
+message SS2C_PARTY_MEMBER_KICK_RES {
+  uint32 result = 1;
+}
+
+message SC2S_PARTY_CHAT_REQ {
+  .DC.Packet.SCHATDATA chatData = 1;
+}
+
+message SS2C_PARTY_CHAT_RES {
+  uint32 result = 1;
+}
+
+message SS2C_PARTY_CHAT_NOT {
+  .DC.Packet.SCHATDATA chatData = 1;
+  uint64 time = 2;
+}
+
+message SS2C_PARTY_READY_CHANGE_NOT {
+  string accountId = 1;
+  string characterId = 2;
+  uint32 isReady = 3;
+}
+
+message SS2C_PARTY_KICKED_OUT_NOT {
+}
+
+message SS2C_PARTY_MEMBER_LOBBY_EMOTE_NOT {
+  string accountId = 1;
+  string characterId = 2;
+  repeated string lobbyEmoteIdList = 3;
+}
+
+message SC2S_PARTY_START_LOBBY_EMOTE_REQ {
+  string lobbyEmoteId = 1;
+}
+
+message SS2C_PARTY_START_LOBBY_EMOTE_RES {
+  uint32 result = 1;
+}
+
+message SS2C_PARTY_START_LOBBY_EMOTE_NOT {
+  string accountId = 1;
+  string characterId = 2;
+  string lobbyEmoteId = 3;
+}
+
+enum PARTY_INVITE_ANSWER {
+  INVITE_ANSWER_NONE = 0;
+  INVITE_ANSWER_ACEEPT = 1;
+  INVITE_ANSWER_CANCEL = 2;
+}
+

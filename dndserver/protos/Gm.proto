@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.gm";
+option java_outer_classname = "gm";
+option java_multiple_files = false;
+
+message SC2S_GM_PARTY_ALL_RANDOM_REQ {
+}
+
+message SS2C_GM_PARTY_ALL_RANDOM_RES {
+}
+

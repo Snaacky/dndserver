@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.gathering_hall";
+option java_outer_classname = "gathering_hall";
+option java_multiple_files = false;
+
+import "_Item.proto";
+import "_Character.proto";
+import "_Chat.proto";
+
+message SGATHERING_HALL_CHANNEL {
+  uint32 channelIndex = 1;
+  string channelId = 2;
+  uint32 memberCount = 3;
+  uint32 groupIndex = 4;
+}
+
+message SGATHERING_HALL_CHAT_C2S {
+  uint32 chatType = 1;
+  string targetAccountId = 2;
+  string targetCharacterId = 3;
+  .DC.Packet.SCHATDATA chatData = 4;
+}
+
+message SGATHERING_HALL_CHAT_S2C {
+  uint64 chatIndex = 1;
+  uint32 chatType = 2;
+  uint64 time = 3;
+  .DC.Packet.SCHATDATA chatData = 4;
+}
+
+message SGATHERING_HALL_USER_UPDATE_INFO {
+  uint32 updateFlag = 1;
+  .DC.Packet.SCHARACTER_GATHERING_HALL_INFO info = 2;
+}
+
+message SC2S_GATHERING_HALL_CHANNEL_LIST_REQ {
+}
+
+message SS2C_GATHERING_HALL_CHANNEL_LIST_RES {
+  repeated .DC.Packet.SGATHERING_HALL_CHANNEL channels = 1;
+}
+
+message SC2S_GATHERING_HALL_CHANNEL_SELECT_REQ {
+  uint32 channelIndex = 1;
+}
+
+message SS2C_GATHERING_HALL_CHANNEL_SELECT_RES {
+  uint32 result = 1;
+}
+
+message SC2S_GATHERING_HALL_CHANNEL_EXIT_REQ {
+}
+
+message SS2C_GATHERING_HALL_CHANNEL_EXIT_RES {
+  uint32 result = 1;
+}
+
+message SC2S_GATHERING_HALL_CHANNEL_USER_LIST_REQ {
+}
+
+message SS2C_GATHERING_HALL_CHANNEL_USER_LIST_RES {
+  uint32 loopFlag = 1;
+  repeated .DC.Packet.SCHARACTER_GATHERING_HALL_INFO characters = 2;
+}
+
+message SS2C_GATHERING_HALL_CHANNEL_USER_UPDATE_NOT {
+  repeated .DC.Packet.SGATHERING_HALL_USER_UPDATE_INFO updates = 1;
+}
+
+message SC2S_GATHERING_HALL_CHANNEL_CHAT_REQ {
+  .DC.Packet.SGATHERING_HALL_CHAT_C2S chat = 1;
+}
+
+message SS2C_GATHERING_HALL_CHANNEL_CHAT_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SGATHERING_HALL_CHAT_S2C chats = 2;
+}
+
+message SS2C_GATHERING_HALL_CHANNEL_CHAT_NOT {
+  repeated .DC.Packet.SGATHERING_HALL_CHAT_S2C chats = 1;
+}
+
+message SC2S_GATHERING_HALL_TARGET_EQUIPPED_ITEM_REQ {
+  uint32 channelIndex = 1;
+  string accountId = 2;
+  string characterId = 3;
+}
+
+message SS2C_GATHERING_HALL_TARGET_EQUIPPED_ITEM_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SItem equippedItems = 2;
+  .DC.Packet.SCHARACTER_GATHERING_HALL_INFO characterInfo = 3;
+}
+

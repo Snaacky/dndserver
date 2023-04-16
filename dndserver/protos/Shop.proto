@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.shop";
+option java_outer_classname = "shop";
+option java_multiple_files = false;
+
+message SSHOP_CHARACTER_SKIN_INFO {
+  string characterSkinId = 1;
+  uint32 isHave = 2;
+}
+
+message SSHOP_ITEM_SKIN_INFO {
+  string itemSkinId = 1;
+  uint32 isHave = 2;
+}
+
+message SSHOP_EMOTE_INFO {
+  string emoteId = 1;
+  uint32 isHave = 2;
+}
+
+message SSHOP_ACTION_INFO {
+  string actionId = 1;
+  uint32 isHave = 2;
+}
+
+message SSHOP_LOBBY_EMOTE_INFO {
+  string lobbyEmoteId = 1;
+  uint32 isHave = 2;
+}
+
+message SC2S_SHOP_CHARACTER_SKIN_LIST_REQ {
+}
+
+message SS2C_SHOP_CHARACTER_SKIN_LIST_RES {
+  uint32 loopFlag = 1;
+  repeated .DC.Packet.SSHOP_CHARACTER_SKIN_INFO characterSkinInfoList = 2;
+}
+
+message SC2S_SHOP_ITEM_SKIN_LIST_REQ {
+}
+
+message SS2C_SHOP_ITEM_SKIN_LIST_RES {
+  uint32 loopFlag = 1;
+  repeated .DC.Packet.SSHOP_ITEM_SKIN_INFO itemSkinInfoList = 2;
+}
+
+message SC2S_SHOP_EMOTE_LIST_REQ {
+}
+
+message SS2C_SHOP_EMOTE_LIST_RES {
+  uint32 loopFlag = 1;
+  repeated .DC.Packet.SSHOP_EMOTE_INFO emoteInfoList = 2;
+}
+
+message SC2S_SHOP_ACTION_LIST_REQ {
+}
+
+message SS2C_SHOP_ACTION_LIST_RES {
+  uint32 loopFlag = 1;
+  repeated .DC.Packet.SSHOP_ACTION_INFO actionInfoList = 2;
+}
+
+message SC2S_SHOP_LOBBY_EMOTE_LIST_REQ {
+}
+
+message SS2C_SHOP_LOBBY_EMOTE_LIST_RES {
+  uint32 loopFlag = 1;
+  repeated .DC.Packet.SSHOP_LOBBY_EMOTE_INFO lobbyEmoteInfoList = 2;
+}
+
+message SC2S_SHOP_CHARACTER_SKIN_BUY_REQ {
+  string buyShopCharacterSkinId = 1;
+}
+
+message SS2C_SHOP_CHARACTER_SKIN_BUY_RES {
+  uint32 result = 1;
+  string buyShopCharacterSkinId = 2;
+}
+
+message SC2S_SHOP_ITEM_SKIN_BUY_REQ {
+  string buyShopItemSkinId = 1;
+}
+
+message SS2C_SHOP_ITEM_SKIN_BUY_RES {
+  uint32 result = 1;
+  string buyShopItemSkinId = 2;
+}
+
+message SC2S_SHOP_EMOTE_BUY_REQ {
+  string buyShopEmoteId = 1;
+}
+
+message SS2C_SHOP_EMOTE_BUY_RES {
+  uint32 result = 1;
+  string buyShopEmoteId = 2;
+}
+
+message SC2S_SHOP_ACTION_BUY_REQ {
+  string buyActionId = 1;
+}
+
+message SS2C_SHOP_ACTION_BUY_RES {
+  uint32 result = 1;
+  string buyActionId = 2;
+}
+
+message SC2S_SHOP_LOBBY_EMOTE_BUY_REQ {
+  string buyLobbyEmoteId = 1;
+}
+
+message SS2C_SHOP_LOBBY_EMOTE_BUY_RES {
+  uint32 result = 1;
+  string buyLobbyEmoteId = 2;
+}
+

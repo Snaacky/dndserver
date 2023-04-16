@@ -1,0 +1,262 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.operate";
+option java_outer_classname = "operate";
+option java_multiple_files = false;
+
+import "_Item.proto";
+
+message Operate_Bad_Word_List {
+  repeated string badWord = 1;
+}
+
+message Operate_Add_Bad_Word {
+  string securityCode = 1;
+  string badWord = 2;
+}
+
+message Operate_announceMessageInfo {
+  int32 nationType = 1;
+  string announceMessage = 2;
+}
+
+message Operate_Add_Announce_Msg {
+  string securityCode = 1;
+  repeated .DC.Packet.Operate_announceMessageInfo announceList = 2;
+}
+
+message Operate_dll_info {
+  string securityCode = 1;
+  string dllPath = 2;
+}
+
+message Operate_dll_list {
+  repeated string dlls = 1;
+}
+
+message Operate_userInfo {
+  uint64 accountId = 1;
+  repeated string nicknameList = 2;
+}
+
+message HackLogInfo {
+  string accountId = 1;
+  string characterId = 2;
+  string nickname = 3;
+  string reason = 4;
+  string registerTime = 5;
+}
+
+message Operate_Hacklog {
+  repeated .DC.Packet.HackLogInfo infos = 1;
+}
+
+message Operate_Ban_Report_User {
+  string securityCode = 1;
+  string reportId = 2;
+  string nickName = 3;
+}
+
+message Operate_hack_report_list {
+  string securityCode = 1;
+}
+
+message Operate_iron_shield_list {
+  string securityCode = 1;
+}
+
+message Operate_add_hardware_ban {
+  string securityCode = 1;
+  string hardwareId = 2;
+}
+
+message Operate_ban_history {
+  string securityCode = 1;
+  string nickname = 2;
+}
+
+message ban_info {
+  string accountId = 1;
+  string banType = 2;
+  string comment = 3;
+  string registerTime = 4;
+}
+
+message Operate_ban_info_list {
+  repeated .DC.Packet.ban_info infos = 1;
+}
+
+message Operate_ban_Hardware_list {
+  string securityCode = 1;
+}
+
+message Operate_nickname_change {
+  string securityCode = 1;
+  string currentNickname = 2;
+  string changeNickname = 3;
+}
+
+message Operate_character_info {
+  uint64 accountId = 1;
+  uint64 characterId = 2;
+  string nickname = 3;
+  string characterClass = 4;
+  string gebder = 5;
+  string registerDate = 6;
+  string lastLoginDate = 7;
+}
+
+message Operate_character_info_list {
+  repeated .DC.Packet.Operate_character_info infos = 1;
+}
+
+message Operate_report_info {
+  uint64 reportId = 1;
+  uint64 targetCharacterId = 2;
+  string targetNickname = 3;
+  uint64 gameId = 4;
+  string registerDate = 5;
+}
+
+message Operate_report_info_list {
+  repeated .DC.Packet.Operate_report_info infos = 1;
+}
+
+message Operate_iron_shield_info {
+  uint64 characterId = 1;
+  string nickname = 2;
+  repeated string hardwareIds = 3;
+  string callbackType = 4;
+  string registerDate = 5;
+}
+
+message Operate_iron_shield_info_list {
+  repeated .DC.Packet.Operate_iron_shield_info infos = 1;
+}
+
+message Operate_ban_user_info {
+  uint64 accountId = 1;
+  string banType = 2;
+  string comment = 3;
+  string registerDate = 4;
+}
+
+message Operate_ban_user_info_list {
+  repeated .DC.Packet.Operate_ban_user_info infos = 1;
+}
+
+message Operate_login_log {
+  uint64 idx = 1;
+  uint64 accountId = 2;
+  string loginTime = 3;
+  string logoutTime = 4;
+  string ipAddress = 5;
+}
+
+message Operate_login_log_list {
+  repeated .DC.Packet.Operate_login_log logs = 1;
+}
+
+message Operate_Ban_User {
+  string securityCode = 1;
+  string nickName = 2;
+  string reason = 3;
+  uint32 banType = 4;
+}
+
+message Operate_characterInfo {
+  uint64 accountId = 1;
+  uint64 characterId = 2;
+  string nickname = 3;
+  string characterClass = 4;
+  string gender = 5;
+  string registerdate = 6;
+  string lastlogindate = 7;
+  repeated .DC.Packet.SItems inventoryItems = 8;
+  repeated .DC.Packet.SItems storageItems = 9;
+}
+
+message Operate_OperateReportBodyInfo {
+  uint64 reportId = 1;
+  uint64 reportAccountId = 2;
+  uint64 targetCharacterId = 3;
+  string targetNickname = 4;
+  uint64 gameId = 5;
+  .DC.Packet.Operate_OperateFileInfo file = 6;
+  string registerDate = 7;
+}
+
+message Operate_OperateIronShieldInfo {
+  uint64 idx = 1;
+  uint64 characterId = 2;
+  string nickname = 3;
+  string callbackType = 4;
+  .DC.Packet.Operate_OperateFileInfo file = 5;
+  string RegisterTime = 6;
+  repeated string hardwareIds = 7;
+}
+
+message Operate_OperateBanUserInfos {
+  uint64 accountId = 1;
+  int32 banType = 2;
+  string comment = 3;
+  string registerTime = 4;
+  string isHardwareBan = 5;
+}
+
+message Operate_OperateLoginLogInfo {
+  uint64 accountId = 1;
+  string loginTime = 2;
+  string logoutTime = 3;
+  string ipAddress = 4;
+}
+
+message Operate_OperateHardwareAccountInfo {
+  uint64 accountId = 1;
+  string hardwareId = 2;
+  string lastUpdateDate = 3;
+  string isHardwareBan = 4;
+}
+
+message Operate_OperateDuplicateHardwareInfo {
+  uint64 accountId = 1;
+  string hardwareId = 2;
+  string isAccountBan = 3;
+}
+
+message Operate_OperateFileInfo {
+  string name = 1;
+  string url = 2;
+}
+
+message Operate_OperateBanInfo {
+  string accountId = 1;
+  string banType = 2;
+  string comment = 3;
+  string registerTime = 4;
+}
+
+message Operate_AllHackInfo {
+  repeated .DC.Packet.Operate_character_info characterInfos = 1;
+  repeated .DC.Packet.Operate_OperateReportBodyInfo reportBodyInfos = 2;
+  repeated .DC.Packet.Operate_OperateIronShieldInfo ironShieldInfos = 3;
+  repeated .DC.Packet.Operate_OperateBanUserInfos banUserInfos = 4;
+  repeated .DC.Packet.Operate_OperateLoginLogInfo loginLogInfos = 5;
+  repeated .DC.Packet.Operate_OperateHardwareAccountInfo hardwareAccountInfos = 6;
+  repeated .DC.Packet.Operate_OperateDuplicateHardwareInfo duplicateHardwareInfos = 7;
+  repeated .DC.Packet.Operate_OperateFileInfo fileInfos = 8;
+  repeated .DC.Packet.Operate_OperateBanInfo banInfos = 9;
+  repeated uint64 findBanList = 10;
+  repeated uint64 banList = 11;
+}
+
+message Operate_AllReportList {
+  repeated .DC.Packet.Operate_OperateReportBodyInfo report = 1;
+}
+
+message Operate_AllIronShieldList {
+  repeated .DC.Packet.Operate_OperateIronShieldInfo ironShield = 1;
+}
+

@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.account";
+option java_outer_classname = "account";
+option java_multiple_files = false;
+
+import "_Item.proto";
+import "_Character.proto";
+
+message SLOGIN_ACCOUNT_INFO {
+  string AccountID = 1;
+}
+
+message SLOGIN_CHARACTER_INFO {
+  string characterId = 1;
+  .DC.Packet.SACCOUNT_NICKNAME nickName = 2;
+  string characterClass = 3;
+  uint64 createAt = 4;
+  uint32 gender = 5;
+  uint32 level = 6;
+  uint64 lastloginDate = 7;
+  repeated .DC.Packet.SItem equipItemList = 8;
+  repeated string equipCharacterSkinList = 9;
+  repeated string equipItemSkinList = 10;
+}
+
+message SC2S_ACCOUNT_LOGIN_REQ {
+  string loginId = 1;
+  string password = 2;
+  string ipAddress = 3;
+  uint32 steamBuildId = 4;
+  repeated string hwIds = 5;
+  string macAddress = 6;
+  uint32 platformId = 7;
+  string buildVersion = 8;
+}
+
+message SS2C_ACCOUNT_LOGIN_RES {
+  enum RESULT {
+    RESULT_NONE = 0;
+    SUCCESS = 1;
+    SUCCESS_FIRST = 2;
+    FAIL_PASSWORD = 3;
+    FAIL_CONNECT = 4;
+    FAIL_SHORT_ID_OR_PASSWORD = 5;
+    FAIL_OVERFLOW_ID_OR_PASSWORD = 6;
+    FAIL_IP_PORT = 7;
+    FAIL_OVERLAP_LOGIN = 8;
+    FAIL_STEAM_BUILD_ID = 11;
+    FAIL_LOGIN_BAN_USER = 12;
+    FAIL_LOGIN_BAN_USER_CHEATER = 13;
+    FAIL_LOGIN_BAN_USER_INAPPROPRIATE_NAME = 14;
+    FAIL_LOGIN_BAN_USER_ETC = 15;
+    FAIL_LOGIN_BAN_HARDWARE = 16;
+    FAIL_BUILD_VERSION_ID = 41;
+    SUCCESS_AGREE_CHECK_RES = 51;
+  }
+
+  uint32 Result = 1;
+  .DC.Packet.SLOGIN_ACCOUNT_INFO AccountInfo = 2;
+  uint32 isReconnect = 3;
+  string address = 4;
+  string sessionId = 5;
+  string accountId = 6;
+  uint32 serverLocation = 7;
+  string secretToken = 8;
+}
+
+message SC2S_ACCOUNT_CHARACTER_CREATE_REQ {
+  string nickName = 1;
+  string characterClass = 2;
+  uint32 gender = 3;
+}
+
+message SS2C_ACCOUNT_CHARACTER_CREATE_RES {
+  uint32 result = 1;
+}
+
+message SC2S_ACCOUNT_CHARACTER_LIST_REQ {
+  uint32 pageIndex = 1;
+  uint32 pageCapacity = 2;
+}
+
+message SS2C_ACCOUNT_CHARACTER_LIST_RES {
+  uint32 totalCharacterCount = 1;
+  uint32 pageIndex = 2;
+  repeated .DC.Packet.SLOGIN_CHARACTER_INFO characterList = 3;
+}
+
+message SC2S_ACCOUNT_CHARACTER_DELETE_REQ {
+  string characterId = 1;
+}
+
+message SS2C_ACCOUNT_CHARACTER_DELETE_RES {
+  uint32 result = 1;
+}
+
+message SC2S_LOBBY_ENTER_REQ {
+  string characterId = 1;
+}
+
+message SS2C_LOBBY_ENTER_RES {
+  uint32 result = 1;
+  string accountId = 2;
+}
+
+message SC2S_ACCOUNT_AGREE_ANSWER_REQ {
+  uint32 isAgree = 1;
+}
+
+message SS2C_ACCOUNT_AGREE_ANSWER_RES {
+  uint32 result = 1;
+}
+

@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.characterClass";
+option java_outer_classname = "characterClass";
+option java_multiple_files = false;
+
+import "_Item.proto";
+
+message SCLASS_EQUIP_INFO {
+  uint32 index = 1;
+  uint32 isAvailableSlot = 2;
+  uint32 requiredLevel = 3;
+  uint32 type = 4;
+  string equipId = 5;
+}
+
+message SCLASS_MOVE_INFO {
+  uint32 index = 1;
+  uint32 type = 2;
+  string moveId = 3;
+  uint32 move = 4;
+}
+
+message SC2S_CLASS_LEVEL_INFO_REQ {
+}
+
+message SS2C_CLASS_LEVEL_INFO_RES {
+  uint32 level = 1;
+  uint32 exp = 2;
+  uint32 expBegin = 3;
+  uint32 expLimit = 4;
+  uint32 rewardPoint = 5;
+}
+
+message SC2S_CLASS_EQUIP_INFO_REQ {
+}
+
+message SS2C_CLASS_EQUIP_INFO_RES {
+  repeated .DC.Packet.SCLASS_EQUIP_INFO equips = 1;
+}
+
+message SC2S_CLASS_PERK_LIST_REQ {
+}
+
+message SS2C_CLASS_PERK_LIST_RES {
+  repeated .DC.Packet.SPerk perks = 1;
+}
+
+message SC2S_CLASS_SKILL_LIST_REQ {
+}
+
+message SS2C_CLASS_SKILL_LIST_RES {
+  repeated .DC.Packet.SSkill skills = 1;
+}
+
+message SC2S_CLASS_SPELL_LIST_REQ {
+  uint32 maxSpellMemory = 1;
+}
+
+message SS2C_CLASS_SPELL_LIST_RES {
+  repeated .DC.Packet.SSpell spells = 1;
+}
+
+message SC2S_CLASS_SPELL_SLOT_MOVE_REQ {
+  string spellId = 1;
+  int32 dstSlotIndex = 2;
+}
+
+message SS2C_CLASS_SPELL_SLOT_MOVE_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SSpell equipSpellList = 2;
+}
+
+message SC2S_CLASS_SPELL_SEQUENCE_CHANGE_REQ {
+  string spellId = 1;
+  uint32 dstSequenceIndex = 2;
+}
+
+message SS2C_CLASS_SPELL_SEQUENCE_CHANGE_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SSpell equipSpellList = 2;
+}
+
+message SC2S_CLASS_ITEM_MOVE_REQ {
+  .DC.Packet.SCLASS_MOVE_INFO oldMove = 1;
+  .DC.Packet.SCLASS_MOVE_INFO newMove = 2;
+}
+
+message SS2C_CLASS_ITEM_MOVE_RES {
+  uint32 result = 1;
+  .DC.Packet.SCLASS_MOVE_INFO oldMove = 2;
+  .DC.Packet.SCLASS_MOVE_INFO newMove = 3;
+}
+

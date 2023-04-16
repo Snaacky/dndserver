@@ -1,0 +1,123 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.merchant";
+option java_outer_classname = "merchant";
+option java_multiple_files = false;
+
+import "_Item.proto";
+
+message SMERCHANT_INFO {
+  string merchantId = 1;
+  uint32 faction = 2;
+  uint64 remainTime = 3;
+  uint32 isUnidentified = 4;
+}
+
+message SC2S_MERCHANT_LIST_REQ {
+}
+
+message SS2C_MERCHANT_LIST_RES {
+  repeated .DC.Packet.SMERCHANT_INFO merchantList = 1;
+}
+
+message SC2S_MERCHANT_STOCK_BUY_ITEM_LIST_REQ {
+  string merchantId = 1;
+}
+
+message SMERCHANT_STOCK_BUY_ITEM_INFO {
+  string stockBuyId = 1;
+  uint64 stockUniqueId = 2;
+  .DC.Packet.SItem itemInfo = 3;
+}
+
+message SMERCHANT_STOCK_CRAFT_ITEM_INFO {
+  string stockCraftId = 1;
+  uint64 stockUniqueId = 2;
+  .DC.Packet.SItem itemInfo = 3;
+}
+
+message SS2C_MERCHANT_STOCK_BUY_ITEM_LIST_RES {
+  uint32 result = 1;
+  uint32 loopMessageFlag = 2;
+  repeated .DC.Packet.SMERCHANT_STOCK_BUY_ITEM_INFO stockList = 3;
+}
+
+message SC2S_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_REQ {
+  string merchantId = 1;
+}
+
+message SMERCHANT_STOCK_SELL_BACK_ITEM_INFO {
+  string stockSellBackId = 1;
+  uint64 stockUniqueId = 2;
+}
+
+message SS2C_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_RES {
+  uint32 result = 1;
+  uint32 loopMessageFlag = 2;
+  repeated .DC.Packet.SMERCHANT_STOCK_SELL_BACK_ITEM_INFO stockList = 3;
+}
+
+message MERCHANT_TRADE_ITEM_INFO {
+  uint64 itemUniqueId = 1;
+  uint32 itemCount = 2;
+  uint32 itemContentsCount = 3;
+}
+
+message SMERCHANT_TRADE_SLOT_INFO {
+  uint32 inventoryId = 1;
+  uint32 slotId = 2;
+  string itemId = 3;
+  uint64 itemUniqueId = 4;
+  uint32 itemCount = 5;
+  uint32 itemContentsCount = 6;
+}
+
+message SC2S_MERCHANT_STOCK_BUY_REQ {
+  string tradeId = 1;
+  uint64 stockUniqueId = 2;
+  repeated .DC.Packet.MERCHANT_TRADE_ITEM_INFO dealItemList = 3;
+  repeated .DC.Packet.SMERCHANT_TRADE_SLOT_INFO merchantSlotInfo = 4;
+}
+
+message SS2C_MERCHANT_STOCK_BUY_RES {
+  uint32 result = 1;
+}
+
+message SMERCHANT_STOCK_SELL_BACK_INFO {
+  string tradeId = 1;
+  uint64 stockUniqueId = 2;
+  uint64 itemUniqueId = 3;
+}
+
+message SC2S_MERCHANT_STOCK_SELL_BACK_REQ {
+  repeated .DC.Packet.SMERCHANT_STOCK_SELL_BACK_INFO sellBackInfos = 1;
+  repeated .DC.Packet.SMERCHANT_TRADE_SLOT_INFO receivedInfos = 2;
+}
+
+message SS2C_MERCHANT_STOCK_SELL_BACK_RES {
+  uint32 result = 1;
+}
+
+message SC2S_MERCHANT_SERVICE_CRAFT_LIST_REQ {
+  string merchantId = 1;
+}
+
+message SS2C_MERCHANT_SERVICE_CRAFT_LIST_RES {
+  uint32 result = 1;
+  uint32 loopMessageFlag = 2;
+  repeated .DC.Packet.SMERCHANT_STOCK_CRAFT_ITEM_INFO stockCraftList = 3;
+}
+
+message SC2S_MERCHANT_SERVICE_CRAFT_REQ {
+  string tradeId = 1;
+  uint64 stockUniqueId = 2;
+  repeated .DC.Packet.MERCHANT_TRADE_ITEM_INFO stockCraftList = 3;
+  .DC.Packet.SMERCHANT_TRADE_SLOT_INFO merchantSlotInfo = 4;
+}
+
+message SS2C_MERCHANT_SERVICE_CRAFT_RES {
+  uint32 result = 1;
+}
+

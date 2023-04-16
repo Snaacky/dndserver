@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.ranking";
+option java_outer_classname = "ranking";
+option java_multiple_files = false;
+
+import "_Character.proto";
+
+message SRankRecord {
+  uint32 pageIndex = 1;
+  uint32 rank = 2;
+  uint32 score = 3;
+  float percentage = 4;
+  string accountId = 5;
+  .DC.Packet.SACCOUNT_NICKNAME nickName = 6;
+  string characterClass = 7;
+}
+
+message SC2S_RANKING_RANGE_REQ {
+  uint32 rankType = 1;
+  uint32 startIndex = 2;
+  uint32 endIndex = 3;
+  string characterClass = 4;
+}
+
+message SS2C_RANKING_RANGE_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SRankRecord records = 2;
+  uint32 rankType = 3;
+  uint32 allRowCount = 4;
+  uint32 startIndex = 5;
+  uint32 endIndex = 6;
+  string characterClass = 7;
+}
+
+message SC2S_RANKING_NEARBY_REQ {
+  uint32 rankType = 1;
+  uint32 searchRange = 2;
+  uint32 searchIndex = 3;
+  string characterClass = 4;
+}
+
+message SS2C_RANKING_NEARBY_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SRankRecord records = 2;
+  uint32 rankType = 3;
+  uint32 allRowCount = 4;
+  uint32 searchRange = 5;
+  string characterClass = 6;
+}
+
+message SC2S_RANKING_CHARACTER_REQ {
+  uint32 rankType = 1;
+  .DC.Packet.SACCOUNT_NICKNAME nickName = 2;
+  string characterClass = 3;
+}
+
+message SS2C_RANKING_CHARACTER_RES {
+  uint32 result = 1;
+  .DC.Packet.SRankRecord rankRecord = 2;
+  uint32 rankType = 3;
+  uint32 allRowCount = 4;
+  string characterClass = 5;
+}
+
+enum RANKING_TYPE {
+  NONE = 0;
+  COIN = 1;
+  KILL = 2;
+  ESCAPE = 3;
+  ADVENTURE = 4;
+  BOSSKILL_LICH = 5;
+  BOSSKILL_GHOSTKING = 6;
+}
+

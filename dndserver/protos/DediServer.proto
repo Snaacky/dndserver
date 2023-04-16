@@ -1,0 +1,270 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.dediServer";
+option java_outer_classname = "dediServer";
+option java_multiple_files = false;
+
+import "_Item.proto";
+import "_Character.proto";
+
+message S2C_GameEnterUser_Json {
+  string restUrl = 1;
+  bytes nickName = 2;
+  bytes streamingNickName = 3;
+  string characterClass = 4;
+  string characterId = 5;
+  uint32 gender = 6;
+  uint32 level = 7;
+  string partyId = 8;
+  int32 karmaRating = 9;
+}
+
+message GameExitAdvPoint {
+  uint32 advPointType = 1;
+  uint32 advPoint = 2;
+}
+
+message GameExitExpPoint {
+  uint32 expPointType = 1;
+  uint32 expPoint = 2;
+}
+
+message Killlog {
+  string instigatorAccountId = 1;
+  string instigatorName = 2;
+  string effectCauserName = 3;
+  uint32 hitBoxType = 4;
+}
+
+message MonsterKillLog {
+  string monsterName = 1;
+  uint32 monsterKillCount = 2;
+}
+
+message C2S_GameExitUser_POST {
+  enum ESCAPE {
+    NONE = 0;
+    SUCCESS = 1;
+    FAIL = 2;
+  }
+
+  uint32 escape = 1;
+  string accountId = 2;
+  string characterId = 3;
+  uint64 gameId = 4;
+  repeated .DC.Packet.SItem items = 5;
+  repeated .DC.Packet.SItem guaranteedItems = 6;
+  string characterClass = 7;
+  uint32 killCount = 8;
+  repeated .DC.Packet.GameExitAdvPoint advPoints = 9;
+  string escapeMapName = 10;
+  string reason = 11;
+  repeated .DC.Packet.GameExitExpPoint expPoints = 12;
+  repeated .DC.Packet.Killlog killLogData = 13;
+  repeated .DC.Packet.MonsterKillLog monsterKillLogs = 14;
+  uint32 gameDifficultyType = 15;
+  uint32 needBlock = 16;
+  uint32 needHWBlock = 17;
+}
+
+message C2S_GameEnterUser_Post {
+  string accountId = 1;
+  string characterId = 2;
+  uint64 gameId = 3;
+  uint32 isSuccess = 4;
+}
+
+message StartGameSessionDataDiscrepancy {
+  uint32 movementTimeDiscrepancyDetection = 1;
+  uint32 movementTimeDiscrepancyResolution = 2;
+  float movementTimeDiscrepancyMaxTimeMargin = 3;
+  float movementTimeDiscrepancyMinTimeMargin = 4;
+  float movementTimeDiscrepancyResolutionRate = 5;
+  float movementTimeDiscrepancyDriftAllowance = 6;
+  uint32 movementTimeDiscrepancyForceCorrectionsDuringResolution = 7;
+}
+
+message StartGameSessionDataHackPolicy {
+  uint32 hack_iron_shield_scan_speed_hack = 1;
+  uint32 hack_iron_shield_scan_dll_injection = 2;
+  uint32 hack_movement_scan = 3;
+  uint32 hack_melee_attack_scan = 4;
+  uint32 hack_invalid_item_scan = 5;
+  uint32 hack_interaction_scan = 6;
+  uint32 hack_iron_shield_scan_esp_hack = 7;
+}
+
+message S2C_GameStartServer_Json {
+  string restUrl = 1;
+  uint64 gameId = 2;
+  uint32 maxGameUser = 3;
+  uint32 waitTimeSec = 4;
+  .DC.Packet.StartGameSessionDataDiscrepancy discrepancy = 5;
+  uint32 gameHackPolicy = 6;
+  uint32 validPlayerMeleeAttackRange = 7;
+  uint32 gameDifficultyType = 8;
+  uint32 shippingLogOnOffPolicy = 9;
+  uint32 shippingLogLevelPolicy = 10;
+  uint32 gmOnOffPolicy = 11;
+  uint32 allowed_interaction_policy = 12;
+  float allowed_interaction_distance = 13;
+  float allowed_interaction_xy_distance = 14;
+  .DC.Packet.StartGameSessionDataHackPolicy hackPolicy = 15;
+  uint32 currentFloor = 16;
+  uint32 isFloorMatchmaking = 17;
+}
+
+message C2S_GameEndServer_POST {
+  repeated .DC.Packet.GameEndUserInfo users = 1;
+  uint64 gameId = 2;
+}
+
+message GameEndUserInfo {
+  string accountId = 1;
+  uint32 kill = 2;
+  uint32 death = 3;
+}
+
+message C2S_GameStart_POST {
+  uint64 gameId = 1;
+  repeated string mapNames = 2;
+}
+
+message C2S_GameCharacterInfo_Get {
+  uint64 gameId = 1;
+  string accountId = 2;
+  string characterId = 3;
+}
+
+message S2C_GameCharacterInfo_Json {
+  uint64 gameId = 1;
+  string accountId = 2;
+  string characterId = 3;
+  repeated .DC.Packet.SItem items = 4;
+  repeated .DC.Packet.SPerk perks = 5;
+  repeated .DC.Packet.SSkill skills = 6;
+  repeated .DC.Packet.SSpell spells = 7;
+  repeated string characterSkinIds = 8;
+  repeated string itemSkinIds = 9;
+  repeated .DC.Packet.SEMOTE emotes = 10;
+  repeated string actionIds = 11;
+}
+
+message C2S_GameAliveCheck_GET {
+  uint64 gameId = 1;
+}
+
+message AliveDataInfo {
+  string Id = 1;
+  repeated string Us = 2;
+}
+
+message C2S_AliveAppendData_GET {
+  string Gs = 1;
+  repeated .DC.Packet.AliveDataInfo infos = 2;
+}
+
+message C2S_GameInterrupt_POST {
+  uint64 gameId = 1;
+}
+
+message C2S_UserReport_POST {
+  uint64 gameId = 1;
+  string reportAccountId = 2;
+  repeated uint32 category = 3;
+  string targetAccountId = 4;
+  .DC.Packet.SACCOUNT_NICKNAME targetNickName = 5;
+  string targetCharacterId = 6;
+  string reportContent = 7;
+}
+
+message S2C_UserReport_POST_Response {
+  string reportAccountId = 1;
+  string targetAccountId = 2;
+  string reportKey = 3;
+  uint32 category = 4;
+}
+
+message GameResultInfo {
+  string accountId = 1;
+  string characterId = 2;
+  uint64 gameId = 3;
+  string characterClass = 4;
+  uint32 killCount = 5;
+  repeated .DC.Packet.GameExitAdvPoint advPoints = 6;
+  string escapeMapName = 7;
+  string reason = 8;
+  repeated .DC.Packet.GameExitExpPoint expPoints = 9;
+  repeated .DC.Packet.Killlog killLogData = 10;
+  repeated .DC.Packet.MonsterKillLog monsterKillLogs = 11;
+  uint32 gameDifficultyType = 12;
+  uint32 needBlock = 13;
+  uint32 needHWBlock = 14;
+}
+
+message C2S_GameDownUser_POST {
+  .DC.Packet.GameResultInfo resultInfo = 1;
+  repeated .DC.Packet.SDownItem downItems = 2;
+  uint32 currentFloor = 3;
+  uint32 hp = 4;
+  repeated string partyAccountIds = 5;
+  uint64 partyIdx = 6;
+}
+
+message C2S_GameEscapeUser_POST {
+  .DC.Packet.GameResultInfo resultInfo = 1;
+  repeated .DC.Packet.SItem items = 2;
+}
+
+message C2S_GameExitUser_V2_POST {
+  .DC.Packet.GameResultInfo resultInfo = 1;
+}
+
+message C2S_GameExitEscapedUser_POST {
+  string accountId = 1;
+  string characterId = 2;
+  uint64 gameId = 3;
+}
+
+message S2C_GameCharacterInfo_Down_Json {
+  uint64 gameId = 1;
+  string accountId = 2;
+  string characterId = 3;
+  repeated .DC.Packet.SDownItem downItems = 4;
+  repeated .DC.Packet.SPerk perks = 5;
+  repeated .DC.Packet.SSkill skills = 6;
+  repeated .DC.Packet.SSpell spells = 7;
+  repeated string characterSkinIds = 8;
+  repeated string itemSkinIds = 9;
+  repeated .DC.Packet.SEMOTE emotes = 10;
+  uint32 hp = 11;
+}
+
+message S2C_GamePolicy_GET {
+  repeated string appHash = 1;
+  string policyJson = 2;
+}
+
+message C2S_GameSpectator_Check_POST {
+  string accountId = 1;
+  string token = 2;
+}
+
+message S2C_GameSpectator_Check_Json {
+  uint32 isSuccess = 1;
+}
+
+message GameDown_UserPartyInfo {
+  string accountId = 1;
+  .DC.Packet.SACCOUNT_NICKNAME nickname = 2;
+  string characterClass = 3;
+  uint32 gender = 4;
+  uint32 level = 5;
+}
+
+message S2C_GameDown_UserParty_GET {
+  repeated .DC.Packet.GameDown_UserPartyInfo partyMember = 1;
+}
+

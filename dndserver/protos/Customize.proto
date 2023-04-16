@@ -1,0 +1,153 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.customize";
+option java_outer_classname = "customize";
+option java_multiple_files = false;
+
+import "_Item.proto";
+
+message SC2S_CUSTOMIZE_CHARACTER_INFO_REQ {
+}
+
+message SS2C_CUSTOMIZE_CHARACTER_INFO_RES {
+  uint32 loopFlag = 1;
+  repeated .DC.Packet.SCUSTOMIZE_CHARACTER customizeCharacters = 2;
+}
+
+message SC2S_CUSTOMIZE_ITEM_INFO_REQ {
+}
+
+message SS2C_CUSTOMIZE_ITEM_INFO_RES {
+  uint32 loopFlag = 1;
+  repeated .DC.Packet.SCUSTOMIZE_ITEM customizeItems = 2;
+}
+
+message SC2S_CUSTOMIZE_EMOTE_INFO_REQ {
+}
+
+message SS2C_CUSTOMIZE_EMOTE_INFO_RES {
+  uint32 loopFlag = 1;
+  repeated .DC.Packet.SEMOTE emotes = 2;
+}
+
+message SC2S_CUSTOMIZE_ACTION_INFO_REQ {
+}
+
+message SS2C_CUSTOMIZE_ACTION_INFO_RES {
+  uint32 loopFlag = 1;
+  repeated .DC.Packet.SCUSTOMIZE_ACTION customizeActionIds = 2;
+}
+
+message SC2S_CUSTOMIZE_LOBBY_EMOTE_INFO_REQ {
+}
+
+message SS2C_CUSTOMIZE_LOBBY_EMOTE_INFO_RES {
+  uint32 loopFlag = 1;
+  repeated .DC.Packet.SCUSTOMIZE_LOBBY_EMOTE customizeLobbyEmoteIds = 2;
+}
+
+message SC2S_CUSTOMIZE_CHARACTER_MOUNT_REQ {
+  string customizeCharacterId = 1;
+}
+
+message SS2C_CUSTOMIZE_CHARACTER_MOUNT_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SCUSTOMIZE_CHARACTER equipCustomizeCharacters = 2;
+}
+
+message SC2S_CUSTOMIZE_CHARACTER_UNMOUNT_REQ {
+  string customizeCharacterId = 1;
+}
+
+message SS2C_CUSTOMIZE_CHARACTER_UNMOUNT_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SCUSTOMIZE_CHARACTER equipCustomizeCharacters = 2;
+}
+
+message SC2S_CUSTOMIZE_ITEM_MOUNT_REQ {
+  string customizeItemId = 1;
+  int32 equipSlotIndex = 2;
+}
+
+message SS2C_CUSTOMIZE_ITEM_MOUNT_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SCUSTOMIZE_ITEM equipCustomizeItems = 2;
+}
+
+message SC2S_CUSTOMIZE_ITEM_UNMOUNT_REQ {
+  string customizeItemId = 1;
+}
+
+message SS2C_CUSTOMIZE_ITEM_UNMOUNT_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SCUSTOMIZE_ITEM equipCustomizeItems = 2;
+}
+
+message SC2S_CUSTOMIZE_EMOTE_MOUNT_REQ {
+  string emoteId = 1;
+  uint32 equipSlotIndex = 2;
+}
+
+message SS2C_CUSTOMIZE_EMOTE_MOUNT_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SEMOTE equipEmotes = 2;
+}
+
+message SC2S_CUSTOMIZE_EMOTE_UNMOUNT_REQ {
+  string emoteId = 1;
+}
+
+message SS2C_CUSTOMIZE_EMOTE_UNMOUNT_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SEMOTE equipEmotes = 2;
+}
+
+message SC2S_CUSTOMIZE_ACTION_MOUNT_REQ {
+  string customizeActionId = 1;
+}
+
+message SS2C_CUSTOMIZE_ACTION_MOUNT_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SCUSTOMIZE_ACTION equipCustomizeActionIds = 2;
+}
+
+message SC2S_CUSTOMIZE_ACTION_UNMOUNT_REQ {
+  string customizeActionId = 1;
+}
+
+message SS2C_CUSTOMIZE_ACTION_UNMOUNT_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SCUSTOMIZE_ACTION equipCustomizeActionIds = 2;
+}
+
+message SC2S_CUSTOMIZE_LOBBY_EMOTE_MOUNT_REQ {
+  string customizeLobbyEmoteId = 1;
+  uint32 equipSlotIndex = 2;
+}
+
+message SS2C_CUSTOMIZE_LOBBY_EMOTE_MOUNT_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SCUSTOMIZE_LOBBY_EMOTE equipCustomizeLobbyEmoteIds = 2;
+}
+
+message SC2S_CUSTOMIZE_LOBBY_EMOTE_UNMOUNT_REQ {
+  string customizeLobbyEmoteId = 1;
+}
+
+message SS2C_CUSTOMIZE_LOBBY_EMOTE_UNMOUNT_RES {
+  uint32 result = 1;
+  repeated .DC.Packet.SCUSTOMIZE_LOBBY_EMOTE equipCustomizeLobbyEmoteIds = 2;
+}
+
+message SC2S_CUSTOMIZE_NEW_ITEM_CHECK_REQ {
+  string itemId = 1;
+}
+
+message SS2C_CUSTOMIZE_NEW_ITEM_CHECK_RES {
+}
+
+message SS2C_CUSTOMIZE_NEW_ITEM_ALERT_NOT {
+}
+

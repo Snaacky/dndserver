@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.common";
+option java_outer_classname = "common";
+option java_multiple_files = false;
+
+import "_Character.proto";
+
+message SC2S_META_LOCATION_REQ {
+  uint32 location = 1;
+}
+
+message SS2C_META_LOCATION_RES {
+  uint32 location = 1;
+}
+
+message SC2S_BLOCK_CHARACTER_REQ {
+  string targetAccountId = 1;
+  string targetCharacterId = 2;
+}
+
+message SS2C_BLOCK_CHARACTER_RES {
+  uint32 result = 1;
+  .DC.Packet.SBLOCK_CHARACTER targetCharacterInfo = 2;
+}
+
+message SC2S_UNBLOCK_CHARACTER_REQ {
+  string targetAccountId = 1;
+  string targetCharacterId = 2;
+}
+
+message SS2C_UNBLOCK_CHARACTER_RES {
+  uint32 result = 1;
+  string targetCharacterId = 2;
+}
+
+message SC2S_BLOCK_CHARACTER_LIST_REQ {
+}
+
+message SS2C_BLOCK_CHARACTER_LIST_RES {
+  repeated .DC.Packet.SBLOCK_CHARACTER blockCharacters = 1;
+}
+
+message SC2S_HACK_LOG_REQ {
+  string logMessage = 1;
+}
+
+message SS2C_HACK_LOG_RES {
+}
+
+message SANNOUNCE_MESSAGE {
+  int32 nationType = 1;
+  string announceMessage = 2;
+}
+
+message SS2C_OPERATE_ANNOUNCE_NOT {
+  repeated .DC.Packet.SANNOUNCE_MESSAGE announceList = 1;
+}
+
+message FSERVICE_POLICY {
+  int32 policyType = 1;
+  int32 policyValue = 2;
+}
+
+message SS2C_SERVICE_POLICY_NOT {
+  repeated .DC.Packet.FSERVICE_POLICY policyList = 1;
+}
+
+message SC2S_RE_LOGIN_REQ {
+}
+
+message SS2C_RE_LOGIN_RES {
+  uint32 isReconnect = 1;
+  string address = 2;
+  string sessionId = 3;
+  string accountId = 4;
+}
+
+message SS2C_CLOSED_GAME_NOT {
+  uint32 cyzz = 1;
+}
+
+message SS2C_HACK_CHECK_DLL_LIST_NOT {
+  repeated string DLLList = 1;
+}
+
+message SC2S_USER_CHARACTER_INFO_REQ {
+  uint32 callbackType = 1;
+  string reportId = 2;
+  repeated string hIds = 3;
+  repeated uint32 blob = 4;
+  string accountId = 5;
+  string characterId = 6;
+  string originNickname = 7;
+}
+
+message SS2C_USER_CHARACTER_INFO_RES {
+}
+
+message SC2S_GM_ENTER_GAME_SPECTATOR_REQ {
+  string nickname = 1;
+  string accountId = 2;
+}
+
+message SS2C_GM_ENTER_GAME_SPECTATOR_RES {
+  uint32 result = 1;
+  string ip = 2;
+  uint32 port = 3;
+  string token = 4;
+  string serviceUrl = 5;
+}
+

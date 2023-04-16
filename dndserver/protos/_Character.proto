@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.character";
+option java_outer_classname = "character";
+option java_multiple_files = false;
+
+import "_Item.proto";
+
+message SCHARACTER_INFO {
+  string accountId = 1;
+  .DC.Packet.SACCOUNT_NICKNAME nickName = 2;
+  string characterClass = 3;
+  string characterId = 4;
+  uint32 gender = 5;
+  uint32 level = 6;
+  string serviceGrpc = 7;
+  repeated .DC.Packet.SItem CharacterItemList = 8;
+  repeated .DC.Packet.SItem CharacterStorageItemList = 9;
+}
+
+message SCHARACTER_FRIEND_INFO {
+  string accountId = 1;
+  .DC.Packet.SACCOUNT_NICKNAME nickName = 2;
+  string characterClass = 3;
+  string characterId = 4;
+  uint32 gender = 5;
+  uint32 level = 6;
+  uint32 locationStatus = 7;
+  uint32 PartyMemeberCount = 8;
+  uint32 PartyMaxMemeberCount = 9;
+}
+
+message SCHARACTER_PARTY_INFO {
+  string accountId = 1;
+  .DC.Packet.SACCOUNT_NICKNAME nickName = 2;
+  string characterClass = 3;
+  string characterId = 4;
+  uint32 gender = 5;
+  uint32 level = 6;
+  uint32 isPartyLeader = 7;
+  uint32 isReady = 8;
+  uint32 isInGame = 9;
+  repeated .DC.Packet.SItem equipItemList = 10;
+  uint32 partyIdx = 11;
+}
+
+message SCHARACTER_TRADE_INFO {
+  string accountId = 1;
+  .DC.Packet.SACCOUNT_NICKNAME nickName = 2;
+  string characterClass = 3;
+  string characterId = 4;
+  uint32 gender = 5;
+  uint32 level = 6;
+  uint32 characterLocation = 7;
+}
+
+message SACCOUNT_NICKNAME {
+  string originalNickName = 1;
+  string streamingModeNickName = 2;
+  int32 karmaRating = 3;
+}
+
+message SBLOCK_CHARACTER {
+  string accountId = 1;
+  string characterId = 2;
+  .DC.Packet.SACCOUNT_NICKNAME nickName = 3;
+  string characterClass = 4;
+  uint32 gender = 5;
+}
+
+message SCHARACTER_GATHERING_HALL_INFO {
+  string accountId = 1;
+  .DC.Packet.SACCOUNT_NICKNAME nickName = 2;
+  string characterClass = 3;
+  string characterId = 4;
+  uint32 gender = 5;
+  uint32 level = 6;
+}
+
+enum Friend_Location {
+  Friend_Location_NONE = 0;
+  Friend_Location_LOBBY = 1;
+  Friend_Location_DUNGEON = 2;
+  Friend_Location_OFFLINE = 3;
+}
+

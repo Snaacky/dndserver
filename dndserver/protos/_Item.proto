@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package DC.Packet;
+
+option java_package = "com.packets.item";
+option java_outer_classname = "item";
+option java_multiple_files = false;
+
+message SItemMeta {
+  string SoulHeart_AccountId = 1;
+  string SoulHeart_PartyId = 2;
+  string SoulHeart_NickName_origin = 3;
+  string SoulHeart_NickName_streaming = 4;
+  uint32 AvailableValue = 5;
+}
+
+message SDownItem {
+  uint64 itemUniqueId = 1;
+  string itemId = 2;
+  uint32 itemCount = 3;
+  uint32 inventoryId = 4;
+  uint32 slotId = 5;
+  uint32 bEquipped = 6;
+  uint32 itemAmmoCount = 7;
+  uint32 itemContentsCount = 8;
+  .DC.Packet.SItemMeta metaItem = 9;
+  repeated .DC.Packet.SItemProperty primaryPropertyArray = 10;
+  repeated .DC.Packet.SItemProperty secondaryPropertyArray = 11;
+}
+
+message SItem {
+  uint64 itemUniqueId = 1;
+  string itemId = 2;
+  uint32 itemCount = 3;
+  uint32 inventoryId = 4;
+  uint32 slotId = 5;
+  uint32 itemAmmoCount = 7;
+  uint32 itemContentsCount = 8;
+  repeated .DC.Packet.SItemProperty primaryPropertyArray = 9;
+  repeated .DC.Packet.SItemProperty secondaryPropertyArray = 10;
+}
+
+message SItemProperty {
+  string propertyTypeId = 1;
+  int32 propertyValue = 2;
+}
+
+message SItems {
+  repeated .DC.Packet.SItem item = 1;
+}
+
+message SPerk {
+  uint32 index = 1;
+  string perkId = 2;
+}
+
+message SSkill {
+  uint32 index = 1;
+  string skillId = 2;
+}
+
+message SSpell {
+  uint32 slotIndex = 1;
+  uint32 sequenceIndex = 2;
+  string spellId = 3;
+}
+
+message SCUSTOMIZE_CHARACTER {
+  string customizeCharacterId = 1;
+  int32 isEquip = 2;
+  int32 isNew = 3;
+}
+
+message SCUSTOMIZE_ITEM {
+  string customizeItemId = 1;
+  int32 isEquip = 2;
+  int32 isNew = 3;
+}
+
+message SEMOTE {
+  string emoteId = 1;
+  int32 equipSlotIndex = 2;
+  int32 isNew = 3;
+}
+
+message SCUSTOMIZE_ACTION {
+  string customizeActionId = 1;
+  int32 isEquip = 2;
+  int32 isNew = 3;
+}
+
+message SCUSTOMIZE_LOBBY_EMOTE {
+  string lobbyEmoteId = 1;
+  int32 equipSlotIndex = 2;
+  int32 isNew = 3;
+}
+
