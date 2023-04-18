@@ -1,3 +1,10 @@
 server:
     host: 127.0.0.1
     port: 13337
+
+game:
+    version: 0.5.0.1173 # playtest 5 hotfix 2
+
+database:
+    type: sqlite # sqlite only right now, MySQL later
+    file: dndserver.db

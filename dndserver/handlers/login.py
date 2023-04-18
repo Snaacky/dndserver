@@ -25,7 +25,7 @@ def process_login(self, data: bytes):
         user = get_user(req.loginId)
 
     resp = account.SS2C_ACCOUNT_LOGIN_RES()
-
+    
     # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password
     if len(req.loginId) <= 2 or len(req.password) <= 2:
         resp.Result = 5
