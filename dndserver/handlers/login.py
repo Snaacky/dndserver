@@ -14,10 +14,7 @@ def process_login(self, data: bytes):
     req.ParseFromString(data[8:])
     logger.debug(req)
 
-    # TODO: Add check to make sure people don't spoof requests for <=2 character
-    # names, passwords are hash when we're receiving them so we don't need to
-    # worry about that
-
+    # Attempt to get the user requested and register an account if necessary
     user = get_user(req.loginId)
     if not user:
         # TODO: Implement secret key generation prompt
@@ -29,7 +26,26 @@ def process_login(self, data: bytes):
 
     resp = account.SS2C_ACCOUNT_LOGIN_RES()
 
-    # Returns FAIL_PASSWORD on mismatching password
+    # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password
+    if len(req.loginId) <= 2 or len(req.password) <= 2:
+        resp.Result = 5
+        account_info = account.SLOGIN_ACCOUNT_INFO()
+        account_info.AccountID = str(user["id"])
+        resp.AccountInfo.CopyFrom(account_info)
+        return resp.SerializeToString()
+
+    # Return FAIL_OVERFLOW_ID_OR_PASSWORD on too long username
+    # Not sure if there's a password overflow limit because the
+    # password field starts glitching out when you add too many
+    # characters.
+    if len(req.loginId) > 20:
+        resp.Result = 6
+        account_info = account.SLOGIN_ACCOUNT_INFO()
+        account_info.AccountID = str(user["id"])
+        resp.AccountInfo.CopyFrom(account_info)
+        return resp.SerializeToString()
+
+    # Return FAIL_PASSWORD on mismatching password
     try:
         PasswordHasher().verify(user["password"], req.password)
     except VerifyMismatchError:
