@@ -131,3 +131,5 @@ dmypy.json
 # dndserver
 .vscode/
 *.lnk
+*.db*
+config.yml
