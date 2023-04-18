@@ -7,6 +7,9 @@ from loguru import logger
 
 from dndserver import database
 from dndserver.protos import Account_pb2 as account
+from dndserver.protos import _PacketCommand_pb2 as pc
+
+import struct
 
 
 def process_login(self, data: bytes):
@@ -72,8 +75,15 @@ def process_login(self, data: bytes):
     account_info = account.SLOGIN_ACCOUNT_INFO()
     account_info.AccountID = str(user["id"])
     resp.AccountInfo.CopyFrom(account_info)
+    
+    
+    header_fmt = "<B3xI"
+    header_len = len(bytes(resp.SerializeToString()))
+    header_byte = pc.PacketCommand.Value("S2C_ACCOUNT_LOGIN_RES")
+        
+    header = struct.pack(header_fmt, header_len, header_byte)
 
-    return resp.SerializeToString()
+    return  header + resp.SerializeToString()
 
 
 def register_user(username: str, password: str, hwids: str, build_version: str, ip_address: str):

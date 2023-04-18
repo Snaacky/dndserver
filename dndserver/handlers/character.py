@@ -17,6 +17,22 @@ def process_character(self, data: bytes):
     resp = account.SS2C_ACCOUNT_CHARACTER_CREATE_RES()
     
     resp.result = 1
+    
+    
+    resp = SS2C_LOBBY_CHARACTER_INFO_RES()
+
+    character_info = SCHARACTER_INFO()
+    character_info.accountId = "456456"
+    character_info.nickName = "dfgdfg"
+    characterClass = "DesignDataPlayerCharacter:Id_PlayerCharacter_Fighter"
+    characterId = "45345"
+    gender = 1
+    level = 1
+    servicegrpc = "???"
+    characteritemlist = SomeCharacterItemList()
+    characterstorageitemlist = SomeCharacterStorageItemList()
+
+    resp.characterDatabase.CopyFrom(character_info)
 
 
     return resp.SerializeToString()
