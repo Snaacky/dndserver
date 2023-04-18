@@ -1,21 +1,20 @@
 import random
 import string
+import struct
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from loguru import logger
 
 from dndserver import database
-from dndserver.protos import Account_pb2 as account
+from dndserver.protos import Account_pb2 as acc
 from dndserver.protos import _PacketCommand_pb2 as pc
-
-import struct
 
 
 def process_login(self, data: bytes):
-    req = account.SC2S_ACCOUNT_LOGIN_REQ()
+    req = acc.SC2S_ACCOUNT_LOGIN_REQ()
     req.ParseFromString(data[8:])
-    logger.debug(req)
+    logger.debug(f"Received SC2S_ACCOUNT_LOGIN_REQ:\n {req}")
 
     # Attempt to get the user requested and register an account if necessary
     user = get_user(req.loginId)
@@ -27,63 +26,58 @@ def process_login(self, data: bytes):
         )
         user = get_user(req.loginId)
 
-    resp = account.SS2C_ACCOUNT_LOGIN_RES()
-    
+    res = acc.SS2C_ACCOUNT_LOGIN_RES()
+
     # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password
     if len(req.loginId) <= 2 or len(req.password) <= 2:
-        resp.Result = 5
-        account_info = account.SLOGIN_ACCOUNT_INFO()
+        res.Result = 5
+        account_info = acc.SLOGIN_ACCOUNT_INFO()
         account_info.AccountID = str(user["id"])
-        resp.AccountInfo.CopyFrom(account_info)
-        return resp.SerializeToString()
+        res.AccountInfo.CopyFrom(account_info)
+        return res.SerializeToString()
 
     # Return FAIL_OVERFLOW_ID_OR_PASSWORD on too long username
     # Not sure if there's a password overflow limit because the
     # password field starts glitching out when you add too many
     # characters.
     if len(req.loginId) > 20:
-        resp.Result = 6
-        account_info = account.SLOGIN_ACCOUNT_INFO()
+        res.Result = 6
+        account_info = acc.SLOGIN_ACCOUNT_INFO()
         account_info.AccountID = str(user["id"])
-        resp.AccountInfo.CopyFrom(account_info)
-        return resp.SerializeToString()
+        res.AccountInfo.CopyFrom(account_info)
+        return res.SerializeToString()
 
     # Return FAIL_PASSWORD on mismatching password
     try:
         PasswordHasher().verify(user["password"], req.password)
     except VerifyMismatchError:
-        resp.Result = 3
-        account_info = account.SLOGIN_ACCOUNT_INFO()
+        res.Result = 3
+        account_info = acc.SLOGIN_ACCOUNT_INFO()
         account_info.AccountID = str(user["id"])
-        resp.AccountInfo.CopyFrom(account_info)
-        return resp.SerializeToString()
+        res.AccountInfo.CopyFrom(account_info)
+        return res.SerializeToString()
 
     # Returns the respective SS2C_ACCOUNT_LOGIN_RES *__BAN_USER ban enum.
     if user["is_banned"]:
-        resp.Result = user["is_banned"]
-        account_info = account.SLOGIN_ACCOUNT_INFO()
+        res.Result = user["is_banned"]
+        account_info = acc.SLOGIN_ACCOUNT_INFO()
         account_info.AccountID = str(user["id"])
-        resp.AccountInfo.CopyFrom(account_info)
-        return resp.SerializeToString()
+        res.AccountInfo.CopyFrom(account_info)
+        return res.SerializeToString()
 
-    resp.sessionId = "session123"     # TODO: Figure out how session IDs look
-    resp.accountId = str(user["id"])  # TODO: Figure out how account IDs look
-    resp.secretToken = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
-    resp.serverLocation = 1
-    resp.isReconnect = False          # TODO: Need to maintain user states and connection statuses?
+    res.sessionId = "session123"     # TODO: Figure out how session IDs look
+    res.accountId = str(user["id"])  # TODO: Figure out how account IDs look
+    res.secretToken = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
+    res.serverLocation = 1
+    res.isReconnect = False          # TODO: Need to maintain user states and connection statuses?
 
-    account_info = account.SLOGIN_ACCOUNT_INFO()
+    account_info = acc.SLOGIN_ACCOUNT_INFO()
     account_info.AccountID = str(user["id"])
-    resp.AccountInfo.CopyFrom(account_info)
-    
-    
-    header_fmt = "<B3xI"
-    header_len = len(bytes(resp.SerializeToString()))
-    header_byte = pc.PacketCommand.Value("S2C_ACCOUNT_LOGIN_RES")
-        
-    header = struct.pack(header_fmt, header_len, header_byte)
+    res.AccountInfo.CopyFrom(account_info)
 
-    return  header + resp.SerializeToString()
+    logger.debug(f"Sent SS2C_ACCOUNT_LOGIN_RES:\n {res}")
+    header = struct.pack("<B3xI", len(res.SerializeToString()), pc.PacketCommand.Value("S2C_ACCOUNT_LOGIN_RES"))
+    return header + res.SerializeToString()
 
 
 def register_user(username: str, password: str, hwids: str, build_version: str, ip_address: str):
@@ -95,6 +89,8 @@ def register_user(username: str, password: str, hwids: str, build_version: str, 
         build_version=build_version,
         ip_address=ip_address
     ))
+    db.commit()
+    db.close()
     return user
 
 
