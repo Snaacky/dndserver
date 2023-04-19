@@ -1,12 +1,9 @@
-import struct
-
 from loguru import logger
 
 from dndserver import database
+from dndserver.objects import items
 from dndserver.protos import Account_pb2 as acc
 from dndserver.protos import _Character_pb2 as char
-from dndserver.protos import _Item_pb2 as item
-from dndserver.protos import _PacketCommand_pb2 as pc
 
 
 def list_characters(self, data: bytes):
@@ -15,54 +12,37 @@ def list_characters(self, data: bytes):
     logger.debug(f"Received SC2S_ACCOUNT_CHARACTER_LIST_REQ:\n {req}")
 
     nickname = char.SACCOUNT_NICKNAME()
-    nickname.originalNickName = "Snaacky"  # str
-    nickname.streamingModeNickName = "Snaacky"  # str
-    nickname.karmaRating = 1  # int
-
-    primary = item.SItemProperty()
-    primary.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_MoveSpeed"
-    primary.propertyValue = 1
-
-    secondary = item.SItemProperty()
-    secondary.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_PhysicalWeaponDamage"
-    secondary.propertyValue = 1
-
-    # torch = item.SItem()
-    # torch.itemUniqueId = 1
-    # torch.itemId = "DesignDataItem:Id_Item_Torch_0001"
-    # torch.itemCount = 1
-    # torch.inventoryId = 1
-    # torch.slotId = 1
-    # torch.itemAmmoCount = 1
-    # torch.itemContentsCount = 1
-    # torch.primaryPropertyArray.append(primary)
-    # torch.secondaryPropertyArray.append(primary)
+    nickname.originalNickName = "Kroftydfg"  # str
+    nickname.streamingModeNickName = "Fighter#1660779"  # str: Fighter#1660779
 
     character = acc.SLOGIN_CHARACTER_INFO()
     character.nickName.CopyFrom(nickname)
-    character.characterId = "1"  # str
+    character.characterId = "2784402"  # str
     character.characterClass = "DesignDataPlayerCharacter:Id_PlayerCharacter_Fighter"  # str
-    character.createAt = 0  # int
-    character.gender = 1    # int
-    character.level = 1     # int
-    character.lastloginDate = 1  # int
-    # character.equipItemList.append(torch)
-    # character.equipItemSkinList.append("")
-    # character.equipCharacterSkinList.append("")
-    # character.equipCharacterSkinList = []  # repeated string equipCharacterSkinList = 9;
-    # character.equipItemSkinList = []       # repeated string equipItemSkinList = 10;
+    character.createAt = 1681858691000  # int(time.time())  # int: unix timestamp
+    character.gender = 1  # int: 1 = male, 2 = female
+    character.level = 1   # int
+    character.lastloginDate = 1681858691000  # int(time.time())  # int: unix timestamp
+    character.equipItemList.append(items.generate_torch())
+    character.equipItemList.append(items.generate_roundshield())
+    character.equipItemList.append(items.generate_lantern())
+    character.equipItemList.append(items.generate_sword())
+    character.equipItemList.append(items.generate_pants())
+    character.equipItemList.append(items.generate_tunic())
+    character.equipItemList.append(items.generate_bandage())
 
     res = acc.SS2C_ACCOUNT_CHARACTER_LIST_RES()
     res.totalCharacterCount = 1  # TODO: Query the db and return all characters from the UID.
-    res.pageIndex = 0  # TODO: Each page holds up to 7 characters, needs to be implemented
+    res.pageIndex = 1            # TODO: Each page holds up to 7 characters, needs to be implemented
     res.characterList.append(character)
 
-    header = struct.pack(
-        "<B3xI", len(res.SerializeToString()),
-        pc.PacketCommand.Value("S2C_ACCOUNT_CHARACTER_LIST_RES")
-    )
+    # header = struct.pack(
+    #     "<B3xI", len(res.SerializeToString()),
+    #     pc.PacketCommand.Value("S2C_ACCOUNT_CHARACTER_LIST_RES")
+    # )
+    header = b"\xa7\x05\x00\x00\x12\x00\x00\x00"
     logger.debug(f"Sent SS2C_ACCOUNT_CHARACTER_LIST_RES:\n {res}")
-    logger.debug(f"Sent SS2C_ACCOUNT_CHARACTER_LIST_RES serialized:\n {res.SerializeToString()}")
+    # logger.debug(f"Sent SS2C_ACCOUNT_CHARACTER_LIST_RES serialized:\n {res.SerializeToString()}")
     return header + res.SerializeToString()
 
 
