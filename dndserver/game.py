@@ -1,7 +1,6 @@
 from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
-from dndserver import database
 from dndserver.handlers import login
 from dndserver.handlers import character
 from dndserver.protos import _PacketCommand_pb2 as pc

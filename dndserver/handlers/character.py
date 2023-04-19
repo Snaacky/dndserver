@@ -6,10 +6,14 @@ from dndserver.protos import Account_pb2 as acc
 from dndserver.protos import _Character_pb2 as char
 
 
-def list_characters(self, data: bytes):
+def list_characters(ctx, data: bytes):
     req = acc.SC2S_ACCOUNT_CHARACTER_LIST_REQ()
     req.ParseFromString(data[8:])
-    logger.debug(f"Received SC2S_ACCOUNT_CHARACTER_LIST_REQ:\n {req}")
+    # logger.debug(f"Received SC2S_ACCOUNT_CHARACTER_LIST_REQ:\n {req}")
+
+    res = acc.SS2C_ACCOUNT_CHARACTER_LIST_RES()
+    res.totalCharacterCount = 1  # TODO: Query the db and return all characters from the UID.
+    res.pageIndex = 1            # TODO: Each page holds up to 7 characters, needs to be implemented
 
     nickname = char.SACCOUNT_NICKNAME()
     nickname.originalNickName = "Kroftydfg"  # str
@@ -23,6 +27,7 @@ def list_characters(self, data: bytes):
     character.gender = 1  # int: 1 = male, 2 = female
     character.level = 1   # int
     character.lastloginDate = 1681858691000  # int(time.time())  # int: unix timestamp
+
     character.equipItemList.append(items.generate_torch())
     character.equipItemList.append(items.generate_roundshield())
     character.equipItemList.append(items.generate_lantern())
@@ -31,9 +36,6 @@ def list_characters(self, data: bytes):
     character.equipItemList.append(items.generate_tunic())
     character.equipItemList.append(items.generate_bandage())
 
-    res = acc.SS2C_ACCOUNT_CHARACTER_LIST_RES()
-    res.totalCharacterCount = 1  # TODO: Query the db and return all characters from the UID.
-    res.pageIndex = 1            # TODO: Each page holds up to 7 characters, needs to be implemented
     res.characterList.append(character)
 
     # header = struct.pack(
@@ -41,17 +43,17 @@ def list_characters(self, data: bytes):
     #     pc.PacketCommand.Value("S2C_ACCOUNT_CHARACTER_LIST_RES")
     # )
     header = b"\xa7\x05\x00\x00\x12\x00\x00\x00"
-    logger.debug(f"Sent SS2C_ACCOUNT_CHARACTER_LIST_RES:\n {res}")
-    # logger.debug(f"Sent SS2C_ACCOUNT_CHARACTER_LIST_RES serialized:\n {res.SerializeToString()}")
+    # logger.debug(f"Sent SS2C_ACCOUNT_CHARACTER_LIST_RES:\n {res}")
+    logger.debug(f"Sent SS2C_ACCOUNT_CHARACTER_LIST_RES SERIAL+HEX:\n {(header + res.SerializeToString()).hex()}")
     return header + res.SerializeToString()
 
 
-def create_character(self, data: bytes):
+def create_character(ctx, data: bytes):
     queue = []
 
     req = acc.SC2S_ACCOUNT_CHARACTER_CREATE_REQ()
     req.ParseFromString(data[8:])
-    logger.debug(req)
+    # logger.debug(req)
 
     # send character res first
     resp = acc.SS2C_ACCOUNT_CHARACTER_CREATE_RES()

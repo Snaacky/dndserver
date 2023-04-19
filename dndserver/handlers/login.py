@@ -27,7 +27,6 @@ def process_login(self, data: bytes):
         user = get_user(req.loginId)
 
     res = acc.SS2C_ACCOUNT_LOGIN_RES()
-
     # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password
     if len(req.loginId) <= 2 or len(req.password) <= 2:
         res.Result = 5
@@ -65,18 +64,19 @@ def process_login(self, data: bytes):
         res.AccountInfo.CopyFrom(account_info)
         return res.SerializeToString()
 
-    res.sessionId = "session123"     # TODO: Figure out how session IDs look
-    res.accountId = str(user["id"])  # TODO: Figure out how account IDs look
-    res.secretToken = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
-    res.serverLocation = 1
-    res.isReconnect = False          # TODO: Need to maintain user states and connection statuses?
+    # res.sessionId = "session123"     # TODO: Figure out how session IDs look
+    res.accountId = "155768"  # str(user["id"])  # TODO: Figure out how account IDs look
+    # res.secretToken = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
+    res.serverLocation = 56
+    # res.isReconnect = False          # TODO: Need to maintain user states and connection statuses?
 
     account_info = acc.SLOGIN_ACCOUNT_INFO()
-    account_info.AccountID = str(user["id"])
+    account_info.AccountID = str(155768)  # str(user["id"])
     res.AccountInfo.CopyFrom(account_info)
 
     logger.debug(f"Sent SS2C_ACCOUNT_LOGIN_RES:\n {res}")
     header = struct.pack("<B3xI", len(res.SerializeToString()), pc.PacketCommand.Value("S2C_ACCOUNT_LOGIN_RES"))
+    logger.debug(f"Sent SS2C_ACCOUNT_LOGIN_RES:\n {header + res.SerializeToString()}")
     return header + res.SerializeToString()
 
 
