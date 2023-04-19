@@ -8,14 +8,17 @@ def generate_torch():
     torch.itemCount = 1
     torch.inventoryId = 3
     torch.slotId = 13
+
     move_speed = item.SItemProperty()
     move_speed.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_MoveSpeed"
     move_speed.propertyValue = -10
     torch.primaryPropertyArray.append(move_speed)
+
     weapon_damage = item.SItemProperty()
     weapon_damage.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_PhysicalWeaponDamage"
     weapon_damage.propertyValue = 13
     torch.primaryPropertyArray.append(weapon_damage)
+
     return torch
 
 
@@ -26,14 +29,17 @@ def generate_roundshield():
     shield.itemCount = 1
     shield.inventoryId = 3
     shield.slotId = 11
+
     armor_rating = item.SItemProperty()
     armor_rating.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_ArmorRating"
     armor_rating.propertyValue = 13
     shield.primaryPropertyArray.append(armor_rating)
+
     move_speed = item.SItemProperty()
     move_speed.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_MoveSpeed"
     move_speed.propertyValue = -12
     shield.primaryPropertyArray.append(move_speed)
+
     return shield
 
 
@@ -44,11 +50,34 @@ def generate_lantern():
     lantern.itemCount = 1
     lantern.inventoryId = 3
     lantern.slotId = 8
+
     move_speed = item.SItemProperty()
     move_speed.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_MoveSpeed"
     move_speed.propertyValue = -10
     lantern.primaryPropertyArray.append(move_speed)
+
     return lantern
+
+
+def generate_sword():
+    sword = item.SItem()
+    sword.itemUniqueId = 6646818918302103
+    sword.itemId = "DesignDataItem:Id_Item_ArmingSword_0001"
+    sword.itemCount = 1
+    sword.inventoryId = 3
+    sword.slotId = 10
+
+    move_speed = item.SItemProperty()
+    move_speed.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_MoveSpeed"
+    move_speed.propertyValue = -20
+    sword.primaryPropertyArray.append(move_speed)
+
+    weapon_damage = item.SItemProperty()
+    weapon_damage.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_PhysicalWeaponDamage"
+    weapon_damage.propertyValue = 23
+    sword.primaryPropertyArray.append(weapon_damage)
+
+    return sword
 
 
 def generate_pants():
@@ -89,6 +118,7 @@ def generate_tunic():
     move_speed.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_MoveSpeed"
     move_speed.propertyValue = -5
     tunic.primaryPropertyArray.append(move_speed)
+
     return tunic
 
 
@@ -99,29 +129,10 @@ def generate_bandage():
     bandage.itemCount = 1
     bandage.inventoryId = 3
     bandage.slotId = 14
+
     primary = item.SItemProperty()
     primary.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_MoveSpeed"
     primary.propertyValue = -20
     bandage.primaryPropertyArray.append(primary)
+
     return bandage
-
-
-def generate_sword():
-    sword = item.SItem()
-    sword.itemUniqueId = 6646818918302103
-    sword.itemId = "DesignDataItem:Id_Item_ArmingSword_0001"
-    sword.itemCount = 1
-    sword.inventoryId = 3
-    sword.slotId = 10
-
-    move_speed = item.SItemProperty()
-    move_speed.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_MoveSpeed"
-    move_speed.propertyValue = -20
-    sword.primaryPropertyArray.append(move_speed)
-
-    weapon_damage = item.SItemProperty()
-    weapon_damage.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_PhysicalWeaponDamage"
-    weapon_damage.propertyValue = 23
-    sword.primaryPropertyArray.append(weapon_damage)
-
-    return sword
