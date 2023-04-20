@@ -1,5 +1,3 @@
-import asyncio
-
 from loguru import logger
 from twisted.internet import reactor
 
@@ -18,7 +16,3 @@ async def main():
     reactor.listenTCP(config.server.port, tcpFactory)
     logger.info(f"Running game server on tcp://{config.server.host}:{config.server.port}")
     reactor.run()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
