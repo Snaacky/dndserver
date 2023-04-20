@@ -77,7 +77,7 @@ def process_login(self, data: bytes):
         db.close()
 
     account_info = acc.SLOGIN_ACCOUNT_INFO()
-    account_info.AccountID = "1"
+    account_info.AccountID = str(user["id"])
     res.AccountInfo.CopyFrom(account_info)
 
     self.sessions[self.transport]["accountId"] = user["id"]
