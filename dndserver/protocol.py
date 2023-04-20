@@ -4,7 +4,9 @@ from twisted.internet.protocol import Factory, Protocol
 # from dndserver.sessions import sessions
 from dndserver.handlers import login
 from dndserver.handlers import character
+from dndserver.handlers import enterlobby
 from dndserver.protos import _PacketCommand_pb2 as pc
+
 
 
 class GameFactory(Factory):
@@ -22,6 +24,8 @@ class GameProtocol(Protocol):
         self.sessions[self.transport] = {"accountId": 0}
 
     def dataReceived(self, data: bytes):
+        if data[4] == 215:
+            return
         logger.debug(f"Received {pc.PacketCommand.Name(data[4])}")
         # TODO: Surely there's a cleaner way that we can do this?
         # TODO: Can we access these enums directly? 'EnumTypeWrapper' object is not callable
@@ -44,6 +48,14 @@ class GameProtocol(Protocol):
                 res = character.delete_character(self, data)
                 serialized = res.SerializeToString()
                 self.send(self.make_header(serialized, "S2C_ACCOUNT_CHARACTER_DELETE_RES") + serialized)
+            case "C2S_LOBBY_ENTER_REQ":
+                res = enterlobby.enter_lobby(self, data)
+                serialized = res.SerializeToString()
+                self.send(self.make_header(serialized, "S2C_LOBBY_ENTER_RES") + serialized)
+            case "C2S_OPEN_LOBBY_MAP_REQ":
+                res = enterlobby.enter_lobby(self, data)
+                serialized = res.SerializeToString()
+                self.send(self.make_header(serialized, "S2C_LOBBY_ENTER_RES") + serialized)
             case _:
                 logger.error(f"Received {pc.PacketCommand.Name(data[4])} {data} packet but no handler yet")
 
