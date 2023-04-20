@@ -73,6 +73,9 @@ def process_login(self, data: bytes):
     account_info.AccountID = str(user["id"])
     resp.AccountInfo.CopyFrom(account_info)
 
+    account_info = acc.SLOGIN_ACCOUNT_INFO()
+    account_info.AccountID = str(user["id"])
+    res.AccountInfo.CopyFrom(account_info)
     return resp.SerializeToString()
 
 
