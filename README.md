@@ -10,4 +10,5 @@ A Dark and Darker private server emulation implementation written in Python.
 * `git clone git@github.com:Snaacky/dndserver.git`
 * `cd dndserver`
 * `poetry install`
+* `poetry shell`
 * `python -m dndserver`
