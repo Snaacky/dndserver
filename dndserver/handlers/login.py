@@ -91,7 +91,9 @@ def register_user(username: str, password: str, hwids: str, build_version: str, 
         password=PasswordHasher().hash(password),
         hwids=hwids,
         build_version=build_version,
-        ip_address=ip_address
+        is_banned=None,
+        ip_address=ip_address,
+        secret_token=None
     ))
     db.commit()
     db.close()
