@@ -1,6 +1,5 @@
 import random
 import string
-import struct
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -8,7 +7,6 @@ from loguru import logger
 
 from dndserver import database
 from dndserver.protos import Account_pb2 as acc
-from dndserver.protos import _PacketCommand_pb2 as pc
 
 
 def process_login(self, data: bytes):
@@ -64,15 +62,16 @@ def process_login(self, data: bytes):
         res.AccountInfo.CopyFrom(account_info)
         return res.SerializeToString()
 
-    res.sessionId = "session123"     # TODO: Figure out how session IDs look
-    res.accountId = str(user["id"])  # TODO: Figure out how account IDs look
-    res.secretToken = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
+    res.accountId = str(user["id"])
     res.serverLocation = 1
-    res.isReconnect = False          # TODO: Need to maintain user states and connection statuses?
+    res.secretToken = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
+    # res.sessionId = "session123"   # TODO: Figure out how session IDs look
+    # res.isReconnect = False        # TODO: Need to maintain user states and connection statuses?
 
     account_info = acc.SLOGIN_ACCOUNT_INFO()
     account_info.AccountID = str(user["id"])
     res.AccountInfo.CopyFrom(account_info)
+
     return resp.SerializeToString()
 
 
