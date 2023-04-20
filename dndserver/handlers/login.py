@@ -68,14 +68,23 @@ def process_login(self, data: bytes):
     # res.sessionId = "session123"   # TODO: Figure out how session IDs look
     # res.isReconnect = False        # TODO: Need to maintain user states and connection statuses?
 
+    if not user["secret_token"]:
+        token = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
+        res.secretToken = token
+        db = database.get()
+        db["users"].update(dict(id=user["id"], secret_token=token), ["id"])
+        db.commit()
+        db.close()
+
     account_info = acc.SLOGIN_ACCOUNT_INFO()
     account_info.AccountID = str(user["id"])
     res.AccountInfo.CopyFrom(account_info)
 
-    return resp.SerializeToString()
+    return res.SerializeToString()
 
 
 def register_user(username: str, password: str, hwids: str, build_version: str, ip_address: str):
+    """Return user object after inserting user into database"""
     db = database.get()
     user = db["users"].insert(dict(
         username=username,
@@ -90,6 +99,7 @@ def register_user(username: str, password: str, hwids: str, build_version: str, 
 
 
 def get_user(username: str):
+    """Return user object from database, returns False if non-existent."""
     db = database.get()
     user = db["users"].find_one(username=username)
     return user if user else False
