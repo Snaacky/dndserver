@@ -1,78 +1,91 @@
 import random
+import time
+
+from loguru import logger
 
 from dndserver import database
 from dndserver.objects import items
 from dndserver.protos import Account_pb2 as acc
 from dndserver.protos import _Character_pb2 as char
+from dndserver.protos import _PacketCommand_pb2 as pc
 
 
 def list_characters(ctx, data: bytes):
     req = acc.SC2S_ACCOUNT_CHARACTER_LIST_REQ()
     req.ParseFromString(data[8:])
+    logger.debug(req)
 
     res = acc.SS2C_ACCOUNT_CHARACTER_LIST_RES()
-    res.totalCharacterCount = 1  # TODO: Query the db and return all characters from the UID.
-    res.pageIndex = 1            # TODO: Each page holds up to 7 characters, needs to be implemented
+    res.pageIndex = req.pageIndex
 
-    nickname = char.SACCOUNT_NICKNAME()
-    nickname.originalNickName = "Snaacky"
-    nickname.streamingModeNickName = f"Fighter#{random.range(1000000, 1700000)}"
+    db = database.get()
+    results = list(db["characters"].find(owner_id=ctx.sessions[ctx.transport]["accountId"]))
 
-    character = acc.SLOGIN_CHARACTER_INFO()
-    character.nickName.CopyFrom(nickname)
-    character.characterId = "1"
-    character.characterClass = "DesignDataPlayerCharacter:Id_PlayerCharacter_Barbarian"
-    character.createAt = 1681858691000  # int(time.time())  # int: unix timestamp
-    character.gender = 2  # int: 1 = male, 2 = female
-    character.level = 1   # int
-    character.lastloginDate = 1681858691000  # int(time.time())  # int: unix timestamp
+    start_index = (req.pageIndex - 1) * 7
+    end_index = start_index + 7
 
-    character.equipItemList.append(items.generate_torch())
-    character.equipItemList.append(items.generate_roundshield())
-    character.equipItemList.append(items.generate_lantern())
-    character.equipItemList.append(items.generate_sword())
-    character.equipItemList.append(items.generate_pants())
-    character.equipItemList.append(items.generate_tunic())
-    character.equipItemList.append(items.generate_bandage())
-    res.characterList.append(character)
+    for result in results[start_index:end_index]:
+        nickname = char.SACCOUNT_NICKNAME()
+        nickname.originalNickName = result["nickname"]
+        nickname.streamingModeNickName = f"Fighter#{random.randrange(1000000, 1700000)}"
 
-    return res.SerializeToString()
+        character = acc.SLOGIN_CHARACTER_INFO()
+        character.nickName.CopyFrom(nickname)
+        character.characterId = str(result["id"])
+        character.characterClass = result["character_class"]
+        character.createAt = result["created_at"]  # 1681858691000  # int(time.time())  # int: unix timestamp
+        character.gender = result["gender"]  # int: 1 = male, 2 = female
+        character.level = result["level"]   # int
+        character.lastloginDate = result["last_logged_at"]  # int(time.time())  # int: unix timestamp
+
+        character.equipItemList.append(items.generate_torch())
+        character.equipItemList.append(items.generate_roundshield())
+        character.equipItemList.append(items.generate_lantern())
+        character.equipItemList.append(items.generate_sword())
+        character.equipItemList.append(items.generate_pants())
+        character.equipItemList.append(items.generate_tunic())
+        character.equipItemList.append(items.generate_bandage())
+        res.characterList.append(character)
+
+    res.totalCharacterCount = len(results)
+
+    return res
 
 
 def create_character(ctx, data: bytes):
-    queue = []
-
     req = acc.SC2S_ACCOUNT_CHARACTER_CREATE_REQ()
     req.ParseFromString(data[8:])
-    # logger.debug(req)
 
-    # send character res first
-    resp = acc.SS2C_ACCOUNT_CHARACTER_CREATE_RES()
-    resp.result = 1
-    queue.append(resp)
+    res = acc.SS2C_ACCOUNT_CHARACTER_CREATE_RES()
+
+    if len(req.nickName) < 2:
+        res.result = pc.PacketResult.Value("FAIL_CHARACTER_NICKNAME_LENGTH_SHORTAGE")
+        return res
+
+    if len(req.nickName) > 20:
+        res.result = pc.PacketResult.Value("FAIL_CHARACTER_NICKNAME_LENGTH_OVER")
+        return res
 
     db = database.get()
+
+    dupe = db["characters"].find_one(nickname=req.nickName)
+    if dupe:
+        res.result = pc.PacketResult.Value("FAIL_DUPLICATE_NICKNAME")
+        return res
+
     db["characters"].insert(dict(
-        owner_id=1,
+        owner_id=ctx.sessions[ctx.transport]["accountId"],
         nickname=req.nickName,
+        gender=req.gender,
         character_class=req.characterClass,
-        gender=req.gender
+        created_at=int(time.time()),
+        level=1,
+        last_logged_at=int(time.time())
     ))
     db.commit()
     db.close()
 
-    # then send the character info second
-    # char_info_resp = SS2C_LOBBY_CHARACTER_INFO_RES()
-    # character_info = SCHARACTER_INFO()
-    # character_info.accountId = "456456"
-    # character_info.nickName = "dfgdfg"
-    # characterClass = "DesignDataPlayerCharacter:Id_PlayerCharacter_Fighter"
-    # characterId = "45345"
-    # gender = 1
-    # level = 1
-    # servicegrpc = "???"
-    # characteritemlist = SomeCharacterItemList()
-    # characterstorageitemlist = SomeCharacterStorageItemList()
-    #
-    # resp.characterDatabase.CopyFrom(character_info)
-    return resp.SerializeToString()
+    res.result = 1
+    return res
+
+    

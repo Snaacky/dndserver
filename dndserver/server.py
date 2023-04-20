@@ -5,7 +5,7 @@ from twisted.internet import reactor
 
 from dndserver import database
 from dndserver.config import config
-from dndserver.game import GameFactory
+from dndserver.protocol import GameFactory
 
 
 async def main():

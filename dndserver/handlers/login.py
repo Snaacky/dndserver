@@ -31,7 +31,7 @@ def process_login(self, data: bytes):
         account_info = acc.SLOGIN_ACCOUNT_INFO()
         account_info.AccountID = str(user["id"])
         res.AccountInfo.CopyFrom(account_info)
-        return res.SerializeToString()
+        return res
 
     # Return FAIL_OVERFLOW_ID_OR_PASSWORD on too long username
     # Not sure if there's a password overflow limit because the
@@ -42,7 +42,7 @@ def process_login(self, data: bytes):
         account_info = acc.SLOGIN_ACCOUNT_INFO()
         account_info.AccountID = str(user["id"])
         res.AccountInfo.CopyFrom(account_info)
-        return res.SerializeToString()
+        return res
 
     # Return FAIL_PASSWORD on mismatching password
     try:
@@ -52,7 +52,7 @@ def process_login(self, data: bytes):
         account_info = acc.SLOGIN_ACCOUNT_INFO()
         account_info.AccountID = str(user["id"])
         res.AccountInfo.CopyFrom(account_info)
-        return res.SerializeToString()
+        return res
 
     # Returns the respective SS2C_ACCOUNT_LOGIN_RES *__BAN_USER ban enum.
     if user["is_banned"]:
@@ -60,23 +60,32 @@ def process_login(self, data: bytes):
         account_info = acc.SLOGIN_ACCOUNT_INFO()
         account_info.AccountID = str(user["id"])
         res.AccountInfo.CopyFrom(account_info)
-        return res.SerializeToString()
+        return res
 
     res = acc.SS2C_ACCOUNT_LOGIN_RES()
-    res.accountId = "1"
+    res.accountId = str(user["id"])
     res.serverLocation = 1
-    res.secretToken = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
     # res.sessionId = "session123"     # TODO: Figure out how session IDs look
     # res.isReconnect = False          # TODO: Need to maintain user states and connection statuses?
 
+    if not user["secret_token"]:
+        token = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
+        res.secretToken = token
+        db = database.get()
+        db["users"].update(dict(id=user["id"], secret_token=token), ["id"])
+        db.commit()
+        db.close()
+
     account_info = acc.SLOGIN_ACCOUNT_INFO()
-    account_info.AccountID = "1"  # str(user["id"])
+    account_info.AccountID = "1"
     res.AccountInfo.CopyFrom(account_info)
 
-    return res.SerializeToString()
+    self.sessions[self.transport]["accountId"] = user["id"]
+    return res
 
 
 def register_user(username: str, password: str, hwids: str, build_version: str, ip_address: str):
+    """Return user object after inserting user into database"""
     db = database.get()
     user = db["users"].insert(dict(
         username=username,
@@ -91,6 +100,7 @@ def register_user(username: str, password: str, hwids: str, build_version: str, 
 
 
 def get_user(username: str):
+    """Return user object from database, returns False if non-existent."""
     db = database.get()
     user = db["users"].find_one(username=username)
     return user if user else False
