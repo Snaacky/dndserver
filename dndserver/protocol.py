@@ -40,6 +40,10 @@ class GameProtocol(Protocol):
                 res = character.create_character(self, data)
                 serialized = res.SerializeToString()
                 self.send(self.make_header(serialized, "S2C_ACCOUNT_CHARACTER_CREATE_RES") + serialized)
+            case "C2S_ACCOUNT_CHARACTER_DELETE_REQ":
+                res = character.delete_character(self, data)
+                serialized = res.SerializeToString()
+                self.send(self.make_header(serialized, "S2C_ACCOUNT_CHARACTER_DELETE_RES") + serialized)
             case _:
                 logger.error(f"Received {pc.PacketCommand.Name(data[4])} {data} packet but no handler yet")
 

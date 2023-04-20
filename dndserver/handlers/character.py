@@ -13,7 +13,6 @@ from dndserver.protos import _PacketCommand_pb2 as pc
 def list_characters(ctx, data: bytes):
     req = acc.SC2S_ACCOUNT_CHARACTER_LIST_REQ()
     req.ParseFromString(data[8:])
-    logger.debug(req)
 
     res = acc.SS2C_ACCOUNT_CHARACTER_LIST_RES()
     res.pageIndex = req.pageIndex
@@ -88,4 +87,24 @@ def create_character(ctx, data: bytes):
     res.result = 1
     return res
 
-    
+
+def delete_character(ctx, data: bytes):
+    req = acc.SC2S_ACCOUNT_CHARACTER_DELETE_REQ()
+    req.ParseFromString(data[8:])
+
+    res = acc.SS2C_ACCOUNT_CHARACTER_DELETE_RES()
+
+    db = database.get()
+    char = db["characters"].find_one(id=req.characterId)
+
+    # Prevents characters from maliciously deleting others characters.
+    if char["owner_id"] != ctx.sessions[ctx.transport]["accountId"]:
+        res.result = pc.PacketResult.Value("FAIL_GENERAL")
+        return res
+
+    db["characters"].delete(id=req.characterId)
+    db.commit()
+    db.close()
+
+    res.result = pc.PacketResult.Value("SUCCESS")
+    return res
