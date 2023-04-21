@@ -1,4 +1,4 @@
-# dndserver ![Discord](https://discordapp.com/api/guilds/1098711487125672016/widget.png?style=shield)
+# dndserver <a href="https://discord.gg/JdUWpdyvKr"><img src="https://discordapp.com/api/guilds/1098711487125672016/widget.png?style=shield"></a>
 A Dark and Darker private server emulation implementation written in Python.
 
 ## Requirements
