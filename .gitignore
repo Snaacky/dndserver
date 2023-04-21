@@ -133,3 +133,4 @@ dmypy.json
 *.lnk
 *.db*
 config.yml
+packets/
