@@ -1,10 +1,9 @@
-from binascii import hexlify
-
 from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
-from dndserver.protos import Account_pb2 as account
-from dndserver.protos import IronMace_pb2 as ironmace
+
+from dndserver.handlers import login
+from dndserver.protos import _PacketCommand_pb2 as pc
 
 
 class GameFactory(Factory):
@@ -13,18 +12,25 @@ class GameFactory(Factory):
 
 
 class GameProtocol(Protocol):
+    def __init__(self) -> None:
+        super().__init__()
+        self.packet_header = b"\x1e\x00\x00\x00\x0c\x00\x00\x00"
+
     def connectionMade(self):
         logger.debug("Connection made")
 
-    def dataReceived(self, data):
-        logger.debug(f"Received data: {data}")
-        match data:
-            #  Received data: b'`\x00\x00\x00\x0b\x00\x02\x00\n\x03asd\x12\x03asd*@4b1bb056f09550f46a4d20314b5858af53bd6c08576f46b6cce68e82cbcef0c0B\n0.5.0.1159'
-            case b"\x08\x00\x00\x00\x01\x00\x03\x00":
-                self.transport.write(b"\x08\x00\x00\x00\x02\x00\x00\x00")
-            case b"\x08\x00\x00\x00\x01\x00\x04\x00":
-                self.transport.write(b"\x1e\x00\x00\x00\x0c\x00\x00\x00\x08\x01\x12\x08\x0a\x06\x31\x35\x35\x37\x36\x38\x32\x06\x31\x35\x35\x37\x36\x38\x38\x04")
+    def dataReceived(self, data: bytes):
+        logger.debug(f"Received {pc.PacketCommand.Name(data[4])}")
+        match pc.PacketCommand.Name(data[4]):
+            # TODO: Can we access these enums directly? 'EnumTypeWrapper' object is not callable
+            case "C2S_ALIVE_REQ":
+                logger.debug(data)
+                self.respond(pc.SS2C_ALIVE_RES().SerializeToString())
+            case "C2S_ACCOUNT_LOGIN_REQ":
+                self.respond(login.process_login(self, data))
             case _:
-                login = account.SC2S_ACCOUNT_LOGIN_REQ()
-                login.ParseFromString(data)
-                print(login)
+                logger.error(f"Received {pc.PacketCommand.Name(data[4])} {data} packet but no handler yet")
+
+    def respond(self, data):
+        """Wrapper that adds the packet header onto the serialized data blob"""
+        self.transport.write(self.packet_header + data)

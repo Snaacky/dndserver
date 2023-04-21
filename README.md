@@ -1,4 +1,4 @@
-# dndserver
+# dndserver <a href="https://discord.gg/JdUWpdyvKr"><img src="https://discordapp.com/api/guilds/1098711487125672016/widget.png?style=shield"></a>
 A Dark and Darker private server emulation implementation written in Python.
 
 ## Requirements
@@ -12,3 +12,4 @@ A Dark and Darker private server emulation implementation written in Python.
 * `poetry install`
 * `poetry shell`
 * `python -m dndserver`
+* Launch game with `-server=dcweb.pages.dev:80` in game launch options.

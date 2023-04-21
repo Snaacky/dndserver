@@ -11,6 +11,9 @@ loguru = "^0.7.0"
 pyaml-env = "^1.2.1"
 twisted = {extras = ["tls"], version = "^22.10.0"}
 protobuf = "^4.22.3"
+dataset = "^1.6.0"
+sqlalchemy-utils = "^0.41.0"
+argon2-cffi = "^21.3.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
@@ -19,3 +22,6 @@ flake8 = "^6.0.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120

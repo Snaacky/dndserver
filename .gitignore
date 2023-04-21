@@ -132,4 +132,5 @@ dmypy.json
 .vscode/
 *.lnk
 *.db*
+config.yml
 packets/
