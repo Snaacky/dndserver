@@ -1,11 +1,12 @@
 from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
-# from dndserver.sessions import sessions
+from dndserver.enums import AccountState
 from dndserver.handlers import login
 from dndserver.handlers import character
 from dndserver.handlers import enterlobby
 from dndserver.protos import _PacketCommand_pb2 as pc
+from dndserver.protos import _Defins_pb2 as df
 
 
 
@@ -24,9 +25,40 @@ class GameProtocol(Protocol):
         self.sessions[self.transport] = {"accountId": 0}
 
     def dataReceived(self, data: bytes):
-        if data[4] == 215:
-            return
+        logger.debug(data)
+
+        match data[4]:
+            case 30:
+                print("30 is: ", data.hex())
+                return
+            case 33:
+                print("33 is: ", data.hex())
+                return
+            case 115:
+                print("115 is: ", data.hex())
+                return
+            case 185:
+                print("185 is: ", data.hex())
+                return
+            case 215:
+                print("215 is: ", data.hex())
+                res = character.character_info(self, data)
+                serialized = res.SerializeToString()
+                self.send(self.make_header(serialized, "S2C_LOBBY_CHARACTER_INFO_RES") + serialized)
+                print("gay")
+                return
+            case 225:
+                print("225 is: ", data.hex())
+                return
+            case 239:
+                print("239 is: ", data.hex())
+                return
+            
         logger.debug(f"Received {pc.PacketCommand.Name(data[4])}")
+        #logger.debug(f"Received {data.hex()}")
+        #logger.debug(f"Received data {data}")
+        
+        
         # TODO: Surely there's a cleaner way that we can do this?
         # TODO: Can we access these enums directly? 'EnumTypeWrapper' object is not callable
         match pc.PacketCommand.Name(data[4]):
@@ -36,10 +68,16 @@ class GameProtocol(Protocol):
                 res = login.process_login(self, data)
                 serialized = res.SerializeToString()
                 self.send(self.make_header(serialized, "S2C_ACCOUNT_LOGIN_RES") + serialized)
+                self.sessions[self.transport]["state"] = AccountState.CHARACTER
             case "C2S_ACCOUNT_CHARACTER_LIST_REQ":
-                res = character.list_characters(self, data)
-                serialized = res.SerializeToString()
-                self.send(self.make_header(serialized, "S2C_ACCOUNT_CHARACTER_LIST_RES") + serialized)
+                if self.sessions[self.transport]["state"] == AccountState.CHARACTER:
+                    res = character.list_characters(self, data)
+                    serialized = res.SerializeToString()
+                    self.send(self.make_header(serialized, "S2C_ACCOUNT_CHARACTER_LIST_RES") + serialized) 
+                elif self.sessions[self.transport]["state"]  == AccountState.LOBBY:
+                    res = character.character_info(self, data)
+                    serialized = res.SerializeToString()
+                    self.send(self.make_header(serialized, "S2C_LOBBY_CHARACTER_INFO_RES") + serialized)
             case "C2S_ACCOUNT_CHARACTER_CREATE_REQ":
                 res = character.create_character(self, data)
                 serialized = res.SerializeToString()
@@ -48,14 +86,16 @@ class GameProtocol(Protocol):
                 res = character.delete_character(self, data)
                 serialized = res.SerializeToString()
                 self.send(self.make_header(serialized, "S2C_ACCOUNT_CHARACTER_DELETE_RES") + serialized)
+            case "C2S_LOBBY_REGION_SELECT_REQ":
+                print("reg")
             case "C2S_LOBBY_ENTER_REQ":
                 res = enterlobby.enter_lobby(self, data)
                 serialized = res.SerializeToString()
-                self.send(self.make_header(serialized, "S2C_LOBBY_ENTER_RES") + serialized)
+                self.send(self.make_header(serialized, "S2C_LOBBY_ENTER_RES") + serialized)    
+                self.sessions[self.transport]["state"] = AccountState.LOBBY
+                #dataa = b"\xa8\x00\x00\x00\xd8\x0b\x00\x01\n*\x08\x01\x10\x01\x18\x01 \x01* DesignDataPerk:Id_Perk_TwoHander\n\x06\x08\x02\x18\x05 \x01\n\x06\x08\x03\x18\n \x01\n\x06\x08\x04\x18\x0f \x01\n'\x08\x05\x10\x01\x18\x01 \x02*\x1dDesignDataSkill:Id_Skill_Rage\n1\x08\x06\x10\x01\x18\x01 \x02*'DesignDataSkill:Id_Skill_RecklessAttack"
             case "C2S_OPEN_LOBBY_MAP_REQ":
-                res = enterlobby.enter_lobby(self, data)
-                serialized = res.SerializeToString()
-                self.send(self.make_header(serialized, "S2C_LOBBY_ENTER_RES") + serialized)
+                logger.debug("hello")
             case _:
                 logger.error(f"Received {pc.PacketCommand.Name(data[4])} {data} packet but no handler yet")
 
