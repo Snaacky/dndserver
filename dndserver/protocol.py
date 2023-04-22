@@ -1,3 +1,5 @@
+import struct
+
 from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
@@ -24,15 +26,13 @@ class GameProtocol(Protocol):
 
     def dataReceived(self, data: bytes):
         """Main loop for receiving request packets and sending response packets."""
-        # Manually catch and skip any unparsed packets
-        try:
-            logger.debug(f"Received {pc.PacketCommand.Name(data[4])}")
-        except ValueError:
-            return logger.error(f"Received {data[4]} {data} packet but no handler yet")
-
         # TODO: Surely there's a cleaner way that we can do this?
         # TODO: Can we access these enums directly? 'EnumTypeWrapper' object is not callable
-        match pc.PacketCommand.Name(data[4]):
+        # TODO: Implement support for segemented packets based on the incoming datas length.
+        # We need to parse the header to see the length of the packet and the ID.
+        length, _id = struct.unpack("<hxxhxx", data[:8])
+
+        match pc.PacketCommand.Name(_id):
 
             # Heartbeat sent between the client and server every second.
             case "C2S_ALIVE_REQ":
@@ -50,16 +50,17 @@ class GameProtocol(Protocol):
             # Sends character list to the character screen and sends character information
             # when in the lobby/tavern.
             case "C2S_ACCOUNT_CHARACTER_LIST_REQ":
-                if self.sessions[self.transport]["state"] == df.Define_Common.CHARACTER_SELECT:
-                    req = acc.SC2S_ACCOUNT_CHARACTER_LIST_REQ()
-                    req.ParseFromString(data[8:])
-                    res = character.list_characters(self, req).SerializeToString()
-                    header = self.make_header(res, "S2C_ACCOUNT_CHARACTER_LIST_RES")
-                    self.send(header, res)
-                elif self.sessions[self.transport]["state"] == df.Define_Common.PLAY:
-                    res = character.character_info(self).SerializeToString()
-                    header = self.make_header(res, "S2C_LOBBY_CHARACTER_INFO_RES")
-                    self.send(header, res)
+                match self.sessions[self.transport]["state"]:
+                    case df.Define_Common.CHARACTER_SELECT:
+                        req = acc.SC2S_ACCOUNT_CHARACTER_LIST_REQ()
+                        req.ParseFromString(data[8:])
+                        res = character.list_characters(self, req).SerializeToString()
+                        header = self.make_header(res, "S2C_ACCOUNT_CHARACTER_LIST_RES")
+                        self.send(header, res)
+                    case df.Define_Common.PLAY:
+                        res = character.character_info(self).SerializeToString()
+                        header = self.make_header(res, "S2C_LOBBY_CHARACTER_INFO_RES")
+                        self.send(header, res)
 
             # Character creation attempt from the client.
             case "C2S_ACCOUNT_CHARACTER_CREATE_REQ":
@@ -86,9 +87,12 @@ class GameProtocol(Protocol):
                 self.send(header, res)
                 self.sessions[self.transport]["state"] = df.Define_Common.PLAY
 
+            case "C2S_CUSTOMIZE_CHARACTER_INFO_REQ":
+                
+
             # All other currently unhandled packets.
             case _:
-                logger.error(f"Received {pc.PacketCommand.Name(data[4])} {data} packet but no handler yet")
+                logger.warning(f"Received {pc.PacketCommand.Name(_id)} {data} packet but no handler yet")
 
     def send(self, header: bytes, body: bytes):
         """Send a D&D packet to the client."""
@@ -105,4 +109,15 @@ class GameProtocol(Protocol):
             raise Exception("Didn't pass data when creating header")
         type_ = pc.PacketCommand.Value(packet_id).to_bytes(2, "little")
         length_ = (len(res) + 8).to_bytes(2, "little")
-        return length_ + b"\x00\x00" + type_ + b"\x00\x00"
+        packet = length_ + b"\x00\x00" + type_ + b"\x00\x00"
+        self.make_header_new(res, packet_id)
+        return packet
+
+    def make_header_new(self, res: bytes, packet_id: str):
+        """Create a D&D packet header."""
+        # header: <packet length: short> 00 00 <packet id: short> 00 00
+        if not res:
+            raise Exception("Didn't pass data when creating header")
+        packetnew = struct.pack("<hxxhxx", len(res) + 8, pc.PacketCommand.Value(packet_id))
+        logger.error(f"packetnew is a {type(packetnew)}")
+        return packetnew
