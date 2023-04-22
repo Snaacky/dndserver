@@ -168,6 +168,7 @@ def generate_bandage():
 
     return bandage
 
+
 def generate_helm():
     bandage = item.SItem()
     bandage.itemUniqueId = 1
@@ -183,23 +184,23 @@ def generate_helm():
 
     return bandage
 
+
 def generate_reckless():
     skills = item.SSkill()
     skills.index = 1
     skills.skillId = "DesignDataSkill:Id_Skill_RecklessAttack"
-    
     return skills
+
 
 def generate_adrenaline():
     skills = item.SSkill()
     skills.index = 2
     skills.skillId = "DesignDataSkill:Id_Skill_AdenalineRush"
-    
     return skills
+
 
 def generate_two_hander():
     skills = item.SPerk()
     skills.index = 1
     skills.perkId = "DesignDataPerk:Id_Perk_TwoHander"
-    
     return skills

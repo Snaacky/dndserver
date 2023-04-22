@@ -75,7 +75,7 @@ def process_login(self, req):
     account_info.AccountID = str(user["id"])
     res.AccountInfo.CopyFrom(account_info)
 
-    # Set the users ID in the session so future calls know that they're authenticated. 
+    # Set the users ID in the session so future calls know that they're authenticated.
     self.sessions[self.transport]["accountId"] = user["id"]
     return res
 

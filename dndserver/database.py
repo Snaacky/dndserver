@@ -34,7 +34,7 @@ def setup():
     if "characters" not in db:
         chars = db.create_table("characters")
         chars.create_column("owner_id", db.types.integer)
-        chars.create_column("nickname", db.types.text)  # ?? characters min, 20 characters max
+        chars.create_column("nickname", db.types.text)
         chars.create_column("gender", db.types.integer)
         chars.create_column("character_class", db.types.text)
         chars.create_column("created_at", db.types.integer, default=int(time.time()))
