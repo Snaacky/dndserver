@@ -57,10 +57,6 @@ class GameProtocol(Protocol):
                         res = character.list_characters(self, req).SerializeToString()
                         header = self.make_header(res, "S2C_ACCOUNT_CHARACTER_LIST_RES")
                         self.send(header, res)
-                    case df.Define_Common.PLAY:
-                        res = character.character_info(self).SerializeToString()
-                        header = self.make_header(res, "S2C_LOBBY_CHARACTER_INFO_RES")
-                        self.send(header, res)
 
             # Character creation attempt from the client.
             case "C2S_ACCOUNT_CHARACTER_CREATE_REQ":
@@ -88,7 +84,9 @@ class GameProtocol(Protocol):
                 self.sessions[self.transport]["state"] = df.Define_Common.PLAY
 
             case "C2S_CUSTOMIZE_CHARACTER_INFO_REQ":
-                
+                res = character.character_info(self).SerializeToString()
+                header = self.make_header(res, "S2C_LOBBY_CHARACTER_INFO_RES")
+                self.send(header, res)
 
             # All other currently unhandled packets.
             case _:
