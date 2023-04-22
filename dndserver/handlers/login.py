@@ -13,8 +13,10 @@ from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
+# Create a base class for SQLAlchemy models
 Base = declarative_base()
 
+# Define a User model for the database
 class User(Base):
     __tablename__ = 'users'
 
@@ -28,6 +30,7 @@ class User(Base):
 
     hwids = relationship("HwId", back_populates="user")
 
+# Define a HwId model for the database
 class HwId(Base):
     __tablename__ = 'hwids'
 
@@ -39,10 +42,12 @@ class HwId(Base):
 
 # Check if the given hwid is associated with a banned user
 def is_banned_hwid(hwid):
+    # Create a database connection
     engine = create_engine('sqlite:///dndserver.db')
     Session = sessionmaker(bind=engine)
     session = Session()
 
+    # Query the database to find a banned user with the given hwid
     banned_user = session.query(User, HwId).join(HwId, User.id == HwId.user_id)\
                    .filter(HwId.hwid == hwid, User.is_banned.isnot(None)).first()
 
@@ -66,6 +71,7 @@ def get_user(username: str) -> Union[Dict, bool]:
 
 # Process login requests and respond accordingly
 def process_login(self, data: bytes):
+    # Deserialize the incoming data
     req = acc.SC2S_ACCOUNT_LOGIN_REQ()
     req.ParseFromString(data[8:])
 
@@ -73,91 +79,94 @@ def process_login(self, data: bytes):
     user = get_user(req.loginId)
     res = acc.SS2C_ACCOUNT_LOGIN_RES()
 
-    if user is None:
+    # Check if the user is banned
+    if user and user["is_banned"]:
         # Return FAIL_USER_BANNED if the user is banned
-        res.Result = 8  # Define a new error code for this case
+        res.Result = 3  # Use error code 3 (invalid password) instead of 8
         account_info = acc.SLOGIN_ACCOUNT_INFO()
         account_info.AccountID = ""  # Set an empty AccountID in this case
         res.AccountInfo.CopyFrom(account_info)
-    else:
-        # Check if the HWID is associated with a banned account
-        if is_banned_hwid(req.hwIds[0]):
-            # Return FAIL_HWID_BANNED if the HWID is associated with a banned account
-            res.Result = 7  # Define a new error code for this case
-            account_info = acc.SLOGIN_ACCOUNT_INFO()
-            account_info.AccountID = ""  # Set an empty AccountID in this case
-            res.AccountInfo.CopyFrom(account_info)
-            return res.SerializeToString()
-
+    elif not user:
         # Register a new user if not found
         register_user(
             username=req.loginId, password=req.password, ip_address=self.transport.client[0], hwid=req.hwIds[0],
             build_version=req.buildVersion
         )
-       
+
         user = get_user(req.loginId)
-
-        # Check if the HWID exists for the user, add it if not
-        hwid = get_hwid(user["id"], req.hwIds[0])
-        if not hwid:
-            add_hwid(user["id"], req.hwIds[0])
-
-        res = acc.SS2C_ACCOUNT_LOGIN_RES()
-
-        # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password
-        if len(req.loginId) <= 2 or len(req.password) <= 2:
-            res.Result = 5
+        if user is None:
+            # If user is banned after registration (which should not happen)
+            res.Result = 8  # Define a new error code for this case
             account_info = acc.SLOGIN_ACCOUNT_INFO()
-            account_info.AccountID = str(user["id"])
+            account_info.AccountID = ""  # Set an empty AccountID in this case
             res.AccountInfo.CopyFrom(account_info)
-            return res.SerializeToString()
 
-        # Return FAIL_OVERFLOW_ID_OR_PASSWORD on too long username
-        if len(req.loginId) > 20:
-            res.Result = 6
-            account_info = acc.SLOGIN_ACCOUNT_INFO()
-            account_info.AccountID = str(user["id"])
-            res.AccountInfo.CopyFrom(account_info)
-            return res.SerializeToString()
+            return res.SerializeToString()  
+        else:
+            # Check if the HWID exists for the user, add it if not
+            hwid = get_hwid(user["id"], req.hwIds[0])
+            if not hwid:
+                add_hwid(user["id"], req.hwIds[0])
 
-        # Return FAIL_PASSWORD on mismatching password
-        try:
-            PasswordHasher().verify(user["password"], req.password)
-        except VerifyMismatchError:
-            res.Result = 3
-            account_info = acc.SLOGIN_ACCOUNT_INFO()
-            account_info.AccountID = str(user["id"])
-            res.AccountInfo.CopyFrom(account_info)
-            return res.SerializeToString()
+            res = acc.SS2C_ACCOUNT_LOGIN_RES()
 
-        # Returns the respective SS2C_ACCOUNT_LOGIN_RES *__BAN_USER ban enum.
-        if user["is_banned"]:
-            res.Result = user["is_banned"]
-            account_info = acc.SLOGIN_ACCOUNT_INFO()
-            account_info.AccountID = str(user["id"])
-            res.AccountInfo.CopyFrom(account_info)
-            return res.SerializeToString()
+            # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password
+            if len(req.loginId) <= 2 or len(req.password) <= 2:
+                res.Result = 5
+                account_info = acc.SLOGIN_ACCOUNT_INFO()
+                account_info.AccountID = str(user["id"])
+                res.AccountInfo.CopyFrom(account_info)
+                return res.SerializeToString()
+
+            # Return FAIL_OVERFLOW_ID_OR_PASSWORD on too long username
+            if len(req.loginId) > 20:
+                res.Result = 6
+                account_info = acc.SLOGIN_ACCOUNT_INFO()
+                account_info.AccountID = str(user["id"])
+                res.AccountInfo.CopyFrom(account_info)
+                return res.SerializeToString()
+
+            # Check if the password matches
+            if not PasswordHasher().verify(user["password"], req.password):
+                res.Result = 3
+                account_info = acc.SLOGIN_ACCOUNT_INFO()
+                account_info.AccountID = str(user["id"])
+                res.AccountInfo.CopyFrom(account_info)
+                return res.SerializeToString()
+
+            # Returns the respective SS2C_ACCOUNT_LOGIN_RES *__BAN_USER ban enum.
+            if user["is_banned"]:
+                res.Result = user["is_banned"]
+                account_info = acc.SLOGIN_ACCOUNT_INFO()
+                account_info.AccountID = str(user["id"])
+                res.AccountInfo.CopyFrom(account_info)
+                return res.SerializeToString()
 
         # Set response parameters
         res.accountId = str(user["id"])
         res.serverLocation = 1
         res.secretToken = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
 
-        # Update the secret token if not already set
-        if not user["secret_token"]:
-            token = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
-            res.secretToken = token
-            db = database.get()
-            db["users"].update(dict(id=user["id"], secret_token=token), ["id"])
-            db.commit()
-            db.close()
+    # Update the secret token if not already set
+    if not user["secret_token"]:
+        token = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
+        res.secretToken = token
+        db = database.get()
+        db["users"].update(dict(id=user["id"], secret_token=token), ["id"])
+        db.commit()
+        db.close()
 
-        # Set account information in response
-        account_info = acc.SLOGIN_ACCOUNT_INFO()
-        account_info.AccountID = str(user["id"])
-        res.AccountInfo.CopyFrom(account_info)
+    # Set account information in response
+    account_info = acc.SLOGIN_ACCOUNT_INFO()
+    account_info.AccountID = str(user["id"])
+    res.AccountInfo.CopyFrom(account_info)
 
-        return res.SerializeToString()
+    return res.SerializeToString()  # Return the serialized response
+
+    # If login was not successful, return a serialized error response
+    error_response = pc.SS2C_ACCOUNT_LOGIN_RES()
+    error_response.result = pc.LoginResult.LOGIN_FAILED  # or any appropriate error code
+    return error_response.SerializeToString()
 
 # Register a new user and store their initial HWID
 def register_user(username: str, password: str, hwid: str, build_version: str, ip_address: str) -> Dict:
@@ -166,6 +175,11 @@ def register_user(username: str, password: str, hwid: str, build_version: str, i
     Returns the newly created user object.
     """
     with database.get() as db:
+        # Check if a user with the same username already exists
+        existing_user = db["users"].find_one(username=username)
+        if existing_user:
+            return existing_user
+        
         user_id = db["users"].insert(dict(
             username=username,
             password=PasswordHasher().hash(password),
