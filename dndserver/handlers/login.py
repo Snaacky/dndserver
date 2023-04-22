@@ -3,29 +3,26 @@ import string
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-from loguru import logger
 
 from dndserver import database
 from dndserver.protos import Account_pb2 as acc
 
 
-def process_login(self, data: bytes):
-    req = acc.SC2S_ACCOUNT_LOGIN_REQ()
-    req.ParseFromString(data[8:])
-    logger.debug(f"Received SC2S_ACCOUNT_LOGIN_REQ:\n {req}")
-
-    # Attempt to get the user requested and register an account if necessary
+def process_login(self, req):
+    """Communication that occurs when the user attempts to login to
+    the game server."""
+    # Attempt to find the request username in the database.
     user = get_user(req.loginId)
     if not user:
-        # TODO: Implement secret key generation prompt
-        register_user(
+        register_user(  # Register the user instead if it doesn't already exist.
             username=req.loginId, password=req.password, ip_address=self.transport.client[0], hwids=req.hwIds[0],
             build_version=req.buildVersion
         )
         user = get_user(req.loginId)
 
     res = acc.SS2C_ACCOUNT_LOGIN_RES()
-    # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password
+
+    # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password.
     if len(req.loginId) <= 2 or len(req.password) <= 2:
         res.Result = 5
         account_info = acc.SLOGIN_ACCOUNT_INFO()
@@ -33,10 +30,7 @@ def process_login(self, data: bytes):
         res.AccountInfo.CopyFrom(account_info)
         return res
 
-    # Return FAIL_OVERFLOW_ID_OR_PASSWORD on too long username
-    # Not sure if there's a password overflow limit because the
-    # password field starts glitching out when you add too many
-    # characters.
+    # Return FAIL_OVERFLOW_ID_OR_PASSWORD on too long username.
     if len(req.loginId) > 20:
         res.Result = 6
         account_info = acc.SLOGIN_ACCOUNT_INFO()
@@ -44,7 +38,7 @@ def process_login(self, data: bytes):
         res.AccountInfo.CopyFrom(account_info)
         return res
 
-    # Return FAIL_PASSWORD on mismatching password
+    # Return FAIL_PASSWORD on invalid password.
     try:
         PasswordHasher().verify(user["password"], req.password)
     except VerifyMismatchError:
@@ -65,9 +59,10 @@ def process_login(self, data: bytes):
     res = acc.SS2C_ACCOUNT_LOGIN_RES()
     res.accountId = str(user["id"])
     res.serverLocation = 1
-    # res.sessionId = "session123"     # TODO: Figure out how session IDs look
-    # res.isReconnect = False          # TODO: Need to maintain user states and connection statuses?
+    # res.sessionId = "session123"  # TODO: Figure out how session IDs look
+    # res.isReconnect = False       # TODO: Need to maintain user states and connection statuses?
 
+    # Generate, save, and show the user a secret token if a registration is occurring.
     if not user["secret_token"]:
         token = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
         res.secretToken = token
@@ -80,6 +75,7 @@ def process_login(self, data: bytes):
     account_info.AccountID = str(user["id"])
     res.AccountInfo.CopyFrom(account_info)
 
+    # Set the users ID in the session so future calls know that they're authenticated. 
     self.sessions[self.transport]["accountId"] = user["id"]
     return res
 

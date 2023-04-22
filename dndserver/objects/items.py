@@ -1,6 +1,37 @@
 from dndserver.protos import _Item_pb2 as item
 
 
+class Item():
+    def __init__(
+        self,
+        unique_id: int,
+        item_id: str,
+        item_count: int,
+        inventory_id: int,
+        slot_id: int,
+        primary_properties: list[tuple[str, int]]
+    ) -> None:
+        self.unique_id = unique_id
+        self.item_id = item_id
+        self.item_count = item_count
+        self.inventory_id = inventory_id
+        self.slot_id = slot_id
+        self.primary_properties = primary_properties
+
+    def create(self):
+        new_item = item.SItem()
+        new_item.itemUniqueId = self.unique_id
+        new_item.itemId = self.item_id
+        new_item.itemCount = self.item_count
+        new_item.inventoryId = self.inventory_id
+        new_item.slotId = self.slot_id
+        for prop in self.primary_properties:
+            new_prop = new_item.SItemProperty()
+            new_prop.propertyTypeId = prop[0]
+            new_prop.propertyValue = prop[1]
+            new_item.primaryPropertyArray.append(new_prop)
+
+
 def generate_torch():
     torch = item.SItem()
     torch.itemUniqueId = 6646818918302105

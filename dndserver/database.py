@@ -10,10 +10,12 @@ url = f"sqlite:///{config.database.file}"
 
 
 def get():
+    """Return an opened connection to the database."""
     return dataset.connect(url)
 
 
 def setup():
+    """Temporary initialization function to make sure the database is setup properly."""
     engine = create_engine(url)
     if not database_exists(engine.url):
         create_database(engine.url)

@@ -3,19 +3,17 @@ import time
 
 from dndserver import database
 from dndserver.objects import items
-from dndserver.protos import Account_pb2 as acc
-from dndserver.protos import _Character_pb2 as char
-from dndserver.protos import _PacketCommand_pb2 as pc
-from dndserver.protos import Lobby_pb2 as lb
+from dndserver.protos import (Account_pb2 as acc, _Character_pb2 as char,
+                              _Defins_pb2 as df, Lobby_pb2 as lb,
+                              _PacketCommand_pb2 as pc)
 
 
-def list_characters(ctx, data: bytes):
-    req = acc.SC2S_ACCOUNT_CHARACTER_LIST_REQ()
-    req.ParseFromString(data[8:])
-    req.pageIndex = 1
-    print(req)
+def list_characters(ctx, req):
+    """Communication that occurs when the user loads from the login to the
+    character selection screen. Return a list of characters depending on
+    the page of characters the user is currently on."""
     res = acc.SS2C_ACCOUNT_CHARACTER_LIST_RES()
-    res.pageIndex = 1
+    req.pageIndex = res.pageIndex = 1
 
     db = database.get()
     results = list(db["characters"].find(owner_id=ctx.sessions[ctx.transport]["accountId"]))
@@ -32,10 +30,10 @@ def list_characters(ctx, data: bytes):
         character.nickName.CopyFrom(nickname)
         character.characterId = str(result["id"])
         character.characterClass = result["character_class"]
-        character.createAt = result["created_at"]  # 1681858691000  # int(time.time())  # int: unix timestamp
-        character.gender = result["gender"]  # int: 1 = male, 2 = female
-        character.level = result["level"]   # int
-        character.lastloginDate = result["last_logged_at"]  # int(time.time())  # int: unix timestamp
+        character.createAt = result["created_at"]
+        character.gender = result["gender"]
+        character.level = result["level"]
+        character.lastloginDate = result["last_logged_at"]
 
         character.equipItemList.append(items.generate_torch())
         character.equipItemList.append(items.generate_roundshield())
@@ -52,17 +50,17 @@ def list_characters(ctx, data: bytes):
     return res
 
 
-def create_character(ctx, data: bytes):
-    req = acc.SC2S_ACCOUNT_CHARACTER_CREATE_REQ()
-    req.ParseFromString(data[8:])
-
+def create_character(ctx, req):
+    """Communication that occurs when the user attempts to create a new
+    character. Does basic sanity checking like the retail game and then
+    stores the created character in the database."""
     res = acc.SS2C_ACCOUNT_CHARACTER_CREATE_RES()
 
-    if len(req.nickName) < 2:
+    if len(req.nickName) < df.Define_Character.MIN:
         res.result = pc.PacketResult.Value("FAIL_CHARACTER_NICKNAME_LENGTH_SHORTAGE")
         return res
 
-    if len(req.nickName) > 20:
+    if len(req.nickName) > df.Define_Character.MAX:
         res.result = pc.PacketResult.Value("FAIL_CHARACTER_NICKNAME_LENGTH_OVER")
         return res
 
@@ -89,10 +87,9 @@ def create_character(ctx, data: bytes):
     return res
 
 
-def delete_character(ctx, data: bytes):
-    req = acc.SC2S_ACCOUNT_CHARACTER_DELETE_REQ()
-    req.ParseFromString(data[8:])
-
+def delete_character(ctx, req):
+    """Communication that occurs when the user deletes a character. Has basic
+    sanity checking to make sure users don't delete others characters."""
     res = acc.SS2C_ACCOUNT_CHARACTER_DELETE_RES()
 
     db = database.get()
@@ -110,7 +107,10 @@ def delete_character(ctx, data: bytes):
     res.result = pc.PacketResult.Value("SUCCESS")
     return res
 
-def character_info(ctx, data: bytes):
+
+def character_info(ctx):
+    """Communication that occurs when the user loads into the lobby/tavern.
+    Sends the game the relevant character information to be rendered in-game."""
     res = lb.SS2C_LOBBY_CHARACTER_INFO_RES()
     res.result = 1
 
@@ -128,14 +128,14 @@ def character_info(ctx, data: bytes):
     char_info.characterId = str(result["id"])
     char_info.gender = result["gender"]
     char_info.level = result["level"]
+
     char_info.CharacterItemList.append(items.generate_helm())
     char_info.CharacterItemList.append(items.generate_torch())
-    #char_info.CharacterItemList.append(items.generate_roundshield())
     char_info.CharacterItemList.append(items.generate_lantern())
     char_info.CharacterItemList.append(items.generate_sword())
     char_info.CharacterItemList.append(items.generate_pants())
     char_info.CharacterItemList.append(items.generate_tunic())
     char_info.CharacterItemList.append(items.generate_bandage())
-    
+
     res.characterDataBase.CopyFrom(char_info)
     return res
