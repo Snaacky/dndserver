@@ -9,8 +9,8 @@ from google.protobuf import symbol_database as _symbol_database
 # @@protoc_insertion_point(imports)
 
 
-from . import _Item_pb2 as __Item__pb2
-from . import _Character_pb2 as __Character__pb2
+from dndserver.protos import _Item_pb2 as __Item__pb2
+from dndserver.protos import _Character_pb2 as __Character__pb2
 
 _sym_db = _symbol_database.Default()
 
