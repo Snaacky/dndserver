@@ -50,13 +50,11 @@ class GameProtocol(Protocol):
             # Sends character list to the character screen and sends character information
             # when in the lobby/tavern.
             case "C2S_ACCOUNT_CHARACTER_LIST_REQ":
-                match self.sessions[self.transport]["state"]:
-                    case df.Define_Common.CHARACTER_SELECT:
-                        req = acc.SC2S_ACCOUNT_CHARACTER_LIST_REQ()
-                        req.ParseFromString(data[8:])
-                        res = character.list_characters(self, req).SerializeToString()
-                        header = self.make_header(res, "S2C_ACCOUNT_CHARACTER_LIST_RES")
-                        self.send(header, res)
+                req = acc.SC2S_ACCOUNT_CHARACTER_LIST_REQ()
+                req.ParseFromString(data[8:])
+                res = character.list_characters(self, req).SerializeToString()
+                header = self.make_header(res, "S2C_ACCOUNT_CHARACTER_LIST_RES")
+                self.send(header, res)
 
             # Character creation attempt from the client.
             case "C2S_ACCOUNT_CHARACTER_CREATE_REQ":
