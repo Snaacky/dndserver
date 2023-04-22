@@ -2,7 +2,7 @@ from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
 from dndserver.handlers import character, lobby, login
-from dndserver.protos import Account_pb2 as acc, _Defins_pb2 as df, _PacketCommand_pb2 as pc
+from dndserver.protos import Account_pb2 as acc, _Defins_pb2 as df, _PacketCommand_pb2 as pc, Lobby_pb2 as lby
 
 
 class GameFactory(Factory):
@@ -85,6 +85,34 @@ class GameProtocol(Protocol):
                 header = self.make_header(res, "S2C_LOBBY_ENTER_RES")
                 self.send(header, res)
                 self.sessions[self.transport]["state"] = df.Define_Common.PLAY
+
+            case "C2S_LOBBY_REGION_SELECT_REQ":
+                if self.sessions[self.transport]["state"] == df.Define_Common.PLAY and len(data) == 10:
+                    req = lby.SC2S_LOBBY_REGION_SELECT_REQ()
+                    req.ParseFromString(data[8:])
+                    res = lobby.region_select(self, req).SerializeToString()
+                    header = self.make_header(res, "S2C_LOBBY_REGION_SELECT_RES")
+                    self.send(header, res)
+                elif self.sessions[self.transport]["state"] == df.Define_Common.CHARACTER_SELECT:
+                    pass
+            case "C2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ":
+                req = lby.SC2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ()
+                req.ParseFromString(data[8:])
+
+                res = lby.SS2C_LOBBY_GAME_DIFFICULTY_SELECT_RES()
+                res.result = 1
+                res.gameDifficultyTypeIndex = req.gameDifficultyTypeIndex
+                res = res.SerializeToString()
+
+                header = self.make_header(res, "S2C_LOBBY_GAME_DIFFICULTY_SELECT_RES")
+                self.send(header, res)
+            case "C2S_CHARACTER_SELECT_ENTER_REQ":
+                res = lby.SS2C_CHARACTER_SELECT_ENTER_RES()
+                res.result = 1
+                res = res.SerializeToString()
+                header = self.make_header(res, "S2C_CHARACTER_SELECT_ENTER_RES")
+                self.send(header, res)
+                self.sessions[self.transport]["state"] = df.Define_Common.CHARACTER_SELECT
 
             # All other currently unhandled packets.
             case _:
