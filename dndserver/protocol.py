@@ -50,17 +50,11 @@ class GameProtocol(Protocol):
             # Sends character list to the character screen and sends character information
             # when in the lobby/tavern.
             case "C2S_ACCOUNT_CHARACTER_LIST_REQ":
-                match self.sessions[self.transport]["state"]:
-                    case df.Define_Common.CHARACTER_SELECT:
-                        req = acc.SC2S_ACCOUNT_CHARACTER_LIST_REQ()
-                        req.ParseFromString(data[8:])
-                        res = character.list_characters(self, req).SerializeToString()
-                        header = self.make_header(res, "S2C_ACCOUNT_CHARACTER_LIST_RES")
-                        self.send(header, res)
-                    case df.Define_Common.PLAY:
-                        res = character.character_info(self).SerializeToString()
-                        header = self.make_header(res, "S2C_LOBBY_CHARACTER_INFO_RES")
-                        self.send(header, res)
+                req = acc.SC2S_ACCOUNT_CHARACTER_LIST_REQ()
+                req.ParseFromString(data[8:])
+                res = character.list_characters(self, req).SerializeToString()
+                header = self.make_header(res, "S2C_ACCOUNT_CHARACTER_LIST_RES")
+                self.send(header, res)
 
             # Character creation attempt from the client.
             case "C2S_ACCOUNT_CHARACTER_CREATE_REQ":
@@ -88,7 +82,9 @@ class GameProtocol(Protocol):
                 self.sessions[self.transport]["state"] = df.Define_Common.PLAY
 
             case "C2S_CUSTOMIZE_CHARACTER_INFO_REQ":
-                
+                res = character.character_info(self).SerializeToString()
+                header = self.make_header(res, "S2C_LOBBY_CHARACTER_INFO_RES")
+                self.send(header, res)
 
             # All other currently unhandled packets.
             case _:
@@ -104,20 +100,7 @@ class GameProtocol(Protocol):
 
     def make_header(self, res: bytes, packet_id: str):
         """Create a D&D packet header."""
-        # header: <packet length> 00 00 <packet id> 00 00
-        if not res:
-            raise Exception("Didn't pass data when creating header")
-        type_ = pc.PacketCommand.Value(packet_id).to_bytes(2, "little")
-        length_ = (len(res) + 8).to_bytes(2, "little")
-        packet = length_ + b"\x00\x00" + type_ + b"\x00\x00"
-        self.make_header_new(res, packet_id)
-        return packet
-
-    def make_header_new(self, res: bytes, packet_id: str):
-        """Create a D&D packet header."""
         # header: <packet length: short> 00 00 <packet id: short> 00 00
         if not res:
             raise Exception("Didn't pass data when creating header")
-        packetnew = struct.pack("<hxxhxx", len(res) + 8, pc.PacketCommand.Value(packet_id))
-        logger.error(f"packetnew is a {type(packetnew)}")
-        return packetnew
+        return struct.pack("<hxxhxx", len(res) + 8, pc.PacketCommand.Value(packet_id))
