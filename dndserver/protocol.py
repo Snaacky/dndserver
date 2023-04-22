@@ -100,20 +100,7 @@ class GameProtocol(Protocol):
 
     def make_header(self, res: bytes, packet_id: str):
         """Create a D&D packet header."""
-        # header: <packet length> 00 00 <packet id> 00 00
-        if not res:
-            raise Exception("Didn't pass data when creating header")
-        type_ = pc.PacketCommand.Value(packet_id).to_bytes(2, "little")
-        length_ = (len(res) + 8).to_bytes(2, "little")
-        packet = length_ + b"\x00\x00" + type_ + b"\x00\x00"
-        self.make_header_new(res, packet_id)
-        return packet
-
-    def make_header_new(self, res: bytes, packet_id: str):
-        """Create a D&D packet header."""
         # header: <packet length: short> 00 00 <packet id: short> 00 00
         if not res:
             raise Exception("Didn't pass data when creating header")
-        packetnew = struct.pack("<hxxhxx", len(res) + 8, pc.PacketCommand.Value(packet_id))
-        logger.error(f"packetnew is a {type(packetnew)}")
-        return packetnew
+        return struct.pack("<hxxhxx", len(res) + 8, pc.PacketCommand.Value(packet_id))
