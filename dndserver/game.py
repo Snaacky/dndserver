@@ -32,8 +32,6 @@ class GameProtocol(Protocol):
             case "C2S_ACCOUNT_LOGIN_REQ":
                 # Process login and store the result in a variable
                 login_result = login.process_login(self, data)
-                # Log the result
-                print("Login result:", login_result)
                 # Pass the result to the respond function
                 self.respond(login_result)
             case _:
