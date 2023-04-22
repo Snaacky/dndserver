@@ -25,11 +25,10 @@ class GameProtocol(Protocol):
     def dataReceived(self, data: bytes):
         """Main loop for receiving request packets and sending response packets."""
         # Manually catch and skip any unparsed packets
-        if data[4] == any([33, 115, 135, 185, 239, 215]):
-            logger.error(f"Received {data[4]} {data} packet but no handler yet")
-            return
-
-        logger.debug(f"Received {pc.PacketCommand.Name(data[4])}")
+        try:
+            logger.debug(f"Received {pc.PacketCommand.Name(data[4])}")
+        except ValueError:
+            return logger.error(f"Received {data[4]} {data} packet but no handler yet")
 
         # TODO: Surely there's a cleaner way that we can do this?
         # TODO: Can we access these enums directly? 'EnumTypeWrapper' object is not callable
@@ -45,6 +44,7 @@ class GameProtocol(Protocol):
                 req.ParseFromString(data[8:])
                 res = login.process_login(self, req).SerializeToString()
                 header = self.make_header(res, "S2C_ACCOUNT_LOGIN_RES")
+                self.sessions[self.transport]["state"] = df.Define_Common.CHARACTER_SELECT
                 self.send(header, res)
 
             # Sends character list to the character screen and sends character information
@@ -79,7 +79,9 @@ class GameProtocol(Protocol):
 
             # Client attempting to load into the lobby.
             case "C2S_LOBBY_ENTER_REQ":
-                res = lobby.enter_lobby(data[8:]).SerializeToString()
+                req = acc.SC2S_LOBBY_ENTER_REQ()
+                req.ParseFromString(data[8:])
+                res = lobby.enter_lobby(req).SerializeToString()
                 header = self.make_header(res, "S2C_LOBBY_ENTER_RES")
                 self.send(header, res)
                 self.sessions[self.transport]["state"] = df.Define_Common.PLAY

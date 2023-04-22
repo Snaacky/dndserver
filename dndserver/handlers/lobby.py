@@ -9,8 +9,8 @@ def enter_lobby(req):
     res = acc.SS2C_LOBBY_ENTER_RES()
     res.result = 1
     db = database.get()
-    result = db["characters"].find_one(character_id=req.characterId)
-    res.accountId = result["owner_id"]
+    result = db["characters"].find_one(id=req.characterId)
+    res.accountId = str(result["owner_id"])
     return res
 
 
