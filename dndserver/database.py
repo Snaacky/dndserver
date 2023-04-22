@@ -24,11 +24,11 @@ def setup():
 
     if "users" not in db:
         users = db.create_table("users")
-        users.create_column("username", db.types.text)  # 2 characters min, 20 characters max
+        users.create_column("username", db.types.text)
         users.create_column("password", db.types.text)
         users.create_column("hwids", db.types.text)
         users.create_column("build_version", db.types.text)
-        users.create_column("is_banned", db.types.integer, default=None)  # 12 = ban user, 13 = ban cheater, 14 = ban inappropriate name, 15 = ban etc, 16 = hwid ban
+        users.create_column("is_banned", db.types.integer, default=None)
         users.create_column("secret_token", db.types.text, default=None)
 
     if "characters" not in db:
