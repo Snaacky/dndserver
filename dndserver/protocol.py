@@ -87,22 +87,18 @@ class GameProtocol(Protocol):
                 self.sessions[self.transport]["state"] = df.Define_Common.PLAY
 
             case "C2S_LOBBY_REGION_SELECT_REQ":
-                if self.sessions[self.transport]["state"] == df.Define_Common.PLAY and len(data) == 10:
+                if self.sessions[self.transport]["state"] == df.Define_Common.PLAY and len(data) == 10: #if len(data) == 40 error parsing message
                     req = lby.SC2S_LOBBY_REGION_SELECT_REQ()
                     req.ParseFromString(data[8:])
                     res = lobby.region_select(self, req).SerializeToString()
                     header = self.make_header(res, "S2C_LOBBY_REGION_SELECT_RES")
                     self.send(header, res)
-                elif self.sessions[self.transport]["state"] == df.Define_Common.CHARACTER_SELECT:
-                    pass
+                elif self.sessions[self.transport]["state"] == df.Define_Common.CHARACTER_SELECT and len(data) == 40:
+                    pass # idk what to do
             case "C2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ":
                 req = lby.SC2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ()
                 req.ParseFromString(data[8:])
-
-                res = lby.SS2C_LOBBY_GAME_DIFFICULTY_SELECT_RES()
-                res.result = 1
-                res.gameDifficultyTypeIndex = req.gameDifficultyTypeIndex
-                res = res.SerializeToString()
+                res = lobby.game_select(self, req).SerializeToString()
 
                 header = self.make_header(res, "S2C_LOBBY_GAME_DIFFICULTY_SELECT_RES")
                 self.send(header, res)

@@ -15,14 +15,18 @@ def enter_lobby(req):
 
 
 def region_select(ctx, req):
-    """Currently unused."""
-    # req = lb.SC2S_LOBBY_REGION_SELECT_REQ()
-    # req.ParseFromString(data[8:])
+    """."""
     res = lb.SS2C_LOBBY_REGION_SELECT_RES()
     res.result = 1
     res.region = req.region
     return res
 
+def game_select(ctx, req):
+    """."""
+    res = lb.SS2C_LOBBY_GAME_DIFFICULTY_SELECT_RES()
+    res.result = 1
+    res.gameDifficultyTypeIndex = req.gameDifficultyTypeIndex
+    return res
 
 def start(ctx, req):
     """Currently unused."""
