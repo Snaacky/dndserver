@@ -4,7 +4,7 @@ from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
 from dndserver.handlers import character, lobby, login
-from dndserver.protos import Account_pb2 as acc, _Defins_pb2 as df, _PacketCommand_pb2 as pc
+from dndserver.protos import Account_pb2 as acc, _Defins_pb2 as df, _PacketCommand_pb2 as pc, Lobby_pb2 as lb
 
 
 class GameFactory(Factory):
@@ -85,6 +85,14 @@ class GameProtocol(Protocol):
                 res = character.character_info(self).SerializeToString()
                 header = self.make_header(res, "S2C_LOBBY_CHARACTER_INFO_RES")
                 self.send(header, res)
+
+            case "C2S_CHARACTER_SELECT_ENTER_REQ":
+                req = lb.SC2S_CHARACTER_SELECT_ENTER_REQ()
+                req.ParseFromString(data[8:])
+                res = lobby.character_select(req).SerializeToString()
+                header = self.make_header(res, "S2C_CHARACTER_SELECT_ENTER_RES")
+                self.send(header, res)
+                self.sessions[self.transport]["state"] = df.Define_Common.CHARACTER_SELECT
 
             # All other currently unhandled packets.
             case _:

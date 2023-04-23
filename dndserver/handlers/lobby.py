@@ -14,6 +14,13 @@ def enter_lobby(req):
     return res
 
 
+def character_select(req):
+    res = lb.SS2C_CHARACTER_SELECT_ENTER_RES()
+    res.result = 1
+
+    return res
+
+
 def region_select(ctx, req):
     """Currently unused."""
     # req = lb.SC2S_LOBBY_REGION_SELECT_REQ()
