@@ -22,7 +22,6 @@ def setup():
         users = db.create_table("users")
         users.create_column("username", db.types.text)  # 2 characters min, 20 characters max
         users.create_column("password", db.types.text)
-        users.create_column("hwids", db.types.text)
         users.create_column("build_version", db.types.text)
         users.create_column("is_banned", db.types.integer, default=None)  # 12 = ban user, 13 = ban cheater, 14 = ban inappropriate name, 15 = ban etc, 16 = hwid ban
         users.create_column("secret_token", db.types.text, default=None)
@@ -33,6 +32,12 @@ def setup():
         chars.create_column("name", db.types.text)  # ?? characters min, 20 characters max
         chars.create_column("sex", db.types.text)
         chars.create_column("class", db.types.text)
+
+    if "hwids" not in db:
+        hwids = db.create_table("hwids")
+        hwids.create_column("id", db.types.integer, primary_id=True)
+        hwids.create_column("user_id", db.types.integer, foreign_key=True, references='users.id')
+        hwids.create_column("hwid", db.types.text)
 
     db.commit()
     db.close()
