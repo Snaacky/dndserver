@@ -3,10 +3,16 @@ import struct
 from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
-from dndserver.handlers import character, lobby, login, ranking
-from dndserver.protos import (Account_pb2 as acc, Common_pb2 as common,
-                              _Defins_pb2 as df, _PacketCommand_pb2 as pc,
-                              Ranking_pb2 as rank, Trade_pb2 as trade)
+from dndserver.handlers import character, friends, lobby, login
+# from dndserver.protos import _Character_pb2 as char
+from dndserver.protos import Defines as df
+from dndserver.protos import PacketCommand as pc
+from dndserver.protos import Account as acc
+# from dndserver.protos import Common_pb2 as common
+from dndserver.protos import Friend as friend
+from dndserver.protos import Party as party
+# from dndserver.protos import Ranking_pb2 as rank
+from dndserver.protos import Trade as trade
 
 
 class GameFactory(Factory):
@@ -122,8 +128,7 @@ class GameProtocol(Protocol):
                 # does not parse against the meta location request protobuf and fails. The
                 # failing message seems to contain the location as the second byte in the message
                 # as a char. For some reason the message does not parse when the last 4 bytes
-                # exist in that message but removing them works. This fix fixex all tabs except
-                # for merchant and gathering hall.
+                # exist in that message but removing them works.
 
                 # Problematic message example:
                 # Raw hex bytes b'\x08\x05\x08\x00\x00\x00G\x055\x00' for C2S_META_LOCATION_REQ
@@ -142,13 +147,43 @@ class GameProtocol(Protocol):
                 # req = common.SC2S_META_LOCATION_REQ()
                 # req.ParseFromString(location)
 
-                location = int.from_bytes(struct.unpack("<xc", msg[:3])[0], "little")
-                self.sessions[self.transport]["state"] = df.Define_Common.MetaLocation.Name(location)
+                # location = int.from_bytes(struct.unpack("<xc", msg[:3])[0], "little")
+                # self.sessions[self.transport]["state"] = df.Define_Common.MetaLocation.Name(location)
 
-                res = common.SS2C_META_LOCATION_RES(location=location).SerializeToString()
-                header = self.make_header(res, "S2C_META_LOCATION_RES")
+                # res = common.SS2C_META_LOCATION_RES(location=location).SerializeToString()
+                # header = self.make_header(res, "S2C_META_LOCATION_RES")
+                # self.send(header, res)
+
+            # Occurs when a user opens the friends list system.
+            case "C2S_FRIEND_LIST_ALL_REQ":
+                res = friends.list_friends(ctx=self).SerializeToString()
+                header = self.make_header(res, "S2C_FRIEND_LIST_ALL_RES")
                 self.send(header, res)
 
+            # Occurs when a user searches for another user by name.
+            case "C2S_FRIEND_FIND_REQ":
+                req = friend.SC2S_FRIEND_FIND_REQ()
+                req.ParseFromString(msg)
+                res = friends.find_user(ctx=self, req=req).SerializeToString()
+                header = self.make_header(res, "S2C_FRIEND_FIND_RES")
+                self.send(header, res)
+
+            # Occurs when a user invites another user to their party.
+            case "C2S_PARTY_INVITE_REQ":
+                req = party.SC2S_PARTY_INVITE_REQ()
+                req.ParseFromString(msg)
+
+                res = friends.party_invite(ctx=self, req=req).SerializeToString()
+                header = self.make_header(res, "S2C_PARTY_INVITE_RES")
+                self.send(header, res)
+
+                res = friends.party_invite_notify(ctx=self, req=req).SerializeToString()
+                header = self.make_header(res, "S2C_PARTY_INVITE_NOT")
+                self.send(header, res)
+
+            # case "C2S_PARTY_INVITE_ANSWER_REQ":
+                
+            
             # All other currently unhandled packets.
             case _:
                 logger.warning(f"Received {pc.PacketCommand.Name(_id)} {data} packet but no handler yet")

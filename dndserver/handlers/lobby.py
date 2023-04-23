@@ -1,6 +1,6 @@
-from dndserver import database
-from dndserver.protos import Account_pb2 as acc
-from dndserver.protos import Lobby_pb2 as lb
+from dndserver import models
+from dndserver.protos import Account as acc
+from dndserver.protos import Lobby as lb
 
 
 def enter_lobby(req):
@@ -8,7 +8,7 @@ def enter_lobby(req):
     character selection screen."""
     res = acc.SS2C_LOBBY_ENTER_RES()
     res.result = 1
-    db = database.get()
+    db = models.get()
     result = db["characters"].find_one(id=req.characterId)
     res.accountId = str(result["owner_id"])
     return res

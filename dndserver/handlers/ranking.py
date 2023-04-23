@@ -2,7 +2,7 @@ import random
 
 from loguru import logger
 
-from dndserver.protos import _Character_pb2 as char, Ranking_pb2 as rank
+from dndserver.protos import Character as char, Ranking as rank
 
 
 def get_ranking(ctx, req):

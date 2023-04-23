@@ -14,6 +14,7 @@ protobuf = "^4.22.3"
 dataset = "^1.6.0"
 sqlalchemy-utils = "^0.41.0"
 argon2-cffi = "^21.3.0"
+arrow = "^1.2.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
