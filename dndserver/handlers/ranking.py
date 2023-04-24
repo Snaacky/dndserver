@@ -1,17 +1,19 @@
 import random
 
-from loguru import logger
+from dndserver.protos.Character import SACCOUNT_NICKNAME
+from dndserver.protos.Ranking import SRankRecord, SC2S_RANKING_RANGE_REQ, SS2C_RANKING_RANGE_RES
 
-from dndserver.protos import Character as char, Ranking as rank
 
-
-def get_ranking(ctx, req):
+def get_ranking(ctx, msg):
     # message SC2S_RANKING_RANGE_REQ {
     #   uint32 rankType = 1;
     #   uint32 startIndex = 2;
     #   uint32 endIndex = 3;
     #   string characterClass = 4;
     # }
+
+    req = SC2S_RANKING_RANGE_REQ()
+    req.ParseFromString(msg)
 
     # message SS2C_RANKING_RANGE_RES {
     #   uint32 result = 1;
@@ -22,17 +24,8 @@ def get_ranking(ctx, req):
     #   uint32 endIndex = 6;
     #   string characterClass = 7;
     # }
+    res = SS2C_RANKING_RANGE_RES(result=1, rankType=1, allRowCount=1, startIndex=1, endIndex=1, characterClass="")
 
-    logger.debug(req)
-    res = rank.SS2C_RANKING_RANGE_RES()
-    res.result = 1
-    res.rankType = 1
-    res.allRowCount = 1
-    res.startIndex = 1
-    res.endIndex = 1
-    res.characterClass = ""
-    
-    record = rank.SRankRecord()
     # message SRankRecord {
     #   uint32 pageIndex = 1;
     #   uint32 rank = 2;
@@ -42,17 +35,18 @@ def get_ranking(ctx, req):
     #   .DC.Packet.SACCOUNT_NICKNAME nickName = 6;
     #   string characterClass = 7;
     # }
-    record.pageIndex = 1
-    record.rank = 1
-    record.score = 1
-    record.percentage = 1.0
-    record.accountId = 1
 
-    nickname = char.SACCOUNT_NICKNAME()
-    nickname.originalNickName = "Test"
-    nickname.streamingModeNickName = f"Fighter#{random.randrange(1000000, 1700000)}"
-
-    record.nickName.CopyFrom(nickname)
+    record = SRankRecord(
+        pageIndex=1,
+        rank=1,
+        score=1,
+        percentage=1.0,
+        accountId=1,
+        nickName=SACCOUNT_NICKNAME(
+            originalNickName="Test",
+            streamingModeNickName=f"Fighter#{random.randrange(1000000, 1700000)}"
+        )
+    )
     res.records.CopyFrom(record)
 
     return res

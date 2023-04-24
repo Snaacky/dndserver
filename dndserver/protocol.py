@@ -4,13 +4,7 @@ from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
 from dndserver.handlers import character, friends, lobby, login, trade
-from dndserver.protos import Defines as df
 from dndserver.protos import PacketCommand as pc
-from dndserver.protos.Account import (SC2S_LOBBY_ENTER_REQ, SC2S_ACCOUNT_LOGIN_REQ, SC2S_ACCOUNT_CHARACTER_LIST_REQ,
-                                      SC2S_ACCOUNT_CHARACTER_CREATE_REQ, SC2S_ACCOUNT_CHARACTER_DELETE_REQ)
-from dndserver.protos.Friend import SC2S_FRIEND_FIND_REQ
-from dndserver.protos.Party import SC2S_PARTY_INVITE_REQ
-from dndserver.protos.Trade import SC2S_TRADE_MEMBERSHIP_REQ
 
 
 class GameFactory(Factory):
@@ -25,160 +19,56 @@ class GameProtocol(Protocol):
 
     def connectionMade(self) -> None:
         """Event for when a client connects to the server."""
-        logger.debug("Connection made")
+        logger.debug(f"Received connection from: {self.transport.client[0]}")
         self.sessions[self.transport] = {"user": None}
-
-    def dataReceived(self, data: bytes) -> None:
-        """Main loop for receiving request packets and sending response packets."""
-        # TODO: Surely there's a cleaner way that we can do this?
-        # TODO: Can we access these enums directly? 'EnumTypeWrapper' object is not callable
-        # TODO: Implement support for segemented packets based on the incoming datas length.
-        # We need to parse the header to see the length of the packet and the ID.
-        length, _id = struct.unpack("<hxxhxx", data[:8])
-        msg = data[8:]
-
-        match pc.PacketCommand.Name(_id):
-
-            # Heartbeat sent between the client and server every second.
-            case "C2S_ALIVE_REQ":
-                self.transport.write(pc.SS2C_ALIVE_RES().SerializeToString())
-
-            # Login attempt from the client.
-            case "C2S_ACCOUNT_LOGIN_REQ":
-                req = SC2S_ACCOUNT_LOGIN_REQ()
-                req.ParseFromString(msg)
-                res = login.process_login(self, req).SerializeToString()
-                header = self.make_header(res, "S2C_ACCOUNT_LOGIN_RES")
-                self.sessions[self.transport]["state"] = df.Define_Common.CHARACTER_SELECT
-                self.send(header, res)
-
-            # Sends character list to the character screen and sends character information
-            # when in the lobby/tavern.
-            case "C2S_ACCOUNT_CHARACTER_LIST_REQ":
-                req = SC2S_ACCOUNT_CHARACTER_LIST_REQ()
-                req.ParseFromString(msg)
-                res = character.list_characters(self, req).SerializeToString()
-                header = self.make_header(res, "S2C_ACCOUNT_CHARACTER_LIST_RES")
-                self.send(header, res)
-
-            # Character creation attempt from the client.
-            case "C2S_ACCOUNT_CHARACTER_CREATE_REQ":
-                req = SC2S_ACCOUNT_CHARACTER_CREATE_REQ()
-                req.ParseFromString(msg)
-                res = character.create_character(self, req).SerializeToString()
-                header = self.make_header(res, "S2C_ACCOUNT_CHARACTER_CREATE_RES")
-                self.send(header, res)
-
-            # Character deletion attempt from the client.
-            case "C2S_ACCOUNT_CHARACTER_DELETE_REQ":
-                req = SC2S_ACCOUNT_CHARACTER_DELETE_REQ()
-                req.ParseFromString(msg)
-                res = character.delete_character(self, req).SerializeToString()
-                header = self.make_header(res, "S2C_ACCOUNT_CHARACTER_DELETE_RES")
-                self.send(header, res)
-
-            # Client attempting to load into the lobby.
-            case "C2S_LOBBY_ENTER_REQ":
-                req = SC2S_LOBBY_ENTER_REQ()
-                req.ParseFromString(msg)
-                res = lobby.enter_lobby(req).SerializeToString()
-                header = self.make_header(res, "S2C_LOBBY_ENTER_RES")
-                self.send(header, res)
-                self.sessions[self.transport]["state"] = df.Define_Common.PLAY
-
-            case "C2S_CUSTOMIZE_CHARACTER_INFO_REQ":
-                res = character.character_info(self).SerializeToString()
-                header = self.make_header(res, "S2C_LOBBY_CHARACTER_INFO_RES")
-                self.send(header, res)
-
-            case "C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ":
-                res = trade.get_trade_reqs(self).SerializeToString()
-                header = self.make_header(res, "S2C_TRADE_MEMBERSHIP_REQUIREMENT_RES")
-                self.send(header, res)
-
-            case "C2S_TRADE_MEMBERSHIP_REQ":
-                req = SC2S_TRADE_MEMBERSHIP_REQ()
-                req.ParseFromString(msg)
-                res = trade.process_membership(self, req).SerializeToString()
-                header = self.make_header(res, "S2C_TRADE_MEMBERSHIP_RES")
-                self.send(header, res)
-
-            case "C2S_META_LOCATION_REQ":
-                logger.debug(f"Raw hex bytes {msg} for C2S_META_LOCATION_REQ")
-                logger.debug(f"Hexlified bytes {msg.hex()} for C2S_META_LOCATION_REQ")
-
-                # For some reason on certain screens like merchant, rankings, etc., the message
-                # does not parse against the meta location request protobuf and fails. The
-                # failing message seems to contain the location as the second byte in the message
-                # as a char. For some reason the message does not parse when the last 4 bytes
-                # exist in that message but removing them works.
-
-                # Problematic message example:
-                # Raw hex bytes b'\x08\x05\x08\x00\x00\x00G\x055\x00' for C2S_META_LOCATION_REQ
-                # Hexlified bytes 08050800000047053500 for C2S_META_LOCATION_REQ
-
-                # Error in protobuf-inspector:
-                # Exception: Unknown wire type 7
-                # 0000   08 05 08 00 00 00 47 05 35 00       ......G.5.
-
-                # protobuf-inspector output With last 4 bytes removed:
-                # root:
-                # 1 <varint> = 5
-                # 1 <varint> = 0
-                # 0 <varint> = 0
-
-                # req = common.SC2S_META_LOCATION_REQ()
-                # req.ParseFromString(location)
-
-                # location = int.from_bytes(struct.unpack("<xc", msg[:3])[0], "little")
-                # self.sessions[self.transport]["state"] = df.Define_Common.MetaLocation.Name(location)
-
-                # res = common.SS2C_META_LOCATION_RES(location=location).SerializeToString()
-                # header = self.make_header(res, "S2C_META_LOCATION_RES")
-                # self.send(header, res)
-
-            # Occurs when a user opens the friends list system.
-            case "C2S_FRIEND_LIST_ALL_REQ":
-                res = friends.list_friends(self).SerializeToString()
-                header = self.make_header(res, "S2C_FRIEND_LIST_ALL_RES")
-                self.send(header, res)
-
-            # Occurs when a user searches for another user by name.
-            case "C2S_FRIEND_FIND_REQ":
-                req = SC2S_FRIEND_FIND_REQ()
-                req.ParseFromString(msg)
-                res = friends.find_user(self, req).SerializeToString()
-                header = self.make_header(res, "S2C_FRIEND_FIND_RES")
-                self.send(header, res)
-
-            # Occurs when a user invites another user to their party.
-            case "C2S_PARTY_INVITE_REQ":
-                req = SC2S_PARTY_INVITE_REQ()
-                req.ParseFromString(msg)
-
-                res = friends.party_invite(self, req).SerializeToString()
-                header = self.make_header(res, "S2C_PARTY_INVITE_RES")
-                self.send(header, res)
-
-                res = friends.party_invite_notify(self, req).SerializeToString()
-                header = self.make_header(res, "S2C_PARTY_INVITE_NOT")
-                self.send(header, res)
-
-            # All other currently unhandled packets.
-            case _:
-                logger.warning(f"Received {pc.PacketCommand.Name(_id)} {data} packet but no handler yet")
-
-    def send(self, header: bytes, body: bytes):
-        """Send a D&D packet to the client."""
-        self.transport.write(header + body)
 
     def connectionLost(self, reason):
         """Event for when a client disconnects from the server."""
-        return NotImplementedError
+        logger.debug(f"Lost connection to: {self.transport.client[0]}")
+        del self.sessions[self.transport]
 
-    def make_header(self, res: bytes, packet_id: str):
+    def dataReceived(self, data: bytes) -> None:
+        """Main loop for receiving request packets and sending response packets."""
+        # TODO: Implement support for segemented packets based on the incoming data's length.
+        length, _id = struct.unpack("<hxxhxx", data[:8])
+        msg = data[8:]
+
+        handlers = {
+            pc.C2S_ALIVE_REQ: self.heartbeat,
+            pc.C2S_ACCOUNT_LOGIN_REQ: login.process_login,
+            pc.C2S_ACCOUNT_CHARACTER_CREATE_REQ: character.create_character,
+            pc.C2S_ACCOUNT_CHARACTER_DELETE_REQ: character.delete_character,
+            pc.C2S_ACCOUNT_CHARACTER_LIST_REQ: character.list_characters,
+            pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.character_info,
+            pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,
+            pc.C2S_FRIEND_LIST_ALL_REQ: friends.list_friends,
+            pc.C2S_FRIEND_FIND_REQ: friends.find_user,
+            pc.C2S_PARTY_INVITE_REQ: friends.party_invite,
+            pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
+            pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
+        }
+        handler = [k for k in handlers.keys() if k == _id]
+        if not handler:
+            return logger.warning(f"Received {pc.PacketCommand.Name(_id)} {data} packet but no handler yet")
+
+        # Heartbeat is handled separately because it doesn't use a header.
+        if handler[0] == pc.C2S_ALIVE_REQ:
+            return self.heartbeat()
+
+        res = handlers[handler[0]](self, msg)
+        self.send(res)
+
+    def heartbeat(self):
+        """Send a D&D keepalive packet."""
+        self.transport.write(pc.SS2C_ALIVE_RES().SerializeToString())
+
+    def make_header(self, msg: bytes):
         """Create a D&D packet header."""
         # header: <packet length: short> 00 00 <packet id: short> 00 00
-        if not res:
-            raise Exception("Didn't pass data when creating header")
-        return struct.pack("<hxxhxx", len(res) + 8, pc.PacketCommand.Value(packet_id))
+        packet_type = type(msg).__name__.replace("SS2C", "S2C").replace("SC2S", "C2S")
+        return struct.pack("<hxxhxx", len(msg.SerializeToString()) + 8, pc.PacketCommand.Value(packet_type))
+
+    def send(self, msg: bytes):
+        """Send a D&D packet to the client."""
+        header = self.make_header(msg)
+        self.transport.write(header + msg.SerializeToString())
