@@ -1,5 +1,4 @@
 from dndserver.protos.Merchant import SC2S_MERCHANT_LIST_REQ, SS2C_MERCHANT_LIST_RES, SMERCHANT_INFO
-from dndserver.protos.Merchant import SC2S_MERCHANT_LIST_REQ, SS2C_MERCHANT_LIST_RES, SMERCHANT_INFO
 
 def get_merchant_list(ctx, msg):
     # TODO: update make the timers update. In the data the faction and 
