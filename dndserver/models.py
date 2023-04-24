@@ -36,6 +36,7 @@ class Character(base):
     character_class = Column(Enum(CharacterClass))
     created_at = Column(ArrowType, default=arrow.utcnow())
     level = Column(Integer, default=1)
+    # karmaRating
 
     def save(self):
         db.add(self)

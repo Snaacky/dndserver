@@ -6,6 +6,7 @@ import argon2
 from dndserver.database import db
 from dndserver.models import Account
 from dndserver.protos.Account import SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES, SC2S_ACCOUNT_LOGIN_REQ
+from dndserver.sessions import sessions
 
 
 def process_login(ctx, msg):
@@ -55,6 +56,6 @@ def process_login(ctx, msg):
     res.AccountInfo.CopyFrom(info)
 
     # Set the user object in session to indicate authentication and for further access.
-    ctx.sessions[ctx.transport]["user"] = user
+    sessions[ctx.transport]["user"] = user
 
     return res

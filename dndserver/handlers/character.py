@@ -12,6 +12,7 @@ from dndserver.protos.Account import (SC2S_ACCOUNT_CHARACTER_CREATE_REQ, SC2S_AC
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_INFO
 from dndserver.protos.Defines import Define_Character
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
+from dndserver.sessions import sessions
 
 
 def list_characters(ctx, msg):
@@ -19,7 +20,7 @@ def list_characters(ctx, msg):
     req = SC2S_ACCOUNT_CHARACTER_LIST_REQ()
     req.ParseFromString(msg)
 
-    query = db.query(Character).filter_by(user_id=ctx.sessions[ctx.transport]["user"].id).all()
+    query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).all()
     res = SS2C_ACCOUNT_CHARACTER_LIST_RES(totalCharacterCount=len(query), pageIndex=req.pageIndex)
 
     start = (res.pageIndex - 1) * 7
@@ -67,7 +68,7 @@ def create_character(ctx, msg):
         return res
 
     character = Character(
-        user_id=ctx.sessions[ctx.transport]["user"].id,
+        user_id=sessions[ctx.transport]["user"].id,
         nickname=req.nickName,
         gender=Gender(req.gender),
         character_class=CharacterClass(req.characterClass)
@@ -86,7 +87,7 @@ def delete_character(ctx, msg):
     res = SS2C_ACCOUNT_CHARACTER_DELETE_RES(result=pc.SUCCESS)
 
     # Prevents characters from maliciously deleting others characters.
-    if query.user_id != ctx.sessions[ctx.transport]["user"].id:
+    if query.user_id != sessions[ctx.transport]["user"].id:
         res.result = pc.FAIL_GENERAL
         return res
 
@@ -96,7 +97,7 @@ def delete_character(ctx, msg):
 
 def character_info(ctx, msg):
     """Occurs when the user loads into the lobby/tavern."""
-    query = db.query(Character).filter_by(user_id=ctx.sessions[ctx.transport]["user"].id).first()
+    query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).first()
     res = SS2C_LOBBY_CHARACTER_INFO_RES(
         result=pc.SUCCESS,
         characterDataBase=SCHARACTER_INFO(

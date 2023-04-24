@@ -5,6 +5,7 @@ from twisted.internet.protocol import Factory, Protocol
 
 from dndserver.handlers import character, friends, lobby, login, trade
 from dndserver.protos import PacketCommand as pc
+from dndserver.sessions import sessions
 
 
 class GameFactory(Factory):
@@ -15,17 +16,16 @@ class GameFactory(Factory):
 class GameProtocol(Protocol):
     def __init__(self) -> None:
         super().__init__()
-        self.sessions = {}
 
     def connectionMade(self) -> None:
         """Event for when a client connects to the server."""
-        logger.debug(f"Received connection from: {self.transport.client[0]}")
-        self.sessions[self.transport] = {"user": None}
+        logger.debug(f"Received connection from: {self.transport.client[0]}:{self.transport.client[1]}")
+        sessions[self.transport] = {"user": None}
 
     def connectionLost(self, reason):
         """Event for when a client disconnects from the server."""
-        logger.debug(f"Lost connection to: {self.transport.client[0]}")
-        del self.sessions[self.transport]
+        logger.debug(f"Lost connection to: {self.transport.client[0]}:{self.transport.client[1]}")
+        del sessions[self.transport]
 
     def dataReceived(self, data: bytes) -> None:
         """Main loop for receiving request packets and sending response packets."""
