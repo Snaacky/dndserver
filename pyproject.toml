@@ -5,7 +5,6 @@ description = ""
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
 
-
 [tool.poetry.dependencies]
 python = "^3.11"
 loguru = "^0.7.0"
