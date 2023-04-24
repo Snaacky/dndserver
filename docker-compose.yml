@@ -1,0 +1,8 @@
+version: '3.11'
+
+services:
+  dndserver:
+    build: .
+    image: dndserver
+    ports:
+      - "13337:13337"
