@@ -1,141 +1,108 @@
 import random
-import time
 
-from dndserver import database
+from dndserver.database import db
+from dndserver.enums import CharacterClass, Gender
+from dndserver.models import Character
 from dndserver.objects import items
-from dndserver.protos import (Account_pb2 as acc, _Character_pb2 as char,
-                              _Defins_pb2 as df, Lobby_pb2 as lb,
-                              _PacketCommand_pb2 as pc)
+from dndserver.protos import PacketCommand as pc
+from dndserver.protos.Account import (SLOGIN_CHARACTER_INFO, SS2C_ACCOUNT_CHARACTER_CREATE_RES,
+                                      SS2C_ACCOUNT_CHARACTER_DELETE_RES, SS2C_ACCOUNT_CHARACTER_LIST_RES)
+from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_INFO
+from dndserver.protos.Defines import Define_Character
+from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 
 
 def list_characters(ctx, req):
-    """Communication that occurs when the user loads from the login to the
-    character selection screen. Return a list of characters depending on
-    the page of characters the user is currently on."""
-    res = acc.SS2C_ACCOUNT_CHARACTER_LIST_RES()
-    req.pageIndex = res.pageIndex = 1
+    """Occurs when the user loads in to the character selection screen."""
+    query = db.query(Character).filter_by(user_id=ctx.sessions[ctx.transport]["user"].id).all()
+    res = SS2C_ACCOUNT_CHARACTER_LIST_RES(totalCharacterCount=len(query), pageIndex=req.pageIndex)
 
-    db = database.get()
-    results = list(db["characters"].find(owner_id=ctx.sessions[ctx.transport]["accountId"]))
+    start = (res.pageIndex - 1) * 7
+    end = start + 7
 
-    start_index = (req.pageIndex - 1) * 7
-    end_index = start_index + 7
-
-    for result in results[start_index:end_index]:
-        nickname = char.SACCOUNT_NICKNAME()
-        nickname.originalNickName = result["nickname"]
-        nickname.streamingModeNickName = f"Fighter#{random.randrange(1000000, 1700000)}"
-
-        character = acc.SLOGIN_CHARACTER_INFO()
-        character.nickName.CopyFrom(nickname)
-        character.characterId = str(result["id"])
-        character.characterClass = result["character_class"]
-        character.createAt = result["created_at"]
-        character.gender = result["gender"]
-        character.level = result["level"]
-        character.lastloginDate = result["last_logged_at"]
-
-        character.equipItemList.append(items.generate_torch())
-        character.equipItemList.append(items.generate_roundshield())
-        character.equipItemList.append(items.generate_lantern())
-        character.equipItemList.append(items.generate_sword())
-        character.equipItemList.append(items.generate_pants())
-        character.equipItemList.append(items.generate_tunic())
-        character.equipItemList.append(items.generate_bandage())
-        character.equipItemList.append(items.generate_helm())
-        res.characterList.append(character)
-
-    res.totalCharacterCount = len(results)
+    for result in query[start:end]:
+        res.characterList.append(SLOGIN_CHARACTER_INFO(
+            characterId=str(result.id),
+            nickName=SACCOUNT_NICKNAME(
+                originalNickName=result.nickname,
+                streamingModeNickName=f"Fighter#{random.randrange(1000000, 1700000)}"
+            ),
+            level=result.level,
+            characterClass=CharacterClass(result.character_class).value,
+            gender=Gender(result.gender).value,
+            equipItemList=[
+                items.generate_torch(), items.generate_roundshield(), items.generate_lantern(),
+                items.generate_sword(), items.generate_pants(), items.generate_tunic(),
+                items.generate_bandage(), items.generate_helm()
+            ],
+            createAt=result.created_at.int_timestamp,
+            # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
+        ))
 
     return res
 
 
 def create_character(ctx, req):
-    """Communication that occurs when the user attempts to create a new
-    character. Does basic sanity checking like the retail game and then
-    stores the created character in the database."""
-    res = acc.SS2C_ACCOUNT_CHARACTER_CREATE_RES()
+    """Occurs when the user attempts to create a new character."""
+    res = SS2C_ACCOUNT_CHARACTER_CREATE_RES(result=pc.SUCCESS)
 
-    if len(req.nickName) < df.Define_Character.MIN:
-        res.result = pc.PacketResult.Value("FAIL_CHARACTER_NICKNAME_LENGTH_SHORTAGE")
+    if len(req.nickName) < Define_Character.MIN:
+        res.result = pc.FAIL_CHARACTER_NICKNAME_LENGTH_SHORTAGE
         return res
 
-    if len(req.nickName) > df.Define_Character.MAX:
-        res.result = pc.PacketResult.Value("FAIL_CHARACTER_NICKNAME_LENGTH_OVER")
+    if len(req.nickName) > Define_Character.MAX:
+        res.result = pc.FAIL_CHARACTER_NICKNAME_LENGTH_OVER
         return res
 
-    db = database.get()
-
-    dupe = db["characters"].find_one(nickname=req.nickName)
-    if dupe:
-        res.result = pc.PacketResult.Value("FAIL_DUPLICATE_NICKNAME")
+    if db.query(Character).filter_by(nickname=req.nickName).first():
+        res.result = pc.FAIL_DUPLICATE_NICKNAME
         return res
 
-    db["characters"].insert(dict(
-        owner_id=ctx.sessions[ctx.transport]["accountId"],
+    character = Character(
+        user_id=ctx.sessions[ctx.transport]["user"].id,
         nickname=req.nickName,
-        gender=req.gender,
-        character_class=req.characterClass,
-        created_at=int(time.time()),
-        level=1,
-        last_logged_at=int(time.time())
-    ))
-    db.commit()
-    db.close()
+        gender=Gender(req.gender),
+        character_class=CharacterClass(req.characterClass)
+    )
 
-    res.result = 1
+    character.save()
     return res
 
 
 def delete_character(ctx, req):
-    """Communication that occurs when the user deletes a character. Has basic
-    sanity checking to make sure users don't delete others characters."""
-    res = acc.SS2C_ACCOUNT_CHARACTER_DELETE_RES()
-
-    db = database.get()
-    char = db["characters"].find_one(id=req.characterId)
+    """Occurs when the user attempts to delete a character."""
+    query = db.query(Character).filter_by(id=req.characterId).first()
+    res = SS2C_ACCOUNT_CHARACTER_DELETE_RES(result=pc.SUCCESS)
 
     # Prevents characters from maliciously deleting others characters.
-    if char["owner_id"] != ctx.sessions[ctx.transport]["accountId"]:
-        res.result = pc.PacketResult.Value("FAIL_GENERAL")
+    if query.user_id != ctx.sessions[ctx.transport]["user"].id:
+        res.result = pc.FAIL_GENERAL
         return res
 
-    db["characters"].delete(id=req.characterId)
-    db.commit()
-    db.close()
-
-    res.result = pc.PacketResult.Value("SUCCESS")
+    query.delete()
     return res
 
 
 def character_info(ctx):
-    """Communication that occurs when the user loads into the lobby/tavern.
-    Sends the game the relevant character information to be rendered in-game."""
-    res = lb.SS2C_LOBBY_CHARACTER_INFO_RES()
-    res.result = 1
-
-    db = database.get()
-    result = db["characters"].find_one(owner_id=ctx.sessions[ctx.transport]["accountId"])
-
-    nickname = char.SACCOUNT_NICKNAME()
-    nickname.originalNickName = result["nickname"]
-    nickname.streamingModeNickName = f"Fighter#{random.randrange(1000000, 1700000)}"
-
-    char_info = char.SCHARACTER_INFO()
-    char_info.accountId = "1"
-    char_info.nickName.CopyFrom(nickname)
-    char_info.characterClass = result["character_class"]
-    char_info.characterId = str(result["id"])
-    char_info.gender = result["gender"]
-    char_info.level = result["level"]
-
-    char_info.CharacterItemList.append(items.generate_helm())
-    char_info.CharacterItemList.append(items.generate_torch())
-    char_info.CharacterItemList.append(items.generate_lantern())
-    char_info.CharacterItemList.append(items.generate_sword())
-    char_info.CharacterItemList.append(items.generate_pants())
-    char_info.CharacterItemList.append(items.generate_tunic())
-    char_info.CharacterItemList.append(items.generate_bandage())
-
-    res.characterDataBase.CopyFrom(char_info)
+    """Occurs when the user loads into the lobby/tavern."""
+    query = db.query(Character).filter_by(user_id=ctx.sessions[ctx.transport]["user"].id).first()
+    res = SS2C_LOBBY_CHARACTER_INFO_RES(
+        result=pc.SUCCESS,
+        characterDataBase=SCHARACTER_INFO(
+            accountId="1",
+            nickName=SACCOUNT_NICKNAME(
+                originalNickName=query.nickname,
+                streamingModeNickName=f"Fighter#{random.randrange(1000000, 1700000)}"
+            ),
+            characterClass=CharacterClass(query.character_class).value,
+            characterId=str(query.id),
+            gender=Gender(query.gender).value,
+            level=query.level,
+            CharacterItemList=[
+                items.generate_helm(), items.generate_torch(), items.generate_lantern(),
+                items.generate_sword(), items.generate_pants(), items.generate_tunic(),
+                items.generate_bandage()
+            ]
+        )
+    )
     return res

@@ -1,4 +1,4 @@
-from dndserver.protos import _Item_pb2 as item
+from dndserver.protos import Item as item
 
 
 class Item():

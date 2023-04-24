@@ -3,30 +3,32 @@ import struct
 from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
-from dndserver.handlers import character, lobby, login, ranking
-from dndserver.protos import (Account_pb2 as acc, Common_pb2 as common,
-                              _Defins_pb2 as df, _PacketCommand_pb2 as pc,
-                              Ranking_pb2 as rank, Trade_pb2 as trade)
+from dndserver.handlers import character, friends, lobby, login, trade
+from dndserver.protos import Defines as df
+from dndserver.protos import PacketCommand as pc
+from dndserver.protos.Account import (SC2S_LOBBY_ENTER_REQ, SC2S_ACCOUNT_LOGIN_REQ, SC2S_ACCOUNT_CHARACTER_LIST_REQ,
+                                      SC2S_ACCOUNT_CHARACTER_CREATE_REQ, SC2S_ACCOUNT_CHARACTER_DELETE_REQ)
+from dndserver.protos.Friend import SC2S_FRIEND_FIND_REQ
+from dndserver.protos.Party import SC2S_PARTY_INVITE_REQ
+from dndserver.protos.Trade import SC2S_TRADE_MEMBERSHIP_REQ
 
 
 class GameFactory(Factory):
-    def buildProtocol(self, addr):
+    def buildProtocol(self, addr) -> Protocol:
         return GameProtocol()
 
 
 class GameProtocol(Protocol):
     def __init__(self) -> None:
         super().__init__()
-        # Where all of the game server related connection session
-        # data is stored.
         self.sessions = {}
 
-    def connectionMade(self):
+    def connectionMade(self) -> None:
         """Event for when a client connects to the server."""
         logger.debug("Connection made")
-        self.sessions[self.transport] = {"accountId": 0}
+        self.sessions[self.transport] = {"user": None}
 
-    def dataReceived(self, data: bytes):
+    def dataReceived(self, data: bytes) -> None:
         """Main loop for receiving request packets and sending response packets."""
         # TODO: Surely there's a cleaner way that we can do this?
         # TODO: Can we access these enums directly? 'EnumTypeWrapper' object is not callable
@@ -43,7 +45,7 @@ class GameProtocol(Protocol):
 
             # Login attempt from the client.
             case "C2S_ACCOUNT_LOGIN_REQ":
-                req = acc.SC2S_ACCOUNT_LOGIN_REQ()
+                req = SC2S_ACCOUNT_LOGIN_REQ()
                 req.ParseFromString(msg)
                 res = login.process_login(self, req).SerializeToString()
                 header = self.make_header(res, "S2C_ACCOUNT_LOGIN_RES")
@@ -53,7 +55,7 @@ class GameProtocol(Protocol):
             # Sends character list to the character screen and sends character information
             # when in the lobby/tavern.
             case "C2S_ACCOUNT_CHARACTER_LIST_REQ":
-                req = acc.SC2S_ACCOUNT_CHARACTER_LIST_REQ()
+                req = SC2S_ACCOUNT_CHARACTER_LIST_REQ()
                 req.ParseFromString(msg)
                 res = character.list_characters(self, req).SerializeToString()
                 header = self.make_header(res, "S2C_ACCOUNT_CHARACTER_LIST_RES")
@@ -61,7 +63,7 @@ class GameProtocol(Protocol):
 
             # Character creation attempt from the client.
             case "C2S_ACCOUNT_CHARACTER_CREATE_REQ":
-                req = acc.SC2S_ACCOUNT_CHARACTER_CREATE_REQ()
+                req = SC2S_ACCOUNT_CHARACTER_CREATE_REQ()
                 req.ParseFromString(msg)
                 res = character.create_character(self, req).SerializeToString()
                 header = self.make_header(res, "S2C_ACCOUNT_CHARACTER_CREATE_RES")
@@ -69,7 +71,7 @@ class GameProtocol(Protocol):
 
             # Character deletion attempt from the client.
             case "C2S_ACCOUNT_CHARACTER_DELETE_REQ":
-                req = acc.SC2S_ACCOUNT_CHARACTER_DELETE_REQ()
+                req = SC2S_ACCOUNT_CHARACTER_DELETE_REQ()
                 req.ParseFromString(msg)
                 res = character.delete_character(self, req).SerializeToString()
                 header = self.make_header(res, "S2C_ACCOUNT_CHARACTER_DELETE_RES")
@@ -77,7 +79,7 @@ class GameProtocol(Protocol):
 
             # Client attempting to load into the lobby.
             case "C2S_LOBBY_ENTER_REQ":
-                req = acc.SC2S_LOBBY_ENTER_REQ()
+                req = SC2S_LOBBY_ENTER_REQ()
                 req.ParseFromString(msg)
                 res = lobby.enter_lobby(req).SerializeToString()
                 header = self.make_header(res, "S2C_LOBBY_ENTER_RES")
@@ -89,28 +91,15 @@ class GameProtocol(Protocol):
                 header = self.make_header(res, "S2C_LOBBY_CHARACTER_INFO_RES")
                 self.send(header, res)
 
-            # case "C2S_RANKING_RANGE_REQ":
-            #     logger.error(req.hex())
-            #     req = rank.SC2S_RANKING_RANGE_REQ()
-            #     req.ParseFromString(msg)
-            #     res = ranking.get_ranking(self, data)
-
             case "C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ":
-                requirement = trade.STRADE_MEMBERSHIP_REQUIREMENT(
-                    memberShipType=1,
-                    memberShipValue=1
-                )
-                res = trade.SS2C_TRADE_MEMBERSHIP_REQUIREMENT_RES(
-                    requirements=[requirement]
-                ).SerializeToString()
+                res = trade.get_trade_reqs(self).SerializeToString()
                 header = self.make_header(res, "S2C_TRADE_MEMBERSHIP_REQUIREMENT_RES")
                 self.send(header, res)
 
             case "C2S_TRADE_MEMBERSHIP_REQ":
-                req = trade.SC2S_TRADE_MEMBERSHIP_REQ()
+                req = SC2S_TRADE_MEMBERSHIP_REQ()
                 req.ParseFromString(msg)
-                logger.debug(f"Received: {msg} for C2S_TRADE_MEMBERSHIP_REQ")
-                res = trade.SS2C_TRADE_MEMBERSHIP_RES(result=1).SerializeToString()
+                res = trade.process_membership(self, req).SerializeToString()
                 header = self.make_header(res, "S2C_TRADE_MEMBERSHIP_RES")
                 self.send(header, res)
 
@@ -122,8 +111,7 @@ class GameProtocol(Protocol):
                 # does not parse against the meta location request protobuf and fails. The
                 # failing message seems to contain the location as the second byte in the message
                 # as a char. For some reason the message does not parse when the last 4 bytes
-                # exist in that message but removing them works. This fix fixex all tabs except
-                # for merchant and gathering hall.
+                # exist in that message but removing them works.
 
                 # Problematic message example:
                 # Raw hex bytes b'\x08\x05\x08\x00\x00\x00G\x055\x00' for C2S_META_LOCATION_REQ
@@ -142,11 +130,38 @@ class GameProtocol(Protocol):
                 # req = common.SC2S_META_LOCATION_REQ()
                 # req.ParseFromString(location)
 
-                location = int.from_bytes(struct.unpack("<xc", msg[:3])[0], "little")
-                self.sessions[self.transport]["state"] = df.Define_Common.MetaLocation.Name(location)
+                # location = int.from_bytes(struct.unpack("<xc", msg[:3])[0], "little")
+                # self.sessions[self.transport]["state"] = df.Define_Common.MetaLocation.Name(location)
 
-                res = common.SS2C_META_LOCATION_RES(location=location).SerializeToString()
-                header = self.make_header(res, "S2C_META_LOCATION_RES")
+                # res = common.SS2C_META_LOCATION_RES(location=location).SerializeToString()
+                # header = self.make_header(res, "S2C_META_LOCATION_RES")
+                # self.send(header, res)
+
+            # Occurs when a user opens the friends list system.
+            case "C2S_FRIEND_LIST_ALL_REQ":
+                res = friends.list_friends(self).SerializeToString()
+                header = self.make_header(res, "S2C_FRIEND_LIST_ALL_RES")
+                self.send(header, res)
+
+            # Occurs when a user searches for another user by name.
+            case "C2S_FRIEND_FIND_REQ":
+                req = SC2S_FRIEND_FIND_REQ()
+                req.ParseFromString(msg)
+                res = friends.find_user(self, req).SerializeToString()
+                header = self.make_header(res, "S2C_FRIEND_FIND_RES")
+                self.send(header, res)
+
+            # Occurs when a user invites another user to their party.
+            case "C2S_PARTY_INVITE_REQ":
+                req = SC2S_PARTY_INVITE_REQ()
+                req.ParseFromString(msg)
+
+                res = friends.party_invite(self, req).SerializeToString()
+                header = self.make_header(res, "S2C_PARTY_INVITE_RES")
+                self.send(header, res)
+
+                res = friends.party_invite_notify(self, req).SerializeToString()
+                header = self.make_header(res, "S2C_PARTY_INVITE_NOT")
                 self.send(header, res)
 
             # All other currently unhandled packets.
