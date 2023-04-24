@@ -7,7 +7,7 @@ Create Date: 2023-04-24 16:54:25.285573
 """
 from alembic import op
 import sqlalchemy as sa
-
+from sqlalchemy_utils import types as sqlalchemy_utils_types
 
 # revision identifiers, used by Alembic.
 revision = '3439c686691f'
@@ -23,7 +23,7 @@ def upgrade() -> None:
     sa.Column('username', sa.String(length=20), nullable=False),
     sa.Column('password', sa.Text(), nullable=True),
     sa.Column('secret_token', sa.String(length=21), nullable=True),
-    sa.Column('created_at', sqlalchemy_utils.types.arrow.ArrowType(), nullable=True),
+    sa.Column('created_at', sqlalchemy_utils_types.arrow.ArrowType(), nullable=True),
     sa.Column('ban_type', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('username')
@@ -34,7 +34,7 @@ def upgrade() -> None:
     sa.Column('nickname', sa.String(length=20), nullable=True),
     sa.Column('gender', sa.Enum('MALE', 'FEMALE', name='gender'), nullable=True),
     sa.Column('character_class', sa.Enum('BARBARIAN', 'BARD', 'CLERIC', 'FIGHTER', 'RANGER', 'ROGUE', 'WIZARD', name='characterclass'), nullable=True),
-    sa.Column('created_at', sqlalchemy_utils.types.arrow.ArrowType(), nullable=True),
+    sa.Column('created_at', sqlalchemy_utils_types.arrow.ArrowType(), nullable=True),
     sa.Column('level', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('nickname')
@@ -44,7 +44,7 @@ def upgrade() -> None:
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('hwid', sa.String(length=64), nullable=True),
     sa.Column('is_banned', sa.Boolean(), nullable=True),
-    sa.Column('seen_at', sqlalchemy_utils.types.arrow.ArrowType(), nullable=True),
+    sa.Column('seen_at', sqlalchemy_utils_types.arrow.ArrowType(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('hwid')
     )
