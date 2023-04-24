@@ -41,6 +41,10 @@ class Character(base):
         db.add(self)
         db.commit()
 
+    def delete(self):
+        db.delete(self)
+        db.commit()
+
 
 class Hwid(base):
     __tablename__ = "hwids"

@@ -5,13 +5,13 @@ import argon2
 
 from dndserver.database import db
 from dndserver.models import Account
-from dndserver.protos import Account as acc
+from dndserver.protos.Account import SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES
 
 
 def process_login(ctx, req):
     """Occurs when the user attempts to login to the game server."""
-    res = acc.SS2C_ACCOUNT_LOGIN_RES()
-
+    # TODO: Not all SS2C_ACCOUNT_LOGIN_RES fields are implemented.
+    res = SS2C_ACCOUNT_LOGIN_RES(serverLocation=1)
     user = db.query(Account).filter_by(username=req.loginId).first()
     if not user:
         user = Account(
@@ -24,24 +24,21 @@ def process_login(ctx, req):
         # TODO: Create new hwid objects and save them to the db here
         res.secretToken = user.secret_token
 
-    # TODO: Not all SS2C_ACCOUNT_LOGIN_RES fields are implemented.
-    res = acc.SS2C_ACCOUNT_LOGIN_RES(accountId=str(user.id), serverLocation=1)
-
     # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password.
     if len(req.loginId) <= 2 or len(req.password) <= 2:
-        res.Result = res.FAIL_SHORT_ID_OR_PASSWORD.Value()
+        res.Result = res.FAIL_SHORT_ID_OR_PASSWORD
         return res
 
     # Return FAIL_OVERFLOW_ID_OR_PASSWORD on too long username.
     if len(req.loginId) > 20:
-        res.Result = res.FAIL_OVERFLOW_ID_OR_PASSWORD.Value()
+        res.Result = res.FAIL_OVERFLOW_ID_OR_PASSWORD
         return res
 
     # Return FAIL_PASSWORD on invalid password.
     try:
         argon2.PasswordHasher().verify(user.password, req.password)
     except argon2.exceptions.VerifyMismatchError:
-        res.Result = res.FAIL_PASSWORD.Value()
+        res.Result = res.FAIL_PASSWORD
         return res
 
     # Returns the respective SS2C_ACCOUNT_LOGIN_RES *__BAN_USER ban enum.
@@ -49,7 +46,8 @@ def process_login(ctx, req):
         res.Result = user.ban_type
         return res
 
-    info = acc.SLOGIN_ACCOUNT_INFO(AccountID=str(user.id))
+    res.accountId = str(user.id)
+    info = SLOGIN_ACCOUNT_INFO(AccountID=str(user.id))
     res.AccountInfo.CopyFrom(info)
 
     # Set the user object in session to indicate authentication and for further access.
