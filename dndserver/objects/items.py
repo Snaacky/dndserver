@@ -170,19 +170,19 @@ def generate_bandage():
 
 
 def generate_helm():
-    bandage = item.SItem()
-    bandage.itemUniqueId = 1
-    bandage.itemId = "DesignDataItem:Id_Item_VikingHelm_0001"
-    bandage.itemCount = 1
-    bandage.inventoryId = 3
-    bandage.slotId = 1
+    helm = item.SItem()
+    helm.itemUniqueId = 1
+    helm.itemId = "DesignDataItem:Id_Item_VikingHelm_0001"
+    helm.itemCount = 1
+    helm.inventoryId = 3
+    helm.slotId = 1
 
     primary = item.SItemProperty()
     primary.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_MoveSpeed"
     primary.propertyValue = -20
-    bandage.primaryPropertyArray.append(primary)
+    helm.primaryPropertyArray.append(primary)
 
-    return bandage
+    return helm
 
 
 def generate_reckless():
