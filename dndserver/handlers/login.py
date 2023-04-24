@@ -2,12 +2,21 @@ import random
 import string
 
 import argon2
-
+from datetime import datetime
 from dndserver.database import db
-from dndserver.models import Account
+from dndserver.models import Account, Hwid
 from dndserver.protos.Account import SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES, SC2S_ACCOUNT_LOGIN_REQ
 from dndserver.sessions import sessions
+from sqlalchemy.orm import Session
 
+def is_banned_hwid(hwid: str, session: Session) -> bool:
+    banned_hwid = session.query(Hwid).filter_by(hwid=hwid, is_banned=True).first()
+    return banned_hwid is not None
+
+def add_hwid_to_user(user_id: int, hwid: str, session: Session):
+    hwid_entry = Hwid(user_id=user_id, hwid=hwid, seen_at=datetime.now())
+    session.add(hwid_entry)
+    session.commit()
 
 def process_login(ctx, msg):
     """Occurs when the user attempts to login to the game server."""
@@ -18,6 +27,12 @@ def process_login(ctx, msg):
     res = SS2C_ACCOUNT_LOGIN_RES(serverLocation=1)
 
     user = db.query(Account).filter_by(username=req.loginId).first()
+
+    # Check if the HWID is banned
+    if is_banned_hwid(req.hwIds[0], db):
+        res.Result = res.FAIL_PASSWORD
+        return res
+    
     if not user:
         user = Account(
             username=req.loginId,
@@ -26,7 +41,7 @@ def process_login(ctx, msg):
         )
         user.save()
 
-        # TODO: Create new hwid objects and save them to the db here
+        add_hwid_to_user(user.id, req.hwIds[0], db)  
         res.secretToken = user.secret_token
 
     # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password.
