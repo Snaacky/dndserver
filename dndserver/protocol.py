@@ -46,6 +46,7 @@ class GameProtocol(Protocol):
             pc.C2S_PARTY_INVITE_REQ: friends.party_invite,
             pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
             pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
+            pc.C2S_CHARACTER_SELECT_ENTER_REQ: lobby.enter_character_select,
         }
         handler = [k for k in handlers.keys() if k == _id]
         if not handler:
