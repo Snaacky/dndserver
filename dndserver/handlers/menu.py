@@ -11,7 +11,7 @@ def process_location(ctx, msg):
     req.ParseFromString(msg[:2])
 
     # check if we have more data than expected for the proto
-    if (len(msg) > 2):
+    if len(msg) > 2:
         # process the other data as well
         ctx.dataReceived(msg[2:])
 
