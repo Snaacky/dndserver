@@ -5,15 +5,20 @@ from dndserver.enums import CharacterClass, Gender
 from dndserver.models import Character
 from dndserver.objects import items
 from dndserver.protos import PacketCommand as pc
-from dndserver.protos.Account import (SLOGIN_CHARACTER_INFO, SS2C_ACCOUNT_CHARACTER_CREATE_RES,
-                                      SS2C_ACCOUNT_CHARACTER_DELETE_RES, SS2C_ACCOUNT_CHARACTER_LIST_RES)
+from dndserver.protos.Account import (SC2S_ACCOUNT_CHARACTER_CREATE_REQ, SC2S_ACCOUNT_CHARACTER_DELETE_REQ,
+                                      SC2S_ACCOUNT_CHARACTER_LIST_REQ, SLOGIN_CHARACTER_INFO,
+                                      SS2C_ACCOUNT_CHARACTER_CREATE_RES, SS2C_ACCOUNT_CHARACTER_DELETE_RES,
+                                      SS2C_ACCOUNT_CHARACTER_LIST_RES)
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_INFO
 from dndserver.protos.Defines import Define_Character
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 
 
-def list_characters(ctx, req):
+def list_characters(ctx, msg):
     """Occurs when the user loads in to the character selection screen."""
+    req = SC2S_ACCOUNT_CHARACTER_LIST_REQ()
+    req.ParseFromString(msg)
+
     query = db.query(Character).filter_by(user_id=ctx.sessions[ctx.transport]["user"].id).all()
     res = SS2C_ACCOUNT_CHARACTER_LIST_RES(totalCharacterCount=len(query), pageIndex=req.pageIndex)
 
@@ -42,8 +47,11 @@ def list_characters(ctx, req):
     return res
 
 
-def create_character(ctx, req):
+def create_character(ctx, msg):
     """Occurs when the user attempts to create a new character."""
+    req = SC2S_ACCOUNT_CHARACTER_CREATE_REQ()
+    req.ParseFromString(msg)
+
     res = SS2C_ACCOUNT_CHARACTER_CREATE_RES(result=pc.SUCCESS)
 
     if len(req.nickName) < Define_Character.MIN:
@@ -69,8 +77,11 @@ def create_character(ctx, req):
     return res
 
 
-def delete_character(ctx, req):
+def delete_character(ctx, msg):
     """Occurs when the user attempts to delete a character."""
+    req = SC2S_ACCOUNT_CHARACTER_DELETE_REQ()
+    req.ParseFromString(msg)
+
     query = db.query(Character).filter_by(id=req.characterId).first()
     res = SS2C_ACCOUNT_CHARACTER_DELETE_RES(result=pc.SUCCESS)
 
@@ -83,7 +94,7 @@ def delete_character(ctx, req):
     return res
 
 
-def character_info(ctx):
+def character_info(ctx, msg):
     """Occurs when the user loads into the lobby/tavern."""
     query = db.query(Character).filter_by(user_id=ctx.sessions[ctx.transport]["user"].id).first()
     res = SS2C_LOBBY_CHARACTER_INFO_RES(

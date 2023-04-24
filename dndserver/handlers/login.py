@@ -5,13 +5,17 @@ import argon2
 
 from dndserver.database import db
 from dndserver.models import Account
-from dndserver.protos.Account import SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES
+from dndserver.protos.Account import SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES, SC2S_ACCOUNT_LOGIN_REQ
 
 
-def process_login(ctx, req):
+def process_login(ctx, msg):
     """Occurs when the user attempts to login to the game server."""
+    req = SC2S_ACCOUNT_LOGIN_REQ()
+    req.ParseFromString(msg)
+
     # TODO: Not all SS2C_ACCOUNT_LOGIN_RES fields are implemented.
     res = SS2C_ACCOUNT_LOGIN_RES(serverLocation=1)
+
     user = db.query(Account).filter_by(username=req.loginId).first()
     if not user:
         user = Account(

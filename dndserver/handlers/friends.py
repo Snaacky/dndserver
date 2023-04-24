@@ -3,7 +3,7 @@ from dndserver.protos import Friend as friend
 from dndserver.protos import Party as party
 
 
-def list_friends(ctx):
+def list_friends(ctx, msg):
     nickname = char.SACCOUNT_NICKNAME()
     nickname.originalNickName = "gay"
     nickname.streamingModeNickName = "Fighter#11111"
@@ -29,7 +29,7 @@ def list_friends(ctx):
     return res
 
 
-def find_user(ctx, req):
+def find_user(ctx, msg):
     nick = char.SACCOUNT_NICKNAME()
     nick.originalNickName = "krofty"
     nick.streamingModeNickName = "Fighter#00321"
@@ -52,7 +52,7 @@ def find_user(ctx, req):
     return res
 
 
-def party_invite(ctx, req):
+def party_invite(ctx, msg):
     # message SC2S_PARTY_INVITE_REQ {
     # .DC.Packet.SACCOUNT_NICKNAME findNickName = 1;
     # string findAccountId = 2;
@@ -63,7 +63,7 @@ def party_invite(ctx, req):
     return res
 
 
-def party_invite_notify(ctx, req):
+def party_invite_notify(ctx, msg):
     res = party.SS2C_PARTY_INVITE_NOT()
 
     nick = char.SACCOUNT_NICKNAME()
