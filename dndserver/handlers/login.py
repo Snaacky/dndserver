@@ -17,6 +17,10 @@ def add_hwid_to_user(user_id: int, hwid: str, session: Session):
     hwid_entry = Hwid(user_id=user_id, hwid=hwid, seen_at=datetime.now())
     session.add(hwid_entry)
     session.commit()
+    
+def hwid_already_logged(user_id: int, hwid: str, session: Session) -> bool:
+    existing_hwid = session.query(Hwid).filter_by(user_id=user_id, hwid=hwid).first()
+    return existing_hwid is not None
 
 def process_login(ctx, msg):
     """Occurs when the user attempts to login to the game server."""
@@ -62,7 +66,9 @@ def process_login(ctx, msg):
         return res
 
     # Log HWID for the user after successful password verification
-    add_hwid_to_user(user.id, req.hwIds[0], db)
+    # if the combination of user_id and hwid doesn't already exist in the table
+    if not hwid_already_logged(user.id, req.hwIds[0], db):
+        add_hwid_to_user(user.id, req.hwIds[0], db)
 
     # Returns the respective SS2C_ACCOUNT_LOGIN_RES *__BAN_USER ban enum.
     if user.ban_type:
