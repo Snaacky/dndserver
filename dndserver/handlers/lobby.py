@@ -33,7 +33,7 @@ def start(ctx, msg):
     return res
 
 def enter_character_select(ctx, msg):
+    """Occurs when client enter in the characters selection menu."""
     res = SS2C_CHARACTER_SELECT_ENTER_RES()
     res.result = 1
-
     return res
