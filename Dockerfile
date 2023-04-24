@@ -17,7 +17,7 @@ COPY entrypoint.sh /entrypoint.sh
 COPY . .
 
 # Expose the port your application will run on
-EXPOSE 30000
+EXPOSE 13337
 
 # Set the entrypoint
 ENTRYPOINT ["/entrypoint.sh"]

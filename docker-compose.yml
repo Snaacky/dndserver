@@ -5,4 +5,4 @@ services:
     build: .
     image: dndserver
     ports:
-      - "30000:13337"
+      - "13337:13337"

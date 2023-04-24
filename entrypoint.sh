@@ -7,13 +7,16 @@ chmod +x /entrypoint.sh
 python -m pip install poetry
 
 # Run poetry install
-python -m poetry install --no-dev --no-interaction --no-ansi
+poetry install --only main --no-interaction --no-ansi
 
 # Move to application directory
-cd dndserver
+cd /app/dndserver
 
 # Run Alembic upgrade
-python -m alembic upgrade head
+alembic upgrade head
+
+# Move back to root directory
+cd ..
 
 # Start the server
-python server.py
+python -m dndserver
