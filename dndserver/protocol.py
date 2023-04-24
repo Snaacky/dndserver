@@ -41,13 +41,14 @@ class GameProtocol(Protocol):
             pc.C2S_ACCOUNT_CHARACTER_LIST_REQ: character.list_characters,
             pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.character_info,
             pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,
+            pc.C2S_CHARACTER_SELECT_ENTER_REQ: lobby.enter_character_select,
             pc.C2S_FRIEND_LIST_ALL_REQ: friends.list_friends,
             pc.C2S_FRIEND_FIND_REQ: friends.find_user,
             pc.C2S_PARTY_INVITE_REQ: friends.party_invite,
-            pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
-            pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
             pc.C2S_META_LOCATION_REQ: menu.process_location,
-            pc.C2S_MERCHANT_LIST_REQ: merchant.get_merchant_list
+            pc.C2S_MERCHANT_LIST_REQ: merchant.get_merchant_list,
+            pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
+            pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership
         }
         handler = [k for k in handlers.keys() if k == _id]
         if not handler:
