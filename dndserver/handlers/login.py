@@ -61,6 +61,9 @@ def process_login(ctx, msg):
         res.Result = res.FAIL_PASSWORD
         return res
 
+    # Log HWID for the user after successful password verification
+    add_hwid_to_user(user.id, req.hwIds[0], db)
+
     # Returns the respective SS2C_ACCOUNT_LOGIN_RES *__BAN_USER ban enum.
     if user.ban_type:
         res.Result = user.ban_type
