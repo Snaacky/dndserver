@@ -51,7 +51,7 @@ class Hwid(base):
     __tablename__ = "hwids"
     id = Column(Integer, primary_key=True, autoincrement="auto")
     user_id = Column(Integer)
-    hwid = Column(String(64), unique=True)
+    hwid = Column(String(64))
     is_banned = Column(Boolean)
     seen_at = Column(ArrowType, default=arrow.utcnow())
 
