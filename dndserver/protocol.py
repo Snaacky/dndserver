@@ -29,37 +29,44 @@ class GameProtocol(Protocol):
 
     def dataReceived(self, data: bytes) -> None:
         """Main loop for receiving request packets and sending response packets."""
-        # TODO: Implement support for segemented packets based on the incoming data's length.
-        length, _id = struct.unpack("<hxxhxx", data[:8])
-        msg = data[8:]
+        # process all the data
+        while len(data):
+            # TODO: Implement support for segemented packets based on the incoming data's length.
+            length, _id = struct.unpack("<hxxhxx", data[:8])
 
-        handlers = {
-            pc.C2S_ALIVE_REQ: self.heartbeat,
-            pc.C2S_ACCOUNT_LOGIN_REQ: login.process_login,
-            pc.C2S_ACCOUNT_CHARACTER_CREATE_REQ: character.create_character,
-            pc.C2S_ACCOUNT_CHARACTER_DELETE_REQ: character.delete_character,
-            pc.C2S_ACCOUNT_CHARACTER_LIST_REQ: character.list_characters,
-            pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.character_info,
-            pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,
-            pc.C2S_CHARACTER_SELECT_ENTER_REQ: lobby.enter_character_select,
-            pc.C2S_FRIEND_LIST_ALL_REQ: friends.list_friends,
-            pc.C2S_FRIEND_FIND_REQ: friends.find_user,
-            pc.C2S_PARTY_INVITE_REQ: friends.party_invite,
-            pc.C2S_META_LOCATION_REQ: menu.process_location,
-            pc.C2S_MERCHANT_LIST_REQ: merchant.get_merchant_list,
-            pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
-            pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership
-        }
-        handler = [k for k in handlers.keys() if k == _id]
-        if not handler:
-            return logger.warning(f"Received {pc.PacketCommand.Name(_id)} {data} packet but no handler yet")
+            # create a message with the correct length
+            msg = data[8:length]
 
-        # Heartbeat is handled separately because it doesn't use a header.
-        if handler[0] == pc.C2S_ALIVE_REQ:
-            return self.heartbeat()
+            handlers = {
+                pc.C2S_ALIVE_REQ: self.heartbeat,
+                pc.C2S_ACCOUNT_LOGIN_REQ: login.process_login,
+                pc.C2S_ACCOUNT_CHARACTER_CREATE_REQ: character.create_character,
+                pc.C2S_ACCOUNT_CHARACTER_DELETE_REQ: character.delete_character,
+                pc.C2S_ACCOUNT_CHARACTER_LIST_REQ: character.list_characters,
+                pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.character_info,
+                pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,
+                pc.C2S_CHARACTER_SELECT_ENTER_REQ: lobby.enter_character_select,
+                pc.C2S_FRIEND_LIST_ALL_REQ: friends.list_friends,
+                pc.C2S_FRIEND_FIND_REQ: friends.find_user,
+                pc.C2S_PARTY_INVITE_REQ: friends.party_invite,
+                pc.C2S_META_LOCATION_REQ: menu.process_location,
+                pc.C2S_MERCHANT_LIST_REQ: merchant.get_merchant_list,
+                pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
+                pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership
+            }
+            handler = [k for k in handlers.keys() if k == _id]
+            if not handler:
+                return logger.warning(f"Received {pc.PacketCommand.Name(_id)} {data} packet but no handler yet")
 
-        res = handlers[handler[0]](self, msg)
-        self.send(res)
+            # Heartbeat is handled separately because it doesn't use a header.
+            if handler[0] == pc.C2S_ALIVE_REQ:
+                return self.heartbeat()
+
+            res = handlers[handler[0]](self, msg)
+            self.send(res)
+
+            # remove the data we have processed
+            data = data[length:]
 
     def heartbeat(self):
         """Send a D&D keepalive packet."""
