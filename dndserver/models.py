@@ -51,7 +51,7 @@ class Hwid(base):
     __tablename__ = "hwids"
     id = Column(Integer, primary_key=True, autoincrement="auto")
     user_id = Column(Integer)
-    hwid = Column(String(64), unique=True)
+    hwid = Column(String(64))
     is_banned = Column(Boolean)
     seen_at = Column(ArrowType, default=arrow.utcnow())
 
@@ -59,6 +59,7 @@ class Hwid(base):
 # class Login(base):
 #     __tablename__ = "logins"
 #     id = Column(Integer, primary_key=True, autoincrement="auto")
+    
 
 # characters: store all logins in a database and grab the latest from that
 # Attempts to initialize the database for the first time.
