@@ -1,5 +1,5 @@
 import arrow
-from sqlalchemy import Column
+from sqlalchemy import Column, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import Boolean, Enum, Integer, String, Text
 from sqlalchemy_utils import ArrowType
@@ -42,6 +42,33 @@ class Character(base):
         db.add(self)
         db.commit()
 
+    def delete(self):
+        db.delete(self)
+        db.commit()
+
+
+class Item(base):
+    __tablename__ = "items"
+
+    id = Column(Integer, primary_key=True, autoincrement="auto")
+    account_id = Column(Integer, ForeignKey("accounts.id"))
+    character_id = Column(Integer, ForeignKey("characters.id"))
+    item_id = Column(Integer, nullable=False)
+    item_quantity = Column(Integer)
+    inventory_id = Column(Integer)
+    slot_id = Column(Integer)
+    item_perk_one = Column(String, default=None)
+    item_perk_two = Column(String, default=None)
+    item_perk_three = Column(String, default=None)
+    item_perk_four = Column(String, default=None)
+    item_perk_five = Column(String, default=None)
+    #item_ammo_count = Column(Integer)     not sure we need this server side
+    #item_contents_count = Column(Integer) not sure we need this server side 
+
+    def save(self):
+        db.add(self)
+        db.commit()
+    
     def delete(self):
         db.delete(self)
         db.commit()
