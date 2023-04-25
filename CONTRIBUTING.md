@@ -17,6 +17,10 @@ We are looking for contributors who are fluent in Python and have an understandi
 
 We are looking for contributors who are fluent in C/asm (x64) with reverse engineering experience (hooking, detours, injection, IDA/Ghidra/x64dbg, etc.) who can help with creating patches for bugs and helping us further understand how the server interacts with the client and vice-versa.
 
+### UE4/UE5 network engineers
+
+We are looking for contributors who have a fluent understanding and experience with the native UE4/UE5 networking stack at a low-level to help flesh out the UDP game server. 
+
 ### Wireshark dumps
 
 If you have Wireshark dumps from any of the playtests, we would love to hear from you! This is an easy way for less technically skilled users to still help contribute to developement.
@@ -24,3 +28,5 @@ If you have Wireshark dumps from any of the playtests, we would love to hear fro
 ## Style Guide
 - [Black](https://github.com/psf/black) with 120 line length.
 - [PEP8](https://peps.python.org/pep-0008/) as close as possible.
+- Double quotes instead of singles.
+- 2 newlines after imports and before first function or variable declaration.
