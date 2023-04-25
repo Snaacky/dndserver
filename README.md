@@ -1,6 +1,6 @@
-# dndserver
+# dndserver <a href="https://discord.gg/JdUWpdyvKr"><img src="https://discordapp.com/api/guilds/1098711487125672016/widget.png?style=shield"></a>
 
-A Dark and Darker private server emulation implementation written in Python.
+Dark and Darker private server implementation written in Python.
 
 ## Requirements
 
@@ -15,3 +15,10 @@ A Dark and Darker private server emulation implementation written in Python.
 - `poetry install`
 - `poetry shell`
 - `python -m dndserver.server`
+
+## Roadmap
+
+Refer to [our project board](https://github.com/users/Snaacky/projects/4?query=is%3Aopen+sort%3Aupdated-desc).
+
+## Contributing
+Refer to [CONTRIBUTING.md](https://github.com/Snaacky/dndserver/blob/master/CONTRIBUTING.md)
