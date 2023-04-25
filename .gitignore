@@ -134,3 +134,4 @@ dmypy.json
 *.db*
 config.yml
 dnc/
+packets/
