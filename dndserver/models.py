@@ -59,7 +59,6 @@ class Hwid(base):
 # class Login(base):
 #     __tablename__ = "logins"
 #     id = Column(Integer, primary_key=True, autoincrement="auto")
-    
 
 # characters: store all logins in a database and grab the latest from that
 # Attempts to initialize the database for the first time.
