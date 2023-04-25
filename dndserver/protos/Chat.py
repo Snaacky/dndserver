@@ -11,7 +11,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-import _Character_pb2 as __Character__pb2
+from dndserver.protos import Character as __Character__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b_Chat.proto\x12\tDC.Packet\x1a\x10_Character.proto\"8\n\x1dSCHATDATA_PIECE_ITEM_PROPERTY\x12\x0b\n\x03pid\x18\x01 \x01(\t\x12\n\n\x02pv\x18\x02 \x01(\x05\"\x9c\x01\n\x14SCHATDATA_PIECE_ITEM\x12\x0b\n\x03uid\x18\x01 \x01(\x04\x12\x0b\n\x03iid\x18\x02 \x01(\t\x12\x34\n\x02pp\x18\x03 \x03(\x0b\x32(.DC.Packet.SCHATDATA_PIECE_ITEM_PROPERTY\x12\x34\n\x02sp\x18\x04 \x03(\x0b\x32(.DC.Packet.SCHATDATA_PIECE_ITEM_PROPERTY\"^\n\x0fSCHATDATA_PIECE\x12\x0f\n\x07\x63hatStr\x18\x01 \x01(\t\x12:\n\x11\x63hatDataPieceItem\x18\x02 \x01(\x0b\x32\x1f.DC.Packet.SCHATDATA_PIECE_ITEM\"\xac\x01\n\tSCHATDATA\x12\x11\n\taccountId\x18\x01 \x01(\t\x12\x13\n\x0b\x63haracterId\x18\x02 \x01(\t\x12.\n\x08nickname\x18\x03 \x01(\x0b\x32\x1c.DC.Packet.SACCOUNT_NICKNAME\x12\x0f\n\x07partyId\x18\x04 \x01(\t\x12\x36\n\x12\x63hatDataPieceArray\x18\x05 \x03(\x0b\x32\x1a.DC.Packet.SCHATDATA_PIECE\"P\n\x10SPIECE_ITEM_BODY\x12\x0b\n\x03idx\x18\x01 \x01(\r\x12/\n\x06pieces\x18\x02 \x01(\x0b\x32\x1f.DC.Packet.SCHATDATA_PIECE_ITEM\"?\n\x11SPIECE_ITEM_ARRAY\x12*\n\x05links\x18\x01 \x03(\x0b\x32\x1b.DC.Packet.SPIECE_ITEM_BODYB\x1a\n\x10\x63om.packets.chatB\x04\x63hatP\x00\x62\x06proto3')

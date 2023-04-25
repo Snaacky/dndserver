@@ -1,20 +1,21 @@
-import asyncio
-
 from loguru import logger
 from twisted.internet import reactor
 
-from dndserver import database
+from dndserver.database import engine
+from dndserver.models import base
 from dndserver.config import config
-from dndserver.game import GameFactory
+from dndserver.protocol import GameFactory
 
 
 async def main():
     """Entrypoint where the server first initializes"""
-    # Initializes the database for the first time if it hasn't been already
-    database.setup()
+    # Creates any missing SQLite tables.
+    base.metadata.create_all(engine)
 
-    # Sets up the factory for the game server traffic
+    # Sets up the factory for the game server traffic.
     tcpFactory = GameFactory()
     reactor.listenTCP(config.server.port, tcpFactory)
+
+    # Start running the TCP server.
     logger.info(f"Running game server on tcp://{config.server.host}:{config.server.port}")
     reactor.run()

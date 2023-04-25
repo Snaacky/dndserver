@@ -11,7 +11,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-import _Character_pb2 as __Character__pb2
+from dndserver.protos import Character as __Character__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0c\x46riend.proto\x12\tDC.Packet\x1a\x10_Character.proto\"?\n\x14SC2S_FRIEND_LIST_REQ\x12\x11\n\tpageIndex\x18\x01 \x01(\r\x12\x14\n\x0cpageCapacity\x18\x02 \x01(\r\"\xb4\x01\n\x14SS2C_FRIEND_LIST_RES\x12\x39\n\x0e\x66riendInfoList\x18\x01 \x03(\x0b\x32!.DC.Packet.SCHARACTER_FRIEND_INFO\x12\x11\n\tpageIndex\x18\x02 \x01(\r\x12\x18\n\x10totalFriendCount\x18\x03 \x01(\r\x12\x18\n\x10lobbyLocateCount\x18\x04 \x01(\r\x12\x1a\n\x12\x64ungeonLocateCount\x18\x05 \x01(\r\"\x1a\n\x18SC2S_FRIEND_LIST_ALL_REQ\"\xb5\x01\n\x18SS2C_FRIEND_LIST_ALL_RES\x12\x39\n\x0e\x66riendInfoList\x18\x01 \x03(\x0b\x32!.DC.Packet.SCHARACTER_FRIEND_INFO\x12\x10\n\x08loopFlag\x18\x02 \x01(\r\x12\x16\n\x0etotalUserCount\x18\x03 \x01(\r\x12\x18\n\x10lobbyLocateCount\x18\x04 \x01(\r\x12\x1a\n\x12\x64ungeonLocateCount\x18\x05 \x01(\r\"F\n\x14SC2S_FRIEND_FIND_REQ\x12.\n\x08nickName\x18\x01 \x01(\x0b\x32\x1c.DC.Packet.SACCOUNT_NICKNAME\"]\n\x14SS2C_FRIEND_FIND_RES\x12\x0e\n\x06result\x18\x01 \x01(\r\x12\x35\n\nfriendInfo\x18\x02 \x01(\x0b\x32!.DC.Packet.SCHARACTER_FRIEND_INFOB\x1e\n\x12\x63om.packets.friendB\x06\x66riendP\x00\x62\x06proto3')

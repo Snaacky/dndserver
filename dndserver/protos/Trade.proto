@@ -110,7 +110,6 @@ message SC2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ {
 message SS2C_TRADE_MEMBERSHIP_REQUIREMENT_RES {
   repeated .DC.Packet.STRADE_MEMBERSHIP_REQUIREMENT requirements = 1;
 }
-
 message SC2S_TRADE_MEMBERSHIP_REQ {
   uint32 becomeTraderFlag = 1;
 }
@@ -118,6 +117,7 @@ message SC2S_TRADE_MEMBERSHIP_REQ {
 message SS2C_TRADE_MEMBERSHIP_RES {
   uint32 result = 1;
 }
+
 
 message SC2S_TRADE_REQUEST_REQ {
   string accountId = 1;

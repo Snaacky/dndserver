@@ -1,107 +1,61 @@
 import random
 import string
 
-from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
-from loguru import logger
+import argon2
 
-from dndserver import database
-from dndserver.protos import Account_pb2 as acc
+from dndserver.database import db
+from dndserver.models import Account
+from dndserver.protos.Account import SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES, SC2S_ACCOUNT_LOGIN_REQ
+from dndserver.sessions import sessions
 
 
-def process_login(self, data: bytes):
-    req = acc.SC2S_ACCOUNT_LOGIN_REQ()
-    req.ParseFromString(data[8:])
+def process_login(ctx, msg):
+    """Occurs when the user attempts to login to the game server."""
+    req = SC2S_ACCOUNT_LOGIN_REQ()
+    req.ParseFromString(msg)
 
-    # Attempt to get the user requested and register an account if necessary
-    user = get_user(req.loginId)
+    # TODO: Not all SS2C_ACCOUNT_LOGIN_RES fields are implemented.
+    res = SS2C_ACCOUNT_LOGIN_RES(serverLocation=1)
+
+    user = db.query(Account).filter_by(username=req.loginId).first()
     if not user:
-        # TODO: Implement secret key generation prompt
-        register_user(
-            username=req.loginId, password=req.password, ip_address=self.transport.client[0], hwids=req.hwIds[0],
-            build_version=req.buildVersion
+        user = Account(
+            username=req.loginId,
+            password=argon2.PasswordHasher().hash(req.password),
+            secret_token=''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
         )
-        user = get_user(req.loginId)
+        user.save()
 
-    res = acc.SS2C_ACCOUNT_LOGIN_RES()
+        # TODO: Create new hwid objects and save them to the db here
+        res.secretToken = user.secret_token
 
-    # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password
+    # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password.
     if len(req.loginId) <= 2 or len(req.password) <= 2:
-        res.Result = 5
-        account_info = acc.SLOGIN_ACCOUNT_INFO()
-        account_info.AccountID = str(user["id"])
-        res.AccountInfo.CopyFrom(account_info)
-        return res.SerializeToString()
+        res.Result = res.FAIL_SHORT_ID_OR_PASSWORD
+        return res
 
-    # Return FAIL_OVERFLOW_ID_OR_PASSWORD on too long username
-    # Not sure if there's a password overflow limit because the
-    # password field starts glitching out when you add too many
-    # characters.
+    # Return FAIL_OVERFLOW_ID_OR_PASSWORD on too long username.
     if len(req.loginId) > 20:
-        res.Result = 6
-        account_info = acc.SLOGIN_ACCOUNT_INFO()
-        account_info.AccountID = str(user["id"])
-        res.AccountInfo.CopyFrom(account_info)
-        return res.SerializeToString()
+        res.Result = res.FAIL_OVERFLOW_ID_OR_PASSWORD
+        return res
 
-    # Return FAIL_PASSWORD on mismatching password
+    # Return FAIL_PASSWORD on invalid password.
     try:
-        PasswordHasher().verify(user["password"], req.password)
-    except VerifyMismatchError:
-        res.Result = 3
-        account_info = acc.SLOGIN_ACCOUNT_INFO()
-        account_info.AccountID = str(user["id"])
-        res.AccountInfo.CopyFrom(account_info)
-        return res.SerializeToString()
+        argon2.PasswordHasher().verify(user.password, req.password)
+    except argon2.exceptions.VerifyMismatchError:
+        res.Result = res.FAIL_PASSWORD
+        return res
 
     # Returns the respective SS2C_ACCOUNT_LOGIN_RES *__BAN_USER ban enum.
-    if user["is_banned"]:
-        res.Result = user["is_banned"]
-        account_info = acc.SLOGIN_ACCOUNT_INFO()
-        account_info.AccountID = str(user["id"])
-        res.AccountInfo.CopyFrom(account_info)
-        return res.SerializeToString()
+    if user.ban_type:
+        res.Result = user.ban_type
+        return res
 
-    res.accountId = str(user["id"])
-    res.serverLocation = 1
-    res.secretToken = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
-    # res.sessionId = "session123"   # TODO: Figure out how session IDs look
-    # res.isReconnect = False        # TODO: Need to maintain user states and connection statuses?
+    res.accountId = str(user.id)
+    info = SLOGIN_ACCOUNT_INFO(AccountID=str(user.id))
+    res.AccountInfo.CopyFrom(info)
 
-    if not user["secret_token"]:
-        token = ''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
-        res.secretToken = token
-        db = database.get()
-        db["users"].update(dict(id=user["id"], secret_token=token), ["id"])
-        db.commit()
-        db.close()
+    # Set the user object in session to indicate authentication and for further access.
+    sessions[ctx.transport]["user"] = user
 
-    account_info = acc.SLOGIN_ACCOUNT_INFO()
-    account_info.AccountID = str(user["id"])
-    res.AccountInfo.CopyFrom(account_info)
-
-    return res.SerializeToString()
-
-
-def register_user(username: str, password: str, hwids: str, build_version: str, ip_address: str):
-    """Return user object after inserting user into database"""
-    db = database.get()
-    user = db["users"].insert(dict(
-        username=username,
-        password=PasswordHasher().hash(password),
-        hwids=hwids,
-        build_version=build_version,
-        is_banned=None,
-        ip_address=ip_address,
-        secret_token=None
-    ))
-    db.commit()
-    db.close()
-    return user
-
-
-def get_user(username: str):
-    """Return user object from database, returns False if non-existent."""
-    db = database.get()
-    user = db["users"].find_one(username=username)
-    return user if user else False
+    return res
