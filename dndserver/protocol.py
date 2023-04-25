@@ -54,7 +54,7 @@ class GameProtocol(Protocol):
                 pc.C2S_MERCHANT_STOCK_BUY_ITEM_LIST_REQ: merchant.get_buy_list,
                 pc.C2S_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_REQ: merchant.get_sellback_list,
                 pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
-                pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership
+                pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
             }
             handler = [k for k in handlers.keys() if k == _id]
             if not handler:
