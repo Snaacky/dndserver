@@ -2,7 +2,7 @@ from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Trade import (SS2C_TRADE_MEMBERSHIP_REQUIREMENT_RES, STRADE_MEMBERSHIP_REQUIREMENT,
                                     SS2C_TRADE_MEMBERSHIP_RES, SS2C_TRADE_CHANNEL_LIST_RES, STRADE_CHANNEL,
                                     SS2C_TRADE_CHANNEL_SELECT_RES, SS2C_TRADE_CHANNEL_CHAT_RES, STRADE_CHAT_S2C,
-                                    SC2S_TRADE_CHANNEL_CHAT_REQ)
+                                    SC2S_TRADE_CHANNEL_CHAT_REQ, SS2C_TRADE_CHANNEL_EXIT_RES)
 from dndserver.protos.Chat import (SCHATDATA, SCHATDATA_PIECE, SCHATDATA_PIECE_ITEM, 
                                    SCHATDATA_PIECE_ITEM_PROPERTY)
 from dndserver.protos.Character import SACCOUNT_NICKNAME
@@ -62,6 +62,10 @@ def chat_request(ctx, msg):
         result=pc.SUCCESS,
         chats=[chat_trade]
     )
+
+
+def exit(ctx, msg):
+    return SS2C_TRADE_CHANNEL_EXIT_RES(result=pc.SUCCESS)
 
 
 def process_membership(ctx, msg):

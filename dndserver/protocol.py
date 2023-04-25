@@ -52,6 +52,7 @@ class GameProtocol(Protocol):
                 pc.C2S_META_LOCATION_REQ: menu.process_location,
                 pc.C2S_MERCHANT_LIST_REQ: merchant.get_merchant_list,
                 pc.C2S_TRADE_CHANNEL_CHAT_REQ: trade.chat_request,
+                pc.C2S_TRADE_CHANNEL_EXIT_REQ: trade.exit,
                 pc.C2S_TRADE_CHANNEL_LIST_REQ: trade.get_trade_channels,
                 pc.C2S_TRADE_CHANNEL_SELECT_REQ: trade.select_trade_channel,
                 pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
