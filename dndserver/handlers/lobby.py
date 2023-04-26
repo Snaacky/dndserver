@@ -49,8 +49,8 @@ def map_select(ctx, msg):
     res = SS2C_LOBBY_GAME_DIFFICULTY_SELECT_RES(result=pc.SUCCESS, gameDifficultyTypeIndex=req.gameDifficultyTypeIndex)
     return res
 
-def open_lobby_map(ctx, msg):
 
+def open_lobby_map(ctx, msg):
     req = SC2S_OPEN_LOBBY_MAP_REQ()
     req.ParseFromString(msg)
     res = SC2S_OPEN_LOBBY_MAP_REQ(result=pc.SUCCESS)
