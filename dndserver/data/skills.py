@@ -1,5 +1,6 @@
 from dndserver.enums import CharacterClass
 
+
 barbarian = [
     "DesignDataSkill:Id_Skill_Rage",
     "DesignDataSkill:Id_Skill_RecklessAttack",

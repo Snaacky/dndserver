@@ -1,5 +1,6 @@
 from dndserver.enums import CharacterClass
 
+
 barbarian = [
     "DesignDataPerk:Id_Perk_AxeSpecialization",
     "DesignDataPerk:Id_Perk_Berserker",

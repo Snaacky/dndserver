@@ -91,7 +91,7 @@ def create_character(ctx, msg):
         res.result = pc.FAIL_DUPLICATE_NICKNAME
         return res
 
-    character = Character(
+    char = Character(
         user_id=sessions[ctx.transport]["user"].id,
         nickname=req.nickName,
         gender=Gender(req.gender),
@@ -99,13 +99,11 @@ def create_character(ctx, msg):
     )
 
     # select the default perks and skills
-    character.perk0, character.perk1, character.perk2, character.perk3 = pk.perks[CharacterClass(req.characterClass)][
-        0:4
-    ]
+    char.perk0, char.perk1, char.perk2, char.perk3 = pk.perks[CharacterClass(req.characterClass)][0:4]
 
-    character.skill0, character.skill1 = sk.skills[CharacterClass(req.characterClass)][0:2]
+    char.skill0, char.skill1 = sk.skills[CharacterClass(req.characterClass)][0:2]
 
-    character.save()
+    char.save()
     return res
 
 
