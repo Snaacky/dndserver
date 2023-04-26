@@ -46,7 +46,6 @@ class GameProtocol(Protocol):
                 pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.character_info,
                 pc.C2S_CLASS_PERK_LIST_REQ: character.list_perks,
                 pc.C2S_CLASS_SKILL_LIST_REQ: character.list_skills,
-                pc.C2S_CLASS_SPELL_LIST_REQ: character.list_spells,
                 pc.C2S_CLASS_EQUIP_INFO_REQ: character.get_perks_and_skills,
                 pc.C2S_CLASS_ITEM_MOVE_REQ: character.move_perks_and_skills,
                 pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,

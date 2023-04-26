@@ -1,6 +1,6 @@
 from dndserver.enums import CharacterClass
 
-barbarian = [
+perks_barbarian = [
     "DesignDataPerk:Id_Perk_AxeSpecialization",
     "DesignDataPerk:Id_Perk_Berserker",
     "DesignDataPerk:Id_Perk_Carnage",
@@ -14,7 +14,7 @@ barbarian = [
     "DesignDataPerk:Id_Perk_Executioner",
 ]
 
-bard = [
+perks_bard = [
     "DesignDataPerk:Id_Perk_LoreMastery",
     "DesignDataPerk:Id_Perk_MelodicProtection",
     "DesignDataPerk:Id_Perk_RapierMastery",
@@ -22,7 +22,7 @@ bard = [
     "DesignDataPerk:Id_Perk_WarSong",
 ]
 
-cleric = [
+perks_cleric = [
     "DesignDataPerk:Id_Perk_AdvancedHealer",
     "DesignDataPerk:Id_Perk_BluntWeaponMastery",
     "DesignDataPerk:Id_Perk_Brewmaster",
@@ -34,7 +34,7 @@ cleric = [
     "DesignDataPerk:Id_Perk_HolyAura",
 ]
 
-fighter = [
+perks_fighter = [
     "DesignDataPerk:Id_Perk_Barricade",
     "DesignDataPerk:Id_Perk_ComboAttack",
     "DesignDataPerk:Id_Perk_Counterattack",
@@ -48,7 +48,7 @@ fighter = [
     "DesignDataPerk:Id_Perk_Slayer",
 ]
 
-ranger = [
+perks_ranger = [
     "DesignDataPerk:Id_Perk_CrossbowMastery",
     "DesignDataPerk:Id_Perk_EnhancedHearing",
     "DesignDataPerk:Id_Perk_Kinesthesia",
@@ -62,7 +62,7 @@ ranger = [
     "DesignDataPerk:Id_Perk_QuickReload",
 ]
 
-rogue = [
+perks_rogue = [
     "DesignDataPerk:Id_Perk_Ambush",
     "DesignDataPerk:Id_Perk_BackAttack",
     "DesignDataPerk:Id_Perk_Creep",
@@ -79,7 +79,7 @@ rogue = [
     "DesignDataPerk:Id_Perk_Thrust",
 ]
 
-wizard = [
+perks_wizard = [
     "DesignDataPerk:Id_Perk_ArcaneFeedback",
     "DesignDataPerk:Id_Perk_ArcaneMastery",
     "DesignDataPerk:Id_Perk_FireMastery",
@@ -92,13 +92,13 @@ wizard = [
 ]
 
 perks = {
-    CharacterClass.BARBARIAN: barbarian,
-    CharacterClass.BARD: bard,
-    CharacterClass.CLERIC: cleric,
-    CharacterClass.FIGHTER: fighter,
-    CharacterClass.RANGER: ranger,
-    CharacterClass.ROGUE: rogue,
-    CharacterClass.WIZARD: wizard,
+    CharacterClass.BARBARIAN: perks_barbarian,
+    CharacterClass.BARD: perks_bard,
+    CharacterClass.CLERIC: perks_cleric,
+    CharacterClass.FIGHTER: perks_fighter,
+    CharacterClass.RANGER: perks_ranger,
+    CharacterClass.ROGUE: perks_rogue,
+    CharacterClass.WIZARD: perks_wizard,
 }
 
 # Other items. Not used at the moment.
@@ -115,3 +115,82 @@ perks = {
 # DesignDataPerk:Id_Perk_DefenseMastery
 # DesignDataPerk:Id_Perk_SurvivalistTongue
 # DesignDataPerk:Id_Perk_TrapMastery
+
+
+skills_barbarian = [
+    "DesignDataSkill:Id_Skill_Rage",
+    "DesignDataSkill:Id_Skill_RecklessAttack",
+    "DesignDataSkill:Id_Skill_SavageRoar",
+    "DesignDataSkill:Id_Skill_WarCry",
+    "DesignDataSkill:Id_Skill_AchillesStrike",
+    "DesignDataSkill:Id_Skill_BloodExchange",
+    "DesignDataSkill:Id_Skill_LifeSiphon",
+]
+
+skills_bard = [
+    "DesignDataSkill:Id_Skill_Encore",
+    "DesignDataSkill:Id_Skill_Dissonance",
+    "DesignDataSkill:Id_Skill_MusicMemory1",
+    "DesignDataSkill:Id_Skill_MusicMemory2",
+]
+
+skills_cleric = [
+    "DesignDataSkill:Id_Skill_HolyPurification",
+    "DesignDataSkill:Id_Skill_Judgement",
+    "DesignDataSkill:Id_Skill_Smite",
+    "DesignDataSkill:Id_Skill_SpellMemory1",
+    "DesignDataSkill:Id_Skill_SpellMemory2",
+    "DesignDataSkill:Id_Skill_DivineProtection",
+]
+
+skills_fighter = [
+    "DesignDataSkill:Id_Skill_AdrenalineRush",
+    "DesignDataSkill:Id_Skill_Breakthrough",
+    "DesignDataSkill:Id_Skill_SecondWind",
+    "DesignDataSkill:Id_Skill_Sprint",
+    "DesignDataSkill:Id_Skill_Taunt",
+    "DesignDataSkill:Id_Skill_VictoryStrike",
+    "DesignDataSkill:Id_Skill_PerfectBlock",
+    "DesignDataSkill:Id_Skill_ShieldSlam",
+]
+
+skills_ranger = [
+    "DesignDataSkill:Id_Skill_FieldRation",
+    "DesignDataSkill:Id_Skill_MultiShot",
+    "DesignDataSkill:Id_Skill_QuickFire",
+    "DesignDataSkill:Id_Skill_QuickShot",
+    "DesignDataSkill:Id_Skill_TrueShot",
+    "DesignDataSkill:Id_Skill_ForcefulShot",
+    "DesignDataSkill:Id_Skill_PenetratingShot",
+]
+
+skills_rogue = [
+    "DesignDataSkill:Id_Skill_Caltrop",
+    "DesignDataSkill:Id_Skill_Hide",
+    "DesignDataSkill:Id_Skill_Rupture",
+    "DesignDataSkill:Id_Skill_SmokeBomb",
+    "DesignDataSkill:Id_Skill_WeakpointAttack",
+    "DesignDataSkill:Id_Skill_CutThroat",
+    "DesignDataSkill:Id_Skill_Tumbling",
+]
+
+skills_wizard = [
+    "DesignDataSkill:Id_Skill_IntenseFocus",
+    "DesignDataSkill:Id_Skill_Meditation",
+    "DesignDataSkill:Id_Skill_SpellMemory1",
+    "DesignDataSkill:Id_Skill_SpellMemory2",
+    "DesignDataSkill:Id_Skill_ArcaneShield",
+]
+
+skills = {
+    CharacterClass.BARBARIAN: skills_barbarian,
+    CharacterClass.BARD: skills_bard,
+    CharacterClass.CLERIC: skills_cleric,
+    CharacterClass.FIGHTER: skills_fighter,
+    CharacterClass.RANGER: skills_ranger,
+    CharacterClass.ROGUE: skills_rogue,
+    CharacterClass.WIZARD: skills_wizard,
+}
+
+# unused skills
+# "DesignDataSkill:Id_Skill_SmokePot"

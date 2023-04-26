@@ -23,8 +23,6 @@ from dndserver.protos.CharacterClass import (
     SC2S_CLASS_ITEM_MOVE_REQ,
     SS2C_CLASS_ITEM_MOVE_RES,
     SS2C_CLASS_SKILL_LIST_RES,
-    SC2S_CLASS_SPELL_LIST_REQ,
-    SS2C_CLASS_SPELL_LIST_RES,
 )
 from dndserver.protos.Defines import Define_Character, Define_Class
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
@@ -91,17 +89,18 @@ def create_character(ctx, msg):
         res.result = pc.FAIL_DUPLICATE_NICKNAME
         return res
 
-    character_class = CharacterClass(req.characterClass)
     character = Character(
         user_id=sessions[ctx.transport]["user"].id,
         nickname=req.nickName,
         gender=Gender(req.gender),
-        character_class=character_class,
-        perk0=perksandskills.perks[character_class][0],
-        perk1=perksandskills.perks[character_class][1],
-        perk2=perksandskills.perks[character_class][2],
-        perk3=perksandskills.perks[character_class][3],
+        character_class=CharacterClass(req.characterClass),
     )
+
+    # select the default perks and skills
+    character.perk0, character.perk1, character.perk2, character.perk3 = perksandskills.perks[
+        CharacterClass(req.characterClass)
+    ][0:3]
+    character.skill0, character.skill1 = perksandskills.skills[CharacterClass(req.characterClass)][0:1]
 
     character.save()
     return res
@@ -152,36 +151,6 @@ def character_info(ctx, msg):
     return res
 
 
-def move_perks_and_skills(ctx, msg):
-    req = SC2S_CLASS_ITEM_MOVE_REQ()
-    req.ParseFromString(msg)
-
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).first()
-    items = [req.oldMove, req.newMove]
-
-    # process all the move requests
-    for it in items:
-        if it.type == Define_Class.Type.NONE_TYPE or it.move == Define_Class.Move.NONE_MOVE:
-            # skip all items that are not moved and are of type none
-            continue
-
-        if it.type == Define_Class.Type.PERK:
-            # get all the perks we have
-            perks = [query.perk0, query.perk1, query.perk2, query.perk3]
-
-            # update the perks
-            if it.move == Define_Class.Move.EQUIP:
-                perks[it.index - 1] = it.moveId
-            elif it.move == Define_Class.Move.UN_EQUIP:
-                perks[it.index - 1] = ""
-
-            # store the perks back
-            query.perk0, query.perk1, query.perk2, query.perk3 = perks
-
-    res = SS2C_CLASS_ITEM_MOVE_RES(result=pc.SUCCESS, oldMove=req.oldMove, newMove=req.newMove)
-    return res
-
-
 def list_perks(ctx, msg):
     query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).first()
     selected_perks = [query.perk0, query.perk1, query.perk2, query.perk3]
@@ -201,16 +170,21 @@ def list_perks(ctx, msg):
 
 
 def list_skills(ctx, msg):
-    # TODO: add support for skills
-    return SS2C_CLASS_SKILL_LIST_RES()
+    query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).first()
+    selected_skills = [query.skill0, query.skill1]
 
+    res = SS2C_CLASS_SKILL_LIST_RES()
+    skills = perksandskills.skills[query.character_class]
+    index = 0
 
-def list_spells(ctx, msg):
-    # TODO: add support for spells
-    req = SC2S_CLASS_SPELL_LIST_REQ()
-    req.ParseFromString(msg)
+    # Generate the response. Do not send the skills we have selected already
+    for skill in skills:
+        if skill not in selected_skills:
+            res.skills.append(item.SSkill(index=index, skillId=skill))
 
-    return SS2C_CLASS_SPELL_LIST_RES()
+            index += 1
+
+    return res
 
 
 def get_perks_and_skills(ctx, msg):
@@ -244,28 +218,36 @@ def get_perks_and_skills(ctx, msg):
             )
         )
 
-    # check if we should send the spells
-    if query.character_class != CharacterClass.WIZARD and query.character_class != CharacterClass.CLERIC:
-        return res
-
-    # get the spells from the json
-    spells = [
-        query.spell0,
-        query.spell1,
-        query.spell2,
-        query.spell3,
-        query.spell4,
-        query.spell5,
-        query.spell6,
-        query.spell7,
-        query.spell8,
-        query.spell9,
-    ]
-    for index, spell in enumerate(spells):
-        res.equips.append(
-            SCLASS_EQUIP_INFO(
-                index=7 + index, isAvailableSlot=True, requiredLevel=1, type=Define_Class.Type.SPELL, equipId=spell
-            )
-        )
-
     return res
+
+
+def move_perks_and_skills(ctx, msg):
+    req = SC2S_CLASS_ITEM_MOVE_REQ()
+    req.ParseFromString(msg)
+
+    query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).first()
+    items = [req.oldMove, req.newMove]
+
+    # process all the move requests
+    for it in items:
+        if it.type == Define_Class.Type.NONE_TYPE or it.move == Define_Class.Move.NONE_MOVE:
+            # skip all items that are not moved and are of type none
+            continue
+
+        if it.type == Define_Class.Type.SPELL:
+            # this should never happen but catch it anyway
+            continue
+
+        # get all the perks and the perks we have selected
+        perks_skills = [query.perk0, query.perk1, query.perk2, query.perk3, query.skill0, query.skill1]
+
+        # update the perks
+        if it.move == Define_Class.Move.EQUIP:
+            perks_skills[it.index - 1] = it.moveId
+        elif it.move == Define_Class.Move.UN_EQUIP:
+            perks_skills[it.index - 1] = ""
+
+        # store the perks and skills back
+        query.perk0, query.perk1, query.perk2, query.perk3, query.skill0, query.skill1 = perks_skills
+
+    return SS2C_CLASS_ITEM_MOVE_RES(result=pc.SUCCESS, oldMove=req.oldMove, newMove=req.newMove)
