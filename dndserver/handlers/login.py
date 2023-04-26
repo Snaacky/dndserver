@@ -4,7 +4,7 @@ import string
 import argon2
 from datetime import datetime
 from dndserver.database import db
-from dndserver.models import Account
+from dndserver.models import Account, Hwid
 from dndserver.protos.Account import SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES, SC2S_ACCOUNT_LOGIN_REQ
 from dndserver.sessions import sessions
 from sqlalchemy.orm import Session
