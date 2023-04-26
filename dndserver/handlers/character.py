@@ -29,7 +29,7 @@ from dndserver.protos.CharacterClass import (
 from dndserver.protos.Defines import Define_Character, Define_Class
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 from dndserver.sessions import sessions
-from dndserver import config
+from dndserver import perksandskills
 
 
 def list_characters(ctx, msg):
@@ -91,15 +91,16 @@ def create_character(ctx, msg):
         res.result = pc.FAIL_DUPLICATE_NICKNAME
         return res
 
+    character_class = CharacterClass(req.characterClass)
     character = Character(
         user_id=sessions[ctx.transport]["user"].id,
         nickname=req.nickName,
         gender=Gender(req.gender),
-        character_class=CharacterClass(req.characterClass),
-        perk0=config.perks[req.characterClass][0],
-        perk1=config.perks[req.characterClass][1],
-        perk2=config.perks[req.characterClass][2],
-        perk3=config.perks[req.characterClass][3],
+        character_class=character_class,
+        perk0=perksandskills.perks[character_class][0],
+        perk1=perksandskills.perks[character_class][1],
+        perk2=perksandskills.perks[character_class][2],
+        perk3=perksandskills.perks[character_class][3],
     )
 
     character.save()
@@ -186,7 +187,7 @@ def list_perks(ctx, msg):
     selected_perks = [query.perk0, query.perk1, query.perk2, query.perk3]
 
     res = SS2C_CLASS_PERK_LIST_RES()
-    perks = config.perks[CharacterClass(query.character_class).value]
+    perks = perksandskills.perks[query.character_class]
     index = 0
 
     # Generate the response. Do not send the perks we have selected already
@@ -244,10 +245,7 @@ def get_perks_and_skills(ctx, msg):
         )
 
     # check if we should send the spells
-    if (
-        CharacterClass(query.character_class).value != CharacterClass.WIZARD
-        and CharacterClass(query.character_class).value != CharacterClass.CLERIC
-    ):
+    if query.character_class != CharacterClass.WIZARD and query.character_class != CharacterClass.CLERIC:
         return res
 
     # get the spells from the json
