@@ -1,3 +1,5 @@
+import random
+
 import arrow
 from sqlalchemy import Column
 from sqlalchemy.ext.declarative import declarative_base
@@ -37,6 +39,7 @@ class Character(base):
     created_at = Column(ArrowType, default=arrow.utcnow())
     level = Column(Integer, default=1)
     karma_rating = Column(Integer, default=0)
+    streaming_nickname = Column(String(15), default=f"Fighter#{random.randrange(1000000, 1700000)}")
 
     def save(self):
         db.add(self)

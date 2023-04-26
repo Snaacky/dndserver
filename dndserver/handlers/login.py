@@ -17,17 +17,17 @@ def process_login(ctx, msg):
     # TODO: Not all SS2C_ACCOUNT_LOGIN_RES fields are implemented.
     res = SS2C_ACCOUNT_LOGIN_RES(serverLocation=1)
 
-    user = db.query(Account).filter_by(username=req.loginId).first()
-    if not user:
-        user = Account(
+    account = db.query(Account).filter_by(username=req.loginId).first()
+    if not account:
+        account = Account(
             username=req.loginId,
             password=argon2.PasswordHasher().hash(req.password),
             secret_token=''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
         )
-        user.save()
+        account.save()
 
         # TODO: Create new hwid objects and save them to the db here
-        res.secretToken = user.secret_token
+        res.secretToken = account.secret_token
 
     # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password.
     if len(req.loginId) <= 2 or len(req.password) <= 2:
@@ -41,21 +41,20 @@ def process_login(ctx, msg):
 
     # Return FAIL_PASSWORD on invalid password.
     try:
-        argon2.PasswordHasher().verify(user.password, req.password)
+        argon2.PasswordHasher().verify(account.password, req.password)
     except argon2.exceptions.VerifyMismatchError:
         res.Result = res.FAIL_PASSWORD
         return res
 
     # Returns the respective SS2C_ACCOUNT_LOGIN_RES *__BAN_USER ban enum.
-    if user.ban_type:
-        res.Result = user.ban_type
+    if account.ban_type:
+        res.Result = account.ban_type
         return res
 
-    res.accountId = str(user.id)
-    info = SLOGIN_ACCOUNT_INFO(AccountID=str(user.id))
+    res.accountId = str(account.id)
+    info = SLOGIN_ACCOUNT_INFO(AccountID=str(account.id))
     res.AccountInfo.CopyFrom(info)
 
-    # Set the user object in session to indicate authentication and for further access.
-    sessions[ctx.transport]["user"] = user
+    sessions[ctx.transport].account = account
 
     return res

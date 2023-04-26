@@ -44,10 +44,10 @@ def get_buy_list(ctx, msg):
     # TODO: handle every trader differently
 
     # send stage 1 (start)
-    ctx.send(SS2C_MERCHANT_STOCK_BUY_ITEM_LIST_RES(result=1, loopMessageFlag=1, stockList=[]))
+    ctx.reply(SS2C_MERCHANT_STOCK_BUY_ITEM_LIST_RES(result=1, loopMessageFlag=1, stockList=[]))
 
     # send stage 2 (data the merchant is selling)
-    ctx.send(
+    ctx.reply(
         SS2C_MERCHANT_STOCK_BUY_ITEM_LIST_RES(
             result=1,
             loopMessageFlag=2,
@@ -101,10 +101,10 @@ def get_sellback_list(ctx, msg):
     # merchant it also sends the sellbacks for the weaponsmith.
 
     # send stage 1 (start)
-    ctx.send(SS2C_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_RES(result=1, loopMessageFlag=1, stockList=[]))
+    ctx.reply(SS2C_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_RES(result=1, loopMessageFlag=1, stockList=[]))
 
     # send stage 2 (data the merchant is selling)
-    ctx.send(
+    ctx.reply(
         SS2C_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_RES(
             result=1,
             loopMessageFlag=2,
