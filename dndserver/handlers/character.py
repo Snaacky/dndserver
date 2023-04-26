@@ -12,6 +12,7 @@ from dndserver.protos.Account import (SC2S_ACCOUNT_CHARACTER_CREATE_REQ, SC2S_AC
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_INFO
 from dndserver.protos.Defines import Define_Character
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
+from dndserver.protos.Inventory import SC2S_INVENTORY_SINGLE_UPDATE_REQ, SS2C_INVENTORY_SINGLE_UPDATE_RES
 from dndserver.sessions import sessions
 
 
@@ -117,4 +118,11 @@ def character_info(ctx, msg):
             ]
         )
     )
+    return res
+
+def move_item(ctx, msg):
+    req = SC2S_INVENTORY_SINGLE_UPDATE_REQ()
+    req.ParseFromString(msg)
+
+    res = SS2C_INVENTORY_SINGLE_UPDATE_RES(result=pc.SUCCESS, oldItem=req.oldItem, newItem=req.newItem)
     return res
