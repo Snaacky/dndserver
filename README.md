@@ -15,7 +15,7 @@ Dark and Darker private server implementation written in Python.
 - `poetry install`
 - `poetry shell`
 - `python -m dndserver.server`
-- Add `-server=dcweb.pages.dev:80` to your game shortcut launch options.
+- Add `-server=dcweb.pages.dev:80` to your game's launch options.
 
 ## Roadmap
 
