@@ -55,3 +55,4 @@ def open_lobby_map(ctx, msg):
     req.ParseFromString(msg)
     res = SC2S_OPEN_LOBBY_MAP_REQ(result=pc.SUCCESS)
     return res
+
