@@ -46,6 +46,7 @@ class GameProtocol(Protocol):
                 pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.character_info,
                 pc.C2S_INVENTORY_SINGLE_UPDATE_REQ: character.move_item,
                 pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,
+                pc.C2S_OPEN_LOBBY_MAP_REQ: lobby.open_lobby_map,
                 pc.C2S_CHARACTER_SELECT_ENTER_REQ: lobby.enter_character_select,
                 pc.C2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ: lobby.map_select,
                 pc.C2S_FRIEND_LIST_ALL_REQ: friends.list_friends,
@@ -57,7 +58,6 @@ class GameProtocol(Protocol):
                 pc.C2S_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_REQ: merchant.get_sellback_list,
                 pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
                 pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
-                pc.C2S_OPEN_LOBBY_MAP_REQ: lobby.open_lobby_map,
             }
             handler = [k for k in handlers.keys() if k == _id]
             if not handler:
