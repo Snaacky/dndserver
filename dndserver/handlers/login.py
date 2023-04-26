@@ -87,3 +87,8 @@ def process_login(ctx, msg):
     sessions[ctx.transport]["user"] = user
 
     return res
+
+def get_username_from_request(raw_request: bytes) -> str:
+    req = SC2S_ACCOUNT_LOGIN_REQ()
+    req.ParseFromString(raw_request)
+    return req.loginId
