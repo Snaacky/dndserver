@@ -26,6 +26,7 @@ from dndserver.protos.CharacterClass import (
 )
 from dndserver.protos.Defines import Define_Character, Define_Class
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
+from dndserver.protos.Inventory import SC2S_INVENTORY_SINGLE_UPDATE_REQ, SS2C_INVENTORY_SINGLE_UPDATE_RES
 from dndserver.sessions import sessions
 from dndserver import perksandskills
 
@@ -148,6 +149,14 @@ def character_info(ctx, msg):
             ],
         ),
     )
+    return res
+
+
+def move_item(ctx, msg):
+    req = SC2S_INVENTORY_SINGLE_UPDATE_REQ()
+    req.ParseFromString(msg)
+
+    res = SS2C_INVENTORY_SINGLE_UPDATE_RES(result=pc.SUCCESS, oldItem=req.oldItem, newItem=req.newItem)
     return res
 
 
