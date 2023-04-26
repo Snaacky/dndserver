@@ -163,6 +163,7 @@ def move_item(ctx, msg):
 
 
 def list_perks(ctx, msg):
+    """Occurs when user selects the class menu."""
     query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).first()
     selected_perks = [query.perk0, query.perk1, query.perk2, query.perk3]
 
@@ -181,6 +182,7 @@ def list_perks(ctx, msg):
 
 
 def list_skills(ctx, msg):
+    """Occurs when user selects the class menu."""
     query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).first()
     selected_skills = [query.skill0, query.skill1]
 
@@ -199,6 +201,7 @@ def list_skills(ctx, msg):
 
 
 def get_perks_and_skills(ctx, msg):
+    """Occurs when the user loads in the game or loads into the class menu."""
     query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).first()
     res = SS2C_CLASS_EQUIP_INFO_RES()
 
@@ -233,6 +236,7 @@ def get_perks_and_skills(ctx, msg):
 
 
 def move_perks_and_skills(ctx, msg):
+    """Occurs when the user tries to move either a perk or a skill."""
     req = SC2S_CLASS_ITEM_MOVE_REQ()
     req.ParseFromString(msg)
 
