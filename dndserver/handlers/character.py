@@ -37,7 +37,7 @@ def list_characters(ctx, msg):
     req = SC2S_ACCOUNT_CHARACTER_LIST_REQ()
     req.ParseFromString(msg)
 
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).all()
+    query = db.query(Character).filter_by(user_id=sessions[ctx.transport].account.id).all()
     res = SS2C_ACCOUNT_CHARACTER_LIST_RES(totalCharacterCount=len(query), pageIndex=req.pageIndex)
 
     start = (res.pageIndex - 1) * 7
@@ -116,7 +116,7 @@ def delete_character(ctx, msg):
     res = SS2C_ACCOUNT_CHARACTER_DELETE_RES(result=pc.SUCCESS)
 
     # Prevents characters from maliciously deleting others characters.
-    if query.user_id != sessions[ctx.transport]["user"].id:
+    if query.user_id != sessions[ctx.transport].user.id:
         res.result = pc.FAIL_GENERAL
         return res
 
@@ -126,18 +126,20 @@ def delete_character(ctx, msg):
 
 def character_info(ctx, msg):
     """Occurs when the user loads into the lobby/tavern."""
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).first()
+    character = sessions[ctx.transport].character
+
     res = SS2C_LOBBY_CHARACTER_INFO_RES(
         result=pc.SUCCESS,
         characterDataBase=SCHARACTER_INFO(
             accountId="1",
             nickName=SACCOUNT_NICKNAME(
-                originalNickName=query.nickname, streamingModeNickName=f"Fighter#{random.randrange(1000000, 1700000)}"
+                originalNickName=character.nickname,
+                streamingModeNickName=character.streaming_nickname
             ),
-            characterClass=CharacterClass(query.character_class).value,
-            characterId=str(query.id),
-            gender=Gender(query.gender).value,
-            level=query.level,
+            characterClass=CharacterClass(character.character_class).value,
+            characterId=str(character.id),
+            gender=Gender(character.gender).value,
+            level=character.level,
             CharacterItemList=[
                 items.generate_helm(),
                 items.generate_torch(),
@@ -149,6 +151,7 @@ def character_info(ctx, msg):
             ],
         ),
     )
+
     return res
 
 

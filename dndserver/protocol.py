@@ -3,9 +3,11 @@ import struct
 from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
-from dndserver.handlers import character, friends, lobby, login, trade, menu, merchant
+from dndserver.handlers import character, friends, lobby, login, party, trade, menu, merchant
+from dndserver.objects.user import User
 from dndserver.protos import PacketCommand as pc
 from dndserver.sessions import sessions
+from dndserver.utils import make_header
 
 
 class GameFactory(Factory):
@@ -20,7 +22,8 @@ class GameProtocol(Protocol):
     def connectionMade(self) -> None:
         """Event for when a client connects to the server."""
         logger.debug(f"Received connection from: {self.transport.client[0]}:{self.transport.client[1]}")
-        sessions[self.transport] = {"user": None}
+        user = User()
+        sessions[self.transport] = user
 
     def connectionLost(self, reason):
         """Event for when a client disconnects from the server."""
@@ -55,17 +58,18 @@ class GameProtocol(Protocol):
                 pc.C2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ: lobby.map_select,
                 pc.C2S_FRIEND_LIST_ALL_REQ: friends.list_friends,
                 pc.C2S_FRIEND_FIND_REQ: friends.find_user,
-                pc.C2S_PARTY_INVITE_REQ: friends.party_invite,
                 pc.C2S_META_LOCATION_REQ: menu.process_location,
                 pc.C2S_MERCHANT_LIST_REQ: merchant.get_merchant_list,
+                pc.C2S_MERCHANT_STOCK_BUY_ITEM_LIST_REQ: merchant.get_buy_list,
                 pc.C2S_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_REQ: merchant.get_sellback_list,
+                pc.C2S_PARTY_INVITE_REQ: party.party_invite,
+                pc.C2S_PARTY_INVITE_ANSWER_REQ: party.accept_invite,
                 pc.C2S_TRADE_CHANNEL_CHAT_REQ: trade.chat_request,
                 pc.C2S_TRADE_CHANNEL_EXIT_REQ: trade.exit,
                 pc.C2S_TRADE_CHANNEL_LIST_REQ: trade.get_trade_channels,
                 pc.C2S_TRADE_CHANNEL_SELECT_REQ: trade.select_trade_channel,
                 pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
-                pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
-                pc.C2S_MERCHANT_STOCK_BUY_ITEM_LIST_REQ: merchant.get_buy_list,
+                pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership
             }
             handler = [k for k in handlers.keys() if k == _id]
             if not handler:
@@ -76,7 +80,7 @@ class GameProtocol(Protocol):
                 return self.heartbeat()
 
             res = handlers[handler[0]](self, msg)
-            self.send(res)
+            self.reply(msg=res)
 
             # remove the data we have processed
             data = data[length:]
@@ -91,7 +95,12 @@ class GameProtocol(Protocol):
         packet_type = type(msg).__name__.replace("SS2C", "S2C").replace("SC2S", "C2S")
         return struct.pack("<hxxhxx", len(msg.SerializeToString()) + 8, pc.PacketCommand.Value(packet_type))
 
-    def send(self, msg: bytes):
-        """Send a D&D packet to the client."""
-        header = self.make_header(msg)
+    def reply(self, msg: bytes):
+        """Send a D&D packet to the current context transport."""
+        header = make_header(msg)
         self.transport.write(header + msg.SerializeToString())
+
+    def send(self, transport, msg: bytes):
+        """Send a D&D packet to a specific transport."""
+        header = make_header(msg)
+        transport.write(header + msg.SerializeToString())
