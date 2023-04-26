@@ -4,8 +4,8 @@ from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Account import SC2S_LOBBY_ENTER_REQ, SS2C_LOBBY_ENTER_RES
 from dndserver.protos.Lobby import (SC2S_CHARACTER_SELECT_ENTER_REQ, SC2S_LOBBY_REGION_SELECT_REQ,
                                     SS2C_LOBBY_REGION_SELECT_RES, SS2C_CHARACTER_SELECT_ENTER_RES,
-                                    SC2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ, SS2C_LOBBY_GAME_DIFFICULTY_SELECT_RES, 
-                                    SC2S_OPEN_LOBBY_MAP_REQ)
+                                    SC2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ, SS2C_LOBBY_GAME_DIFFICULTY_SELECT_RES,
+                                    SS2C_OPEN_LOBBY_MAP_RES, SC2S_OPEN_LOBBY_MAP_REQ)
 from dndserver.sessions import sessions
 
 
@@ -53,6 +53,5 @@ def map_select(ctx, msg):
 def open_lobby_map(ctx, msg):
     req = SC2S_OPEN_LOBBY_MAP_REQ()
     req.ParseFromString(msg)
-    res = SC2S_OPEN_LOBBY_MAP_REQ(result=pc.SUCCESS)
+    res = SS2C_OPEN_LOBBY_MAP_RES()
     return res
-
