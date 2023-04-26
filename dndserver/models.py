@@ -51,17 +51,16 @@ class Item(base):
     __tablename__ = "items"
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
-    account_id = Column(Integer, ForeignKey("accounts.id"))
     character_id = Column(Integer, ForeignKey("characters.id"))
     item_id = Column(Integer, nullable=False)
     item_quantity = Column(Integer)
     inventory_id = Column(Integer)
     slot_id = Column(Integer)
-    item_perk_one = Column(String, default=None)
-    item_perk_two = Column(String, default=None)
-    item_perk_three = Column(String, default=None)
-    item_perk_four = Column(String, default=None)
-    item_perk_five = Column(String, default=None)
+    perk1 = Column(String, default=None)
+    perk2 = Column(String, default=None)
+    perk3 = Column(String, default=None)
+    perk4 = Column(String, default=None)
+    perk5 = Column(String, default=None)
     #item_ammo_count = Column(Integer)     not sure we need this server side
     #item_contents_count = Column(Integer) not sure we need this server side 
 
