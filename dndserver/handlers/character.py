@@ -28,7 +28,8 @@ from dndserver.protos.Defines import Define_Character, Define_Class
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 from dndserver.protos.Inventory import SC2S_INVENTORY_SINGLE_UPDATE_REQ, SS2C_INVENTORY_SINGLE_UPDATE_RES
 from dndserver.sessions import sessions
-from dndserver import perksandskills
+from dndserver.data import perks as pk
+from dndserver.data import skills as sk
 
 
 def list_characters(ctx, msg):
@@ -98,10 +99,11 @@ def create_character(ctx, msg):
     )
 
     # select the default perks and skills
-    character.perk0, character.perk1, character.perk2, character.perk3 = perksandskills.perks[
-        CharacterClass(req.characterClass)
-    ][0:3]
-    character.skill0, character.skill1 = perksandskills.skills[CharacterClass(req.characterClass)][0:1]
+    character.perk0, character.perk1, character.perk2, character.perk3 = pk.perks[CharacterClass(req.characterClass)][
+        0:3
+    ]
+
+    character.skill0, character.skill1 = sk.skills[CharacterClass(req.characterClass)][0:1]
 
     character.save()
     return res
@@ -165,7 +167,7 @@ def list_perks(ctx, msg):
     selected_perks = [query.perk0, query.perk1, query.perk2, query.perk3]
 
     res = SS2C_CLASS_PERK_LIST_RES()
-    perks = perksandskills.perks[query.character_class]
+    perks = pk.perks[query.character_class]
     index = 0
 
     # Generate the response. Do not send the perks we have selected already
@@ -183,7 +185,7 @@ def list_skills(ctx, msg):
     selected_skills = [query.skill0, query.skill1]
 
     res = SS2C_CLASS_SKILL_LIST_RES()
-    skills = perksandskills.skills[query.character_class]
+    skills = sk.skills[query.character_class]
     index = 0
 
     # Generate the response. Do not send the skills we have selected already
