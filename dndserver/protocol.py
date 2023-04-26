@@ -17,6 +17,26 @@ class GameProtocol(Protocol):
     def __init__(self) -> None:
         super().__init__()
 
+    def update_session(self, username: str) -> None:
+        # Step 1: Check if a session already exists for the same user account
+        user_already_connected = False
+        existing_transport = None
+        for transport, session in sessions.items():
+            if session.get("user") is not None:
+                logger.debug(f"Checking existing session: {session['user'].username}")
+                if session["user"].username == username:
+                    user_already_connected = True
+                    existing_transport = transport
+                    break
+
+        if user_already_connected:
+            logger.debug("User already connected, disconnecting the old session.")
+            # Step 2: Delete the existing session
+            del sessions[existing_transport]
+            
+            # Step 3: Disconnect the transport attached to the existing session
+            existing_transport.loseConnection()
+
     def connectionMade(self) -> None:
         """Event for when a client connects to the server."""
         logger.debug(f"Received connection from: {self.transport.client[0]}:{self.transport.client[1]}")
@@ -25,7 +45,9 @@ class GameProtocol(Protocol):
     def connectionLost(self, reason):
         """Event for when a client disconnects from the server."""
         logger.debug(f"Lost connection to: {self.transport.client[0]}:{self.transport.client[1]}")
-        del sessions[self.transport]
+        # Check if the transport exists in the sessions dictionary before deleting it
+        if self.transport in sessions:
+            del sessions[self.transport]
 
     def dataReceived(self, data: bytes) -> None:
         """Main loop for receiving request packets and sending response packets."""
@@ -66,6 +88,10 @@ class GameProtocol(Protocol):
             # Heartbeat is handled separately because it doesn't use a header.
             if handler[0] == pc.C2S_ALIVE_REQ:
                 return self.heartbeat()
+            
+            if handler[0] == pc.C2S_ACCOUNT_LOGIN_REQ:
+                username = login.get_username_from_request(msg)
+                self.update_session(username)
 
             res = handlers[handler[0]](self, msg)
             self.send(res)
