@@ -100,10 +100,10 @@ def create_character(ctx, msg):
 
     # select the default perks and skills
     character.perk0, character.perk1, character.perk2, character.perk3 = pk.perks[CharacterClass(req.characterClass)][
-        0:3
+        0:4
     ]
 
-    character.skill0, character.skill1 = sk.skills[CharacterClass(req.characterClass)][0:1]
+    character.skill0, character.skill1 = sk.skills[CharacterClass(req.characterClass)][0:2]
 
     character.save()
     return res
