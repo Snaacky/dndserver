@@ -2,10 +2,10 @@ import random
 
 from dndserver.database import db
 from dndserver.enums import CharacterClass, Gender
-from dndserver.models import Character
-from dndserver.objects import items
+from dndserver.models import Character, Item
+from dndserver import objects
 from dndserver.protos import PacketCommand as pc
-from dndserver.protos import Item as item
+from dndserver.protos import Item as pItem
 from dndserver.protos.Account import (
     SC2S_ACCOUNT_CHARACTER_CREATE_REQ,
     SC2S_ACCOUNT_CHARACTER_DELETE_REQ,
@@ -51,21 +51,20 @@ def list_characters(ctx, msg):
             SLOGIN_CHARACTER_INFO(
                 characterId=str(result.id),
                 nickName=SACCOUNT_NICKNAME(
-                    originalNickName=result.nickname,
-                    streamingModeNickName=result.streaming_nickname
+                    originalNickName=result.nickname, streamingModeNickName=result.streaming_nickname
                 ),
                 level=result.level,
                 characterClass=CharacterClass(result.character_class).value,
                 gender=Gender(result.gender).value,
                 equipItemList=[
-                    items.generate_torch(),
-                    items.generate_roundshield(),
-                    items.generate_lantern(),
-                    items.generate_sword(),
-                    items.generate_pants(),
-                    items.generate_tunic(),
-                    items.generate_bandage(),
-                    items.generate_helm()
+                    objects.items.generate_torch(),
+                    objects.items.generate_roundshield(),
+                    objects.items.generate_lantern(),
+                    objects.items.generate_sword(),
+                    objects.items.generate_pants(),
+                    objects.items.generate_tunic(),
+                    objects.items.generate_bandage(),
+                    objects.items.generate_helm(),
                 ],
                 createAt=result.created_at.int_timestamp,
                 # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
@@ -107,6 +106,30 @@ def create_character(ctx, msg):
     char.skill0, char.skill1 = sk.skills[CharacterClass(req.characterClass)][0:2]
     char.save()
 
+    # TODO: make this dependend on the character class
+    starter_items = [
+        objects.items.generate_helm(),
+        objects.items.generate_torch(),
+        objects.items.generate_lantern(),
+        objects.items.generate_sword(),
+        objects.items.generate_pants(),
+        objects.items.generate_tunic(),
+        objects.items.generate_bandage(),
+    ]
+
+    # give the character a starter set
+    for item in starter_items:
+        # we ignore the unique id here of the item. The database knows best what the id should be
+        it = Item(
+            character_id=char.id,
+            item_id=item.itemId,
+            quantity=item.itemCount,
+            inventory_id=item.inventoryId,
+            slot_id=item.slotId,
+        )
+
+        it.save()
+
     return res
 
 
@@ -138,30 +161,33 @@ def customise_character_info(ctx, msg):
 def character_info(ctx, msg):
     """Occurs when the user loads into the lobby/tavern."""
     character = sessions[ctx.transport].character
+    query = db.query(Item).filter_by(character_id=sessions[ctx.transport].character.id)
 
-    res = SS2C_LOBBY_CHARACTER_INFO_RES(
-        result=pc.SUCCESS,
-        characterDataBase=SCHARACTER_INFO(
-            accountId=str(sessions[ctx.transport].account.id),
-            nickName=SACCOUNT_NICKNAME(
-                originalNickName=character.nickname,
-                streamingModeNickName=character.streaming_nickname
-            ),
-            characterClass=CharacterClass(character.character_class).value,
-            characterId=str(character.id),
-            gender=Gender(character.gender).value,
-            level=character.level,
-            CharacterItemList=[
-                items.generate_helm(),
-                items.generate_torch(),
-                items.generate_lantern(),
-                items.generate_sword(),
-                items.generate_pants(),
-                items.generate_tunic(),
-                items.generate_bandage(),
-            ],
+    char_info = SCHARACTER_INFO(
+        accountId=str(sessions[ctx.transport].account.id),
+        nickName=SACCOUNT_NICKNAME(
+            originalNickName=character.nickname, streamingModeNickName=character.streaming_nickname
         ),
+        characterClass=CharacterClass(character.character_class).value,
+        characterId=str(character.id),
+        gender=Gender(character.gender).value,
+        level=character.level,
     )
+
+    for item in query:
+        it = pItem.SItem(
+            itemUniqueId=item.id,
+            itemId=item.item_id,
+            itemCount=item.quantity,
+            inventoryId=item.inventory_id,
+            slotId=item.slot_id,
+            itemAmmoCount=item.id,
+            itemContentsCount=item.id,
+        )
+
+        char_info.CharacterItemList.append(it)
+
+    res = SS2C_LOBBY_CHARACTER_INFO_RES(result=pc.SUCCESS, characterDataBase=char_info)
 
     return res
 
@@ -184,6 +210,23 @@ def get_experience(ctx, msg):
 def move_item(ctx, msg):
     req = SC2S_INVENTORY_SINGLE_UPDATE_REQ()
     req.ParseFromString(msg)
+
+    # get the current character
+    char_query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
+
+    for old, new in zip(list(req.oldItem), list(req.newItem)):
+        # get the current item in the database
+        item_query = db.query(Item).filter_by(character_id=char_query.id).filter_by(id=new.itemUniqueId).first()
+
+        # check if we have the item in the database
+        if item_query is None:
+            return SS2C_INVENTORY_SINGLE_UPDATE_RES(result=pc.FAIL_GENERAL, oldItem=req.oldItem, newItem=req.newItem)
+
+        # handle the move request
+        if req.singleUpdateFlag == 0:
+            item_query.inventory_id = new.inventoryId
+            item_query.slot_id = new.slotId
+
     res = SS2C_INVENTORY_SINGLE_UPDATE_RES(result=pc.SUCCESS, oldItem=req.oldItem, newItem=req.newItem)
     return res
 
@@ -200,7 +243,7 @@ def list_perks(ctx, msg):
     # Generate the response. Do not send the perks we have selected already
     for perk in perks:
         if perk not in selected_perks:
-            res.perks.append(item.SPerk(index=index, perkId=perk))
+            res.perks.append(pItem.SPerk(index=index, perkId=perk))
             index += 1
 
     return res
@@ -218,7 +261,7 @@ def list_skills(ctx, msg):
     # Generate the response. Do not send the skills we have selected already
     for skill in skills:
         if skill not in selected_skills:
-            res.skills.append(item.SSkill(index=index, skillId=skill))
+            res.skills.append(pItem.SSkill(index=index, skillId=skill))
             index += 1
 
     return res
