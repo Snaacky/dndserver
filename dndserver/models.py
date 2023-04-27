@@ -85,15 +85,26 @@ class Item(base):
     inventory_id = Column(Integer)
     slot_id = Column(Integer)
 
-    perk0 = Column(String, default="")
-    perk1 = Column(String, default="")
-    perk2 = Column(String, default="")
-    perk3 = Column(String, default="")
-    perk4 = Column(String, default="")
-
     ammo_count = Column(Integer, default=0)
-    # item_ammo_count = Column(Integer)     not sure we need this server side
-    # item_contents_count = Column(Integer) not sure we need this server side
+
+    def save(self):
+        db.add(self)
+        db.commit()
+
+    def delete(self):
+        db.delete(self)
+        db.commit()
+
+
+class ItemAttribute(base):
+    __tablename__ = "item_attribute"
+
+    id = Column(Integer, primary_key=True, autoincrement="auto")
+    item_id = Column(Integer)
+
+    primary = Column(Boolean)
+    property = Column(String)
+    value = Column(Integer)
 
     def save(self):
         db.add(self)
