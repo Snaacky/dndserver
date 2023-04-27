@@ -3,6 +3,7 @@ from dndserver.objects.party import Party
 from dndserver.models import Character
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Account import SC2S_LOBBY_ENTER_REQ, SS2C_LOBBY_ENTER_RES
+from dndserver.protos.InGame import SC2S_AUTO_MATCH_REG_REQ, SS2C_ENTER_GAME_SERVER_NOT, SS2C_AUTO_MATCH_REG_RES
 from dndserver.protos.Lobby import (SC2S_CHARACTER_SELECT_ENTER_REQ, SC2S_LOBBY_REGION_SELECT_REQ,
                                     SS2C_LOBBY_REGION_SELECT_RES, SS2C_CHARACTER_SELECT_ENTER_RES,
                                     SC2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ, SS2C_LOBBY_GAME_DIFFICULTY_SELECT_RES,
@@ -10,6 +11,7 @@ from dndserver.protos.Lobby import (SC2S_CHARACTER_SELECT_ENTER_REQ, SC2S_LOBBY_
 from dndserver.parties import parties
 from dndserver.sessions import sessions
 from dndserver.handlers import character
+from dndserver.protos.Character import SACCOUNT_NICKNAME
 
 
 def enter_lobby(ctx, msg):
@@ -36,11 +38,21 @@ def region_select(ctx, msg):
     return res
 
 
-def start(ctx, msg):
+def play(ctx, msg):
     """Currently unused."""
-    req = SC2S_CHARACTER_SELECT_ENTER_REQ()
+    req = SC2S_AUTO_MATCH_REG_REQ()
     req.ParseFromString(msg)
-    res = SS2C_CHARACTER_SELECT_ENTER_RES(result=pc.SUCCESS)
+
+    ctx.reply(SS2C_AUTO_MATCH_REG_RES(result=pc.SUCCESS))
+    nickname = SACCOUNT_NICKNAME(originalNickName="Krofty", streamingModeNickName="")
+    
+    res = SS2C_ENTER_GAME_SERVER_NOT()
+    res.port = 7777
+    res.ip = "127.0.0.1"
+    res.sessionId = "psess-5d28173b-d912-4bcc-beb6-bab58e36178b"
+    res.accountId = "1"
+    res.isReconnect = 0
+    res.nickName.CopyFrom((nickname))
     return res
 
 
