@@ -3,7 +3,7 @@ import struct
 from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
-from dndserver.handlers import character, friends, lobby, login, trade, menu, merchant
+from dndserver.handlers import character, friends, lobby, login, trade, menu, merchant, ranking
 from dndserver.protos import PacketCommand as pc
 from dndserver.sessions import sessions
 
@@ -62,6 +62,7 @@ class GameProtocol(Protocol):
                 pc.C2S_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_REQ: merchant.get_sellback_list,
                 pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
                 pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
+                pc.C2S_RANKING_RANGE_REQ: ranking.get_ranking,
             }
             handler = [k for k in handlers.keys() if k == _id]
             if not handler:
