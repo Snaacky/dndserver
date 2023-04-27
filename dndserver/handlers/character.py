@@ -62,7 +62,6 @@ def list_characters(ctx, msg):
                     items.generate_pants(),
                     items.generate_tunic(),
                     items.generate_bandage(),
-                    items.generate_helm(),
                     items.generate_boots(),
                 ],
                 createAt=result.created_at.int_timestamp,
