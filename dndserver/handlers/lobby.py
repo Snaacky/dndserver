@@ -9,6 +9,7 @@ from dndserver.protos.Lobby import (SC2S_CHARACTER_SELECT_ENTER_REQ, SC2S_LOBBY_
                                     SS2C_OPEN_LOBBY_MAP_RES, SC2S_OPEN_LOBBY_MAP_REQ)
 from dndserver.parties import parties
 from dndserver.sessions import sessions
+from dndserver.handlers import character
 
 
 def enter_lobby(ctx, msg):
@@ -60,5 +61,5 @@ def map_select(ctx, msg):
 def open_lobby_map(ctx, msg):
     req = SC2S_OPEN_LOBBY_MAP_REQ()
     req.ParseFromString(msg)
-    res = SS2C_OPEN_LOBBY_MAP_RES(result=pc.SUCCESS)
+    res = SS2C_OPEN_LOBBY_MAP_RES()
     return res

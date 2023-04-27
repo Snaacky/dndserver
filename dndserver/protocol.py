@@ -46,7 +46,12 @@ class GameProtocol(Protocol):
                 pc.C2S_ACCOUNT_CHARACTER_CREATE_REQ: character.create_character,
                 pc.C2S_ACCOUNT_CHARACTER_DELETE_REQ: character.delete_character,
                 pc.C2S_ACCOUNT_CHARACTER_LIST_REQ: character.list_characters,
-                pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.character_info,
+                pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.customise_character_info,
+                pc.C2S_CLASS_PERK_LIST_REQ: character.list_perks,
+                pc.C2S_CLASS_SKILL_LIST_REQ: character.list_skills,
+                pc.C2S_CLASS_EQUIP_INFO_REQ: character.get_perks_and_skills,
+                pc.C2S_CLASS_ITEM_MOVE_REQ: character.move_perks_and_skills,
+                pc.C2S_CLASS_LEVEL_INFO_REQ: character.get_experience,
                 pc.C2S_INVENTORY_SINGLE_UPDATE_REQ: character.move_item,
                 pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,
                 pc.C2S_CHARACTER_SELECT_ENTER_REQ: lobby.enter_character_select,
@@ -60,6 +65,7 @@ class GameProtocol(Protocol):
                 pc.C2S_PARTY_INVITE_ANSWER_REQ: party.accept_invite,
                 pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
                 pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
+                pc.C2S_RANKING_RANGE_REQ: ranking.get_ranking,
             }
             handler = [k for k in handlers.keys() if k == _id]
             if not handler:
