@@ -1,3 +1,5 @@
+import random
+
 import arrow
 from sqlalchemy import Column
 from sqlalchemy.ext.declarative import declarative_base
@@ -38,6 +40,7 @@ class Character(base):
     level = Column(Integer, default=1)
     experience = Column(Integer, default=0)
     karma_rating = Column(Integer, default=0)
+    streaming_nickname = Column(String(15), default=f"Fighter#{random.randrange(1000000, 1700000)}")
 
     perk0 = Column(String, default="")
     perk1 = Column(String, default="")
