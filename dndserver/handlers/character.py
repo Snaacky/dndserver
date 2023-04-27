@@ -165,8 +165,6 @@ def character_info(ctx, msg):
 
     return res
 
-    return res
-
 
 def get_experience(ctx, msg):
     """Occurs when the user loads into the lobby."""
