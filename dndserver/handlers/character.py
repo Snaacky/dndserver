@@ -170,7 +170,7 @@ def character_info(ctx, msg):
 
 def get_experience(ctx, msg):
     """Occurs when the user loads into the lobby."""
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport].character.id).first()
+    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
     res = SS2C_CLASS_LEVEL_INFO_RES()
 
     res.level = query.level
@@ -192,7 +192,7 @@ def move_item(ctx, msg):
 
 def list_perks(ctx, msg):
     """Occurs when user selects the class menu."""
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport].character.id).first()
+    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
     selected_perks = [query.perk0, query.perk1, query.perk2, query.perk3]
 
     res = SS2C_CLASS_PERK_LIST_RES()
@@ -210,7 +210,7 @@ def list_perks(ctx, msg):
 
 def list_skills(ctx, msg):
     """Occurs when user selects the class menu."""
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport].character.id).first()
+    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
     selected_skills = [query.skill0, query.skill1]
 
     res = SS2C_CLASS_SKILL_LIST_RES()
@@ -228,7 +228,7 @@ def list_skills(ctx, msg):
 
 def get_perks_and_skills(ctx, msg):
     """Occurs when the user loads in the game or loads into the class menu."""
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport].character.id).first()
+    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
     res = SS2C_CLASS_EQUIP_INFO_RES()
 
     # level requirements for the 4 perks
@@ -266,7 +266,7 @@ def move_perks_and_skills(ctx, msg):
     req = SC2S_CLASS_ITEM_MOVE_REQ()
     req.ParseFromString(msg)
 
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport].character.id).first()
+    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
     items = [req.oldMove, req.newMove]
 
     # process all the move requests
