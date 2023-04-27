@@ -21,6 +21,7 @@ class ItemType(Enum):
     CONSUMABLES = "consumables"
     UTILITY = "utility"
     LOOTABLES = "lootables"
+    JEWELRY = "jewelry"
     OTHERS = "others"
 
 # TODO We might want to store this somewhere else, and only call it once, when server starts

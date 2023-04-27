@@ -372,9 +372,7 @@ def create_items_per_class(char_class):
                 items.generate_item("Bandage", ItemType.CONSUMABLES, Rarity.JUNK, 3, 8, 14),
                 items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 14, 15),
                 items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4, 16),
-                # Missing WandererAttire from json data so using PaddedTunic instead
-                # items.generate_item("WandererAttire", ItemType.ARMORS, Rarity.JUNK, 3, 2, 6),
-                items.generate_item("PaddedTunic", ItemType.ARMORS, Rarity.JUNK, 3, 2, 17)
+                items.generate_item("WandererAttire", ItemType.ARMORS, Rarity.JUNK, 3, 2, 6)
                 ]
     
     if(CharacterClass.CLERIC.value == char_class):
@@ -394,7 +392,8 @@ def create_items_per_class(char_class):
                 items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 8, 34),
                 items.generate_item("Bandage", ItemType.CONSUMABLES, Rarity.JUNK, 3, 14, 35),
                 items.generate_item("PaddedTunic", ItemType.ARMORS, Rarity.JUNK, 3, 2, 36),
-                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4, 37)]
+                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4, 37),
+                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19, 482)]
     
     if(CharacterClass.RANGER.value == char_class):
         return [items.generate_item("RecurveBow", ItemType.WEAPONS, Rarity.JUNK, 3, 10, 41),

@@ -1,0 +1,108 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_RingOfQuickness_7001",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.RingOfQuickness"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_RingOfQuickness_3001"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_RingOfQuickness_7001",
+          "SourceString": "Text_DesignData_Item_Item_RingOfQuickness_7001",
+          "LocalizedString": "Ring of Quickness"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_RingOfQuickness_3001",
+          "SourceString": "Text_DesignData_Item_Flavor_RingOfQuickness_3001",
+          "LocalizedString": "Ring Of Quickness"
+        },
+        "SlotType": {
+          "TagName": "Type.Item.Slot.Ring"
+        },
+        "AccessoryType": {
+          "TagName": "Type.Item.Accessory.Ring"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Unique"
+        },
+        "MaxCount": 1,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "RingOfQuickness"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "RingOfQuickness_Sound"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 1,
+        "InventoryHeight": 1,
+        "PrimaryProperty": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemProperty"
+          },
+          "PrimaryAssetName": "Id_ItemProperty_Primary_RingOfQuickness_7001"
+        },
+        "SecondaryProperties": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataItemProperty"
+            },
+            "PrimaryAssetName": "Id_ItemProperty_Secondary_Light"
+          },
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataItemProperty"
+            },
+            "PrimaryAssetName": "Id_ItemProperty_Secondary_Light"
+          },
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataItemProperty"
+            },
+            "PrimaryAssetName": "Id_ItemProperty_Secondary_Light"
+          },
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataItemProperty"
+            },
+            "PrimaryAssetName": "Id_ItemProperty_Secondary_Light"
+          },
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataItemProperty"
+            },
+            "PrimaryAssetName": "Id_ItemProperty_Secondary_Light"
+          }
+        ],
+        "Requirement": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemRequirement"
+          },
+          "PrimaryAssetName": "Id_ItemRequirement_RingOfQuickness_7001"
+        },
+        "AdvPoint": 7,
+        "ExpPoint": 7
+      }
+    }
+  }
+]
