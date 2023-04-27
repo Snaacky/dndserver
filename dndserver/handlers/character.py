@@ -97,6 +97,7 @@ def create_character(ctx, msg):
     char = Character(
         user_id=sessions[ctx.transport]["user"].id,
         nickname=req.nickName,
+        streaming_nickname=f"Fighter#{random.randrange(1000000, 1700000)}",
         gender=Gender(req.gender),
         character_class=CharacterClass(req.characterClass),
     )
