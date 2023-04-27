@@ -3,7 +3,7 @@ import struct
 from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
-from dndserver.handlers import character, friends, lobby, login, party, trade, menu, merchant
+from dndserver.handlers import character, friends, lobby, login, trade, menu, merchant, party, ranking
 from dndserver.objects.user import User
 from dndserver.protos import PacketCommand as pc
 from dndserver.sessions import sessions
@@ -46,16 +46,15 @@ class GameProtocol(Protocol):
                 pc.C2S_ACCOUNT_CHARACTER_CREATE_REQ: character.create_character,
                 pc.C2S_ACCOUNT_CHARACTER_DELETE_REQ: character.delete_character,
                 pc.C2S_ACCOUNT_CHARACTER_LIST_REQ: character.list_characters,
-                pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.character_info,
-                pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,
-                pc.C2S_CHARACTER_SELECT_ENTER_REQ: lobby.enter_character_select,
+                pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.customise_character_info,
                 pc.C2S_CLASS_PERK_LIST_REQ: character.list_perks,
                 pc.C2S_CLASS_SKILL_LIST_REQ: character.list_skills,
                 pc.C2S_CLASS_EQUIP_INFO_REQ: character.get_perks_and_skills,
                 pc.C2S_CLASS_ITEM_MOVE_REQ: character.move_perks_and_skills,
+                pc.C2S_CLASS_LEVEL_INFO_REQ: character.get_experience,
                 pc.C2S_INVENTORY_SINGLE_UPDATE_REQ: character.move_item,
-                pc.C2S_OPEN_LOBBY_MAP_REQ: lobby.open_lobby_map,
-                pc.C2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ: lobby.map_select,
+                pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,
+                pc.C2S_CHARACTER_SELECT_ENTER_REQ: lobby.enter_character_select,
                 pc.C2S_FRIEND_LIST_ALL_REQ: friends.list_friends,
                 pc.C2S_FRIEND_FIND_REQ: friends.find_user,
                 pc.C2S_META_LOCATION_REQ: menu.process_location,
@@ -69,7 +68,8 @@ class GameProtocol(Protocol):
                 pc.C2S_TRADE_CHANNEL_LIST_REQ: trade.get_trade_channels,
                 pc.C2S_TRADE_CHANNEL_SELECT_REQ: trade.select_trade_channel,
                 pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
-                pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership
+                pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
+                pc.C2S_RANKING_RANGE_REQ: ranking.get_ranking
             }
             handler = [k for k in handlers.keys() if k == _id]
             if not handler:
@@ -89,12 +89,6 @@ class GameProtocol(Protocol):
         """Send a D&D keepalive packet."""
         self.transport.write(pc.SS2C_ALIVE_RES().SerializeToString())
 
-    def make_header(self, msg: bytes):
-        """Create a D&D packet header."""
-        # header: <packet length: short> 00 00 <packet id: short> 00 00
-        packet_type = type(msg).__name__.replace("SS2C", "S2C").replace("SC2S", "C2S")
-        return struct.pack("<hxxhxx", len(msg.SerializeToString()) + 8, pc.PacketCommand.Value(packet_type))
-
     def reply(self, msg: bytes):
         """Send a D&D packet to the current context transport."""
         header = make_header(msg)
@@ -103,4 +97,4 @@ class GameProtocol(Protocol):
     def send(self, transport, msg: bytes):
         """Send a D&D packet to a specific transport."""
         header = make_header(msg)
-        transport.write(header + msg.SerializeToString())
+        sessions[transport].write(header + msg.SerializeToString())

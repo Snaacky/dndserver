@@ -23,7 +23,10 @@ from dndserver.protos.CharacterClass import (
     SC2S_CLASS_ITEM_MOVE_REQ,
     SS2C_CLASS_ITEM_MOVE_RES,
     SS2C_CLASS_SKILL_LIST_RES,
+    SS2C_CLASS_LEVEL_INFO_RES,
 )
+from dndserver.protos.Customize import SS2C_CUSTOMIZE_CHARACTER_INFO_RES
+from dndserver.protos.Item import SCUSTOMIZE_CHARACTER
 from dndserver.protos.Defines import Define_Character, Define_Class
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 from dndserver.protos.Inventory import SC2S_INVENTORY_SINGLE_UPDATE_REQ, SS2C_INVENTORY_SINGLE_UPDATE_RES
@@ -49,7 +52,7 @@ def list_characters(ctx, msg):
                 characterId=str(result.id),
                 nickName=SACCOUNT_NICKNAME(
                     originalNickName=result.nickname,
-                    streamingModeNickName=f"Fighter#{random.randrange(1000000, 1700000)}",
+                    streamingModeNickName=result.streaming_nickname
                 ),
                 level=result.level,
                 characterClass=CharacterClass(result.character_class).value,
@@ -62,7 +65,7 @@ def list_characters(ctx, msg):
                     items.generate_pants(),
                     items.generate_tunic(),
                     items.generate_bandage(),
-                    items.generate_helm(),
+                    items.generate_helm()
                 ],
                 createAt=result.created_at.int_timestamp,
                 # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
@@ -92,18 +95,18 @@ def create_character(ctx, msg):
         return res
 
     char = Character(
-        user_id=sessions[ctx.transport]["user"].id,
+        user_id=sessions[ctx.transport].account.id,
         nickname=req.nickName,
+        streaming_nickname=f"Fighter#{random.randrange(1000000, 1700000)}",
         gender=Gender(req.gender),
         character_class=CharacterClass(req.characterClass),
     )
 
     # select the default perks and skills
     char.perk0, char.perk1, char.perk2, char.perk3 = pk.perks[CharacterClass(req.characterClass)][0:4]
-
     char.skill0, char.skill1 = sk.skills[CharacterClass(req.characterClass)][0:2]
-
     char.save()
+
     return res
 
 
@@ -121,6 +124,14 @@ def delete_character(ctx, msg):
         return res
 
     query.delete()
+    return res
+
+
+def customise_character_info(ctx, msg):
+    custom = SCUSTOMIZE_CHARACTER(customizeCharacterId="1", isEquip=1, isNew=1)
+    res = SS2C_CUSTOMIZE_CHARACTER_INFO_RES()
+    res.loopFlag = 0
+    res.customizeCharacters.append(custom)
     return res
 
 
@@ -152,20 +163,32 @@ def character_info(ctx, msg):
         ),
     )
 
+
+def get_experience(ctx, msg):
+    """Occurs when the user loads into the lobby."""
+    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
+    res = SS2C_CLASS_LEVEL_INFO_RES()
+
+    res.level = query.level
+    res.exp = query.experience
+    res.expBegin = 0
+
+    # 1 - 4 = 40 exp, 5 - 9 = 60 exp, 10 - 14 = 80 exp, 15 - 19 = 100
+    res.expLimit = 40 + (int(query.level / 5) * 20)
+
     return res
 
 
 def move_item(ctx, msg):
     req = SC2S_INVENTORY_SINGLE_UPDATE_REQ()
     req.ParseFromString(msg)
-
     res = SS2C_INVENTORY_SINGLE_UPDATE_RES(result=pc.SUCCESS, oldItem=req.oldItem, newItem=req.newItem)
     return res
 
 
 def list_perks(ctx, msg):
     """Occurs when user selects the class menu."""
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).first()
+    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
     selected_perks = [query.perk0, query.perk1, query.perk2, query.perk3]
 
     res = SS2C_CLASS_PERK_LIST_RES()
@@ -176,7 +199,6 @@ def list_perks(ctx, msg):
     for perk in perks:
         if perk not in selected_perks:
             res.perks.append(item.SPerk(index=index, perkId=perk))
-
             index += 1
 
     return res
@@ -184,7 +206,7 @@ def list_perks(ctx, msg):
 
 def list_skills(ctx, msg):
     """Occurs when user selects the class menu."""
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).first()
+    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
     selected_skills = [query.skill0, query.skill1]
 
     res = SS2C_CLASS_SKILL_LIST_RES()
@@ -195,7 +217,6 @@ def list_skills(ctx, msg):
     for skill in skills:
         if skill not in selected_skills:
             res.skills.append(item.SSkill(index=index, skillId=skill))
-
             index += 1
 
     return res
@@ -203,7 +224,7 @@ def list_skills(ctx, msg):
 
 def get_perks_and_skills(ctx, msg):
     """Occurs when the user loads in the game or loads into the class menu."""
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).first()
+    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
     res = SS2C_CLASS_EQUIP_INFO_RES()
 
     # level requirements for the 4 perks
@@ -241,7 +262,7 @@ def move_perks_and_skills(ctx, msg):
     req = SC2S_CLASS_ITEM_MOVE_REQ()
     req.ParseFromString(msg)
 
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).first()
+    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
     items = [req.oldMove, req.newMove]
 
     # process all the move requests
