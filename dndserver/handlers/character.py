@@ -142,7 +142,7 @@ def character_info(ctx, msg):
     res = SS2C_LOBBY_CHARACTER_INFO_RES(
         result=pc.SUCCESS,
         characterDataBase=SCHARACTER_INFO(
-            accountId="1",
+            accountId=str(sessions[ctx.transport].account.id),
             nickName=SACCOUNT_NICKNAME(
                 originalNickName=character.nickname,
                 streamingModeNickName=character.streaming_nickname
