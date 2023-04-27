@@ -146,6 +146,12 @@ def delete_character(ctx, msg):
         res.result = pc.FAIL_GENERAL
         return res
 
+    # also delete all the items this character has
+    items = db.query(Item).filter_by(character_id=req.characterId)
+    for item in items:
+        item.delete()
+
+    # delete the character after we have removed all the other items
     query.delete()
     return res
 
