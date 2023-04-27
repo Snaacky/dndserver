@@ -1,52 +1,75 @@
 import random
 
+from dndserver.database import db
+from dndserver.models import Character
 from dndserver.protos.Character import SACCOUNT_NICKNAME
-from dndserver.protos.Ranking import SRankRecord, SC2S_RANKING_RANGE_REQ, SS2C_RANKING_RANGE_RES
+from dndserver.protos.Ranking import SRankRecord, SC2S_RANKING_RANGE_REQ, SS2C_RANKING_RANGE_RES, RANKING_TYPE
+from dndserver.protos import PacketCommand as pc
 
 
 def get_ranking(ctx, msg):
-    # message SC2S_RANKING_RANGE_REQ {
-    #   uint32 rankType = 1;
-    #   uint32 startIndex = 2;
-    #   uint32 endIndex = 3;
-    #   string characterClass = 4;
-    # }
-
+    """Occurs when the user opens the leaderboards."""
     req = SC2S_RANKING_RANGE_REQ()
     req.ParseFromString(msg)
 
-    # message SS2C_RANKING_RANGE_RES {
-    #   uint32 result = 1;
-    #   repeated .DC.Packet.SRankRecord records = 2;
-    #   uint32 rankType = 3;
-    #   uint32 allRowCount = 4;
-    #   uint32 startIndex = 5;
-    #   uint32 endIndex = 6;
-    #   string characterClass = 7;
-    # }
-    res = SS2C_RANKING_RANGE_RES(result=1, rankType=1, allRowCount=1, startIndex=1, endIndex=1, characterClass="")
+    # TODO: implement some caching so the database is not hit every time a user requests the rankings
+    if req.rankType == RANKING_TYPE.COIN:
+        query = db.query(Character).order_by(Character.ranking_coin.desc())
+    elif req.rankType == RANKING_TYPE.KILL:
+        query = db.query(Character).order_by(Character.ranking_kill.desc())
+    elif req.rankType == RANKING_TYPE.ESCAPE:
+        query = db.query(Character).order_by(Character.ranking_escape.desc())
+    elif req.rankType == RANKING_TYPE.ADVENTURE:
+        query = db.query(Character).order_by(Character.ranking_adventure.desc())
+    elif req.rankType == RANKING_TYPE.BOSSKILL_LICH:
+        query = db.query(Character).order_by(Character.ranking_lich.desc())
+    elif req.rankType == RANKING_TYPE.BOSSKILL_GHOSTKING:
+        query = db.query(Character).order_by(Character.ranking_ghostking.desc())
+    else:
+        # we dont know this type. Give a error
+        return SS2C_RANKING_RANGE_RES(result=pc.FAIL_NO_VALUE)
 
-    # message SRankRecord {
-    #   uint32 pageIndex = 1;
-    #   uint32 rank = 2;
-    #   uint32 score = 3;
-    #   float percentage = 4;
-    #   string accountId = 5;
-    #   .DC.Packet.SACCOUNT_NICKNAME nickName = 6;
-    #   string characterClass = 7;
-    # }
+    res = SS2C_RANKING_RANGE_RES()
+    res.result = pc.SUCCESS
+    res.rankType = req.rankType
+    res.startIndex = req.startIndex
+    res.endIndex = req.endIndex
+    res.characterClass = ""
+    res.allRowCount = query.count()
 
-    record = SRankRecord(
-        pageIndex=1,
-        rank=1,
-        score=1,
-        percentage=1.0,
-        accountId=1,
-        nickName=SACCOUNT_NICKNAME(
-            originalNickName="Test",
-            streamingModeNickName=f"Fighter#{random.randrange(1000000, 1700000)}"
+    for index, (character, _) in enumerate(zip(query, range(min(query.count(), req.endIndex)))):
+        if req.rankType == RANKING_TYPE.COIN:
+            score = character.ranking_coin
+        elif req.rankType == RANKING_TYPE.KILL:
+            score = character.ranking_kill
+        elif req.rankType == RANKING_TYPE.ESCAPE:
+            score = character.ranking_escape
+        elif req.rankType == RANKING_TYPE.ADVENTURE:
+            score = character.ranking_adventure
+        elif req.rankType == RANKING_TYPE.BOSSKILL_LICH:
+            score = character.ranking_lich
+        elif req.rankType == RANKING_TYPE.BOSSKILL_GHOSTKING:
+            score = character.ranking_ghostking
+
+        if score == 0:
+            # if the score is 0 we do not show it. As the query is sorted on decending order
+            # the next items are also zero and we can exit
+            return res
+
+        record = SRankRecord()
+        record.score = score
+
+        record.percentage = 1.0
+        record.accountId = str(character.user_id)
+        record.pageIndex = index
+        record.rank = index + 1
+
+        nickname = SACCOUNT_NICKNAME(
+            originalNickName=character.nickname, streamingModeNickName=f"Fighter#{random.randrange(1000000, 1700000)}"
         )
-    )
-    res.records.CopyFrom(record)
+
+        record.nickName.CopyFrom(nickname)
+
+        res.records.extend([record])
 
     return res
