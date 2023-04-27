@@ -1,0 +1,64 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_GoldCoinBag",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.GoldCoinBag"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_GoldCoinBag"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_GoldCoinBag",
+          "SourceString": "Text_DesignData_Item_Item_GoldCoinBag",
+          "LocalizedString": "Gold Coin Bag"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_GoldCoinBag_2001",
+          "SourceString": "Text_DesignData_Item_Flavor_GoldCoinBag_2001",
+          "LocalizedString": "A bag that can hold quite a bit of gold coins."
+        },
+        "MiscType": {
+          "TagName": "Type.Item.Misc.Container.Gold"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Common"
+        },
+        "MaxCount": 1,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "GoldCoinBag"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "GoldCoinBag_Sound"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 2,
+        "InventoryHeight": 2,
+        "ContainerData": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemContainer"
+          },
+          "PrimaryAssetName": "Id_ItemContainer_GoldCoinBag"
+        }
+      }
+    }
+  }
+]

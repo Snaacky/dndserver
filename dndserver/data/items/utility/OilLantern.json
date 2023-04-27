@@ -1,0 +1,119 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_OilLantern",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.OilLantern"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_OilLantern"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_OilLantern",
+          "SourceString": "Text_DesignData_Item_Item_OilLantern",
+          "LocalizedString": "Oil Lantern"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_OilLantern_2001",
+          "SourceString": "Text_DesignData_Item_Flavor_OilLantern_2001",
+          "LocalizedString": "Always reliable, the oil lantern casts a warm glow illuminating the path ahead."
+        },
+        "SlotType": {
+          "TagName": "Type.Item.Slot.Utility"
+        },
+        "HandType": {
+          "TagName": "Type.Item.Hand.OneHanded"
+        },
+        "UtilityType": {
+          "TagName": "Type.Item.Utility.LightSource"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Common"
+        },
+        "MaxCount": 1,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "OilLantern"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "OilLantern_Sound"
+        },
+        "ActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_OilLantern_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Item/Utility/OilLantern/BP_OilLantern.1"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 1,
+        "InventoryHeight": 2,
+        "SelfAbilities": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayAbility"
+            },
+            "PrimaryAssetName": "Id_ItemAbility_OilLanternActivateOnEquip"
+          },
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayAbility"
+            },
+            "PrimaryAssetName": "Id_ItemAbility_OilLanternAdditionalActivate"
+          }
+        ],
+        "Abilities": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayAbility"
+            },
+            "PrimaryAssetName": "Id_ItemAbility_OilLantern_LightActivate"
+          },
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayAbility"
+            },
+            "PrimaryAssetName": "Id_ItemAbility_OilLanternThrow"
+          }
+        ],
+        "Effects": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayEffect"
+            },
+            "PrimaryAssetName": "Id_ItemEffect_Utility_LightSource"
+          }
+        ],
+        "PrimaryProperty": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemProperty"
+          },
+          "PrimaryAssetName": "Id_ItemProperty_Primary_OilLantern"
+        },
+        "Requirement": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemRequirement"
+          },
+          "PrimaryAssetName": "Id_ItemRequirement_OilLantern"
+        },
+        "AdvPoint": 1,
+        "ExpPoint": 1
+      }
+    }
+  }
+]

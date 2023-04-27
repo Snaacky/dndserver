@@ -1,0 +1,110 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_FranciscaAxe_5001",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.FranciscaAxe"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_FranciscaAxe_0001"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_FranciscaAxe_5001",
+          "SourceString": "Text_DesignData_Item_Item_FranciscaAxe_5001",
+          "LocalizedString": "Francisca Axe"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_FranciscaAxe_0001",
+          "SourceString": "Text_DesignData_Item_Flavor_FranciscaAxe_0001",
+          "LocalizedString": "A Lightweight small throwing axe that can take out enemies from a distance."
+        },
+        "SlotType": {
+          "TagName": "Type.Item.Slot.Utility"
+        },
+        "HandType": {
+          "TagName": "Type.Item.Hand.OneHanded"
+        },
+        "WeaponTypes": [
+          {
+            "TagName": "Type.Item.Weapon.Axe"
+          }
+        ],
+        "UtilityType": {
+          "TagName": "Type.Item.Utility.Throwable"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Epic"
+        },
+        "MaxCount": 3,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "FranciscaAxe"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "FranciscaAxe_Sound"
+        },
+        "ActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_FranciscaAxe_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Item/Utility/FranciscaAxe/BP_FranciscaAxe.1"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 1,
+        "InventoryHeight": 2,
+        "Abilities": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayAbility"
+            },
+            "PrimaryAssetName": "Id_ItemAbility_FranciscaAxeThrow"
+          }
+        ],
+        "Effects": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayEffect"
+            },
+            "PrimaryAssetName": "Id_ItemEffect_Weapon_Axe"
+          },
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayEffect"
+            },
+            "PrimaryAssetName": "Id_ItemEffect_Utility_Throwable"
+          }
+        ],
+        "PrimaryProperty": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemProperty"
+          },
+          "PrimaryAssetName": "Id_ItemProperty_Primary_FranciscaAxe_5001"
+        },
+        "Requirement": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemRequirement"
+          },
+          "PrimaryAssetName": "Id_ItemRequirement_FranciscaAxe_5001"
+        },
+        "AdvPoint": 5,
+        "ExpPoint": 5
+      }
+    }
+  }
+]

@@ -1,0 +1,79 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_GoldenKey",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.GoldenKey"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_GoldenKey"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_GoldenKey",
+          "SourceString": "Text_DesignData_Item_Item_GoldenKey",
+          "LocalizedString": "Golden Key"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_GoldenKey_7001",
+          "SourceString": "Text_DesignData_Item_Flavor_GoldenKey_7001",
+          "LocalizedString": "An intricate golden key that may lead to priceless treasure."
+        },
+        "SlotType": {
+          "TagName": "Type.Item.Slot.Utility"
+        },
+        "HandType": {
+          "TagName": "Type.Item.Hand.OneHanded"
+        },
+        "UtilityType": {
+          "TagName": "Type.Item.Utility.Consumable"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Unique"
+        },
+        "MaxCount": 1,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "GoldenKey"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "Lockpick_Sound"
+        },
+        "ActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_GoldenKey_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Item/Utility/GoldenKey/BP_GoldenKey.1"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 1,
+        "InventoryHeight": 2,
+        "Effects": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayEffect"
+            },
+            "PrimaryAssetName": "Id_ItemEffect_Utility_Consumable_GoldenKey"
+          }
+        ],
+        "AdvPoint": 10,
+        "ExpPoint": 10
+      }
+    }
+  }
+]

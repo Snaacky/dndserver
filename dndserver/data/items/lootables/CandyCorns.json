@@ -1,0 +1,60 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_CandyCorns",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.CandyCorns"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_CandyCorns"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_CandyCorns",
+          "SourceString": "Text_DesignData_Item_Item_CandyCorns",
+          "LocalizedString": "Candy Corn"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_CandyCorns_7001",
+          "SourceString": "Text_DesignData_Item_Flavor_CandyCorns_7001",
+          "LocalizedString": "Candy Corns"
+        },
+        "MiscType": {
+          "TagName": "Type.Item.Misc.Currency"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Unique"
+        },
+        "MaxCount": 10,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "CandyCorns"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "CandyCorns_Sound"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 1,
+        "InventoryHeight": 1,
+        "AdvPoint": 1,
+        "ExpPoint": 1
+      }
+    }
+  }
+]

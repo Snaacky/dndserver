@@ -1,0 +1,65 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_CobaltIngots_4001",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.CobaltIngots"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_CobaltIngots_4001"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_CobaltIngots_4001",
+          "SourceString": "Text_DesignData_Item_Item_CobaltIngots_4001",
+          "LocalizedString": "Cobalt Ingot"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_CobaltIngots_4001",
+          "SourceString": "Text_DesignData_Item_Flavor_CobaltIngots_4001",
+          "LocalizedString": "A highly enriched ingot of pure Cobalt."
+        },
+        "MiscType": {
+          "TagName": "Type.Item.Misc.Ingot"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Rare"
+        },
+        "MaxCount": 5,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "CobaltIngot"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "CobaltIngot_Sound"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 2,
+        "InventoryHeight": 2,
+        "BundleInfo": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemBundleInfo"
+          },
+          "PrimaryAssetName": "Id_ItemBundleInfo_CobaltIngot"
+        }
+      }
+    }
+  }
+]
