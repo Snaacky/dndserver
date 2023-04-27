@@ -18,10 +18,8 @@ class Rarity(Enum):
 class ItemType(Enum):
     WEAPONS = "weapons"
     ARMORS = "armors"
-    JEWELRY = "jewelry"
     CONSUMABLES = "consumables"
     UTILITY = "utility"
-    MATERIALS = "materials"
     LOOTABLES = "lootables"
     OTHERS = "others"
 
