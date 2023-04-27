@@ -18,7 +18,7 @@ def enter_lobby(ctx, msg):
     req.ParseFromString(msg)
 
     query = db.query(Character).filter_by(id=req.characterId).first()
-    res = SS2C_LOBBY_ENTER_RES(result=pc.SUCCESS, accountId=str(query.user_id))
+    res = SS2C_LOBBY_ENTER_RES(result=pc.SUCCESS, accountId=str(query.id))
 
     sessions[ctx.transport].character = query
     sessions[ctx.transport].party = Party(_id=len(parties) + 1, player_1=sessions[ctx.transport])
