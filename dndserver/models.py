@@ -38,6 +38,7 @@ class Character(base):
     level = Column(Integer, default=1)
     experience = Column(Integer, default=0)
     karma_rating = Column(Integer, default=0)
+    streaming_nickname = Column(String(15))
 
     perk0 = Column(String, default="")
     perk1 = Column(String, default="")
