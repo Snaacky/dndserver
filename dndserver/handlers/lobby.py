@@ -7,6 +7,7 @@ from dndserver.protos.Lobby import (SC2S_CHARACTER_SELECT_ENTER_REQ, SC2S_LOBBY_
                                     SS2C_LOBBY_REGION_SELECT_RES, SS2C_CHARACTER_SELECT_ENTER_RES,
                                     SC2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ, SS2C_LOBBY_GAME_DIFFICULTY_SELECT_RES,
                                     SS2C_OPEN_LOBBY_MAP_RES, SC2S_OPEN_LOBBY_MAP_REQ)
+from dndserver.parties import parties
 from dndserver.sessions import sessions
 
 
@@ -20,6 +21,8 @@ def enter_lobby(ctx, msg):
 
     sessions[ctx.transport].character = query
     sessions[ctx.transport].party = Party(_id=len(parties) + 1, player_1=sessions[ctx.transport])
+
+    ctx.reply(character.character_info(ctx, msg))
 
     return res
 
@@ -42,8 +45,7 @@ def start(ctx, msg):
 
 def enter_character_select(ctx, msg):
     """Occurs when client enter in the characters selection menu."""
-    res = SS2C_CHARACTER_SELECT_ENTER_RES()
-    res.result = pc.SUCCESS
+    res = SS2C_CHARACTER_SELECT_ENTER_RES(result=1)
     return res
 
 
@@ -58,5 +60,5 @@ def map_select(ctx, msg):
 def open_lobby_map(ctx, msg):
     req = SC2S_OPEN_LOBBY_MAP_REQ()
     req.ParseFromString(msg)
-    res = SS2C_OPEN_LOBBY_MAP_RES()
+    res = SS2C_OPEN_LOBBY_MAP_RES(result=pc.SUCCESS)
     return res

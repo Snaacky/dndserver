@@ -28,23 +28,30 @@ def list_characters(ctx, msg):
     end = start + 7
 
     for result in query[start:end]:
-        res.characterList.append(SLOGIN_CHARACTER_INFO(
-            characterId=str(result.id),
-            nickName=SACCOUNT_NICKNAME(
-                originalNickName=result.nickname,
-                streamingModeNickName=result.streaming_nickname
-            ),
-            level=result.level,
-            characterClass=CharacterClass(result.character_class).value,
-            gender=Gender(result.gender).value,
-            equipItemList=[
-                items.generate_torch(), items.generate_roundshield(), items.generate_lantern(),
-                items.generate_sword(), items.generate_pants(), items.generate_tunic(),
-                items.generate_bandage(), items.generate_helm()
-            ],
-            createAt=result.created_at.int_timestamp,
-            # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
-        ))
+        res.characterList.append(
+            SLOGIN_CHARACTER_INFO(
+                characterId=str(result.id),
+                nickName=SACCOUNT_NICKNAME(
+                    originalNickName=result.nickname,
+                    streamingModeNickName=result.streaming_nickname
+                ),
+                level=result.level,
+                characterClass=CharacterClass(result.character_class).value,
+                gender=Gender(result.gender).value,
+                equipItemList=[
+                    items.generate_torch(),
+                    items.generate_roundshield(),
+                    items.generate_lantern(),
+                    items.generate_sword(),
+                    items.generate_pants(),
+                    items.generate_tunic(),
+                    items.generate_bandage(),
+                    items.generate_helm()
+                ],
+                createAt=result.created_at.int_timestamp,
+                # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
+            )
+        )
 
     return res
 
@@ -68,14 +75,18 @@ def create_character(ctx, msg):
         res.result = pc.FAIL_DUPLICATE_NICKNAME
         return res
 
-    character = Character(
+    char = Character(
         user_id=sessions[ctx.transport].account.id,
         nickname=req.nickName,
         gender=Gender(req.gender),
         character_class=CharacterClass(req.characterClass)
     )
 
-    character.save()
+    # select the default perks and skills
+    char.perk0, char.perk1, char.perk2, char.perk3 = pk.perks[CharacterClass(req.characterClass)][0:4]
+    char.skill0, char.skill1 = sk.skills[CharacterClass(req.characterClass)][0:2]
+    char.save()
+
     return res
 
 
@@ -98,7 +109,6 @@ def delete_character(ctx, msg):
 
 def character_info(ctx, msg):
     """Occurs when the user loads into the lobby/tavern."""
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport].account.id).first()
     character = sessions[ctx.transport].character
 
     res = SS2C_LOBBY_CHARACTER_INFO_RES(
@@ -120,6 +130,8 @@ def character_info(ctx, msg):
             ]
         )
     )
+
+    return res
 
     return res
 
