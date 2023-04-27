@@ -63,6 +63,7 @@ def list_characters(ctx, msg):
                     items.generate_tunic(),
                     items.generate_bandage(),
                     items.generate_helm(),
+                    items.generate_boots(),
                 ],
                 createAt=result.created_at.int_timestamp,
                 # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
@@ -146,6 +147,7 @@ def character_info(ctx, msg):
                 items.generate_pants(),
                 items.generate_tunic(),
                 items.generate_bandage(),
+                items.generate_boots(),
             ],
         ),
     )

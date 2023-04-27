@@ -9,7 +9,8 @@ class Item():
         item_count: int,
         inventory_id: int,
         slot_id: int,
-        primary_properties: list[tuple[str, int]]
+        primary_properties: list[tuple[str, int]],
+        secondary_properties: list[tuple[str, int]]
     ) -> None:
         self.unique_id = unique_id
         self.item_id = item_id
@@ -17,6 +18,7 @@ class Item():
         self.inventory_id = inventory_id
         self.slot_id = slot_id
         self.primary_properties = primary_properties
+        self.secondary_properties = secondary_properties
 
     def create(self):
         new_item = item.SItem()
@@ -30,6 +32,7 @@ class Item():
             new_prop.propertyTypeId = prop[0]
             new_prop.propertyValue = prop[1]
             new_item.primaryPropertyArray.append(new_prop)
+            new_item.secondaryPropertyArray.append(new_prop)
 
 
 def generate_torch():
@@ -63,7 +66,7 @@ def generate_roundshield():
 
     armor_rating = item.SItemProperty()
     armor_rating.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_ArmorRating"
-    armor_rating.propertyValue = 13
+    armor_rating.propertyValue = 500
     shield.primaryPropertyArray.append(armor_rating)
 
     move_speed = item.SItemProperty()
@@ -142,7 +145,7 @@ def generate_tunic():
 
     armor_rating = item.SItemProperty()
     armor_rating.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_ArmorRating"
-    armor_rating.propertyValue = 14
+    armor_rating.propertyValue = 500
     tunic.primaryPropertyArray.append(armor_rating)
 
     move_speed = item.SItemProperty()
@@ -151,6 +154,51 @@ def generate_tunic():
     tunic.primaryPropertyArray.append(move_speed)
 
     return tunic
+
+def generate_boots():
+    boots = item.SItem()
+    boots.itemUniqueId = 6646818718302106
+    boots.itemId = "DesignDataItem:Id_Item_AdventurerBoots_6001"
+    boots.itemCount = 1
+    boots.inventoryId = 3
+    boots.slotId = 5
+
+    armor_rating = item.SItemProperty()
+    armor_rating.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_ArmorRating"
+    armor_rating.propertyValue = 6
+    boots.primaryPropertyArray.append(armor_rating)
+
+    move_speed = item.SItemProperty()
+    move_speed.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_MoveSpeed"
+    move_speed.propertyValue = 5
+    boots.primaryPropertyArray.append(move_speed)
+
+    magic_resistance = item.SItemProperty()
+    magic_resistance.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_MagicRegistance"
+    magic_resistance.propertyValue = 5
+    boots.primaryPropertyArray.append(magic_resistance)
+
+    enchant_one = item.SItemProperty()
+    enchant_one.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_ArmorPenetration"
+    enchant_one.propertyValue = 2
+    boots.secondaryPropertyArray.append(enchant_one)
+
+    enchant_two = item.SItemProperty()
+    enchant_two.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_BuffDurationBonus"
+    enchant_two.propertyValue = 37
+    boots.secondaryPropertyArray.append(enchant_two)
+
+    enchant_three = item.SItemProperty()
+    enchant_three.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_Strength"
+    enchant_three.propertyValue = 50
+    boots.secondaryPropertyArray.append(enchant_three)
+
+    enchant_four = item.SItemProperty()
+    enchant_four.propertyTypeId = "DesignDataItemPropertyType:Id_ItemPropertyType_Effect_Primitive"
+    enchant_four.propertyValue = 50
+    boots.secondaryPropertyArray.append(enchant_four)
+
+    return boots
 
 
 def generate_bandage():
