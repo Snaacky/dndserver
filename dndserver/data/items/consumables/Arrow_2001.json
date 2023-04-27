@@ -32,7 +32,7 @@
         "RarityType": {
           "TagName": "Type.Item.Rarity.Common"
         },
-        "MaxCount": 10,
+        "MaxCount": 15,
         "CanDrop": true,
         "CanSaveIntoDatabase": true,
         "ArtData": {
