@@ -25,6 +25,8 @@ from dndserver.protos.CharacterClass import (
     SS2C_CLASS_SKILL_LIST_RES,
     SS2C_CLASS_LEVEL_INFO_RES,
 )
+from dndserver.protos.Customize import SS2C_CUSTOMIZE_CHARACTER_INFO_RES
+from dndserver.protos.Item import SCUSTOMIZE_CHARACTER
 from dndserver.protos.Defines import Define_Character, Define_Class
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 from dndserver.protos.Inventory import SC2S_INVENTORY_SINGLE_UPDATE_REQ, SS2C_INVENTORY_SINGLE_UPDATE_RES
@@ -122,6 +124,14 @@ def delete_character(ctx, msg):
         return res
 
     query.delete()
+    return res
+
+
+def customise_character_info(ctx, msg):
+    custom = SCUSTOMIZE_CHARACTER(customizeCharacterId="1", isEquip=1, isNew=1)
+    res = SS2C_CUSTOMIZE_CHARACTER_INFO_RES()
+    res.loopFlag = 0
+    res.customizeCharacters.append(custom)
     return res
 
 

@@ -7,6 +7,7 @@ from dndserver.protos.Lobby import (SC2S_CHARACTER_SELECT_ENTER_REQ, SC2S_LOBBY_
                                     SC2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ, SS2C_LOBBY_GAME_DIFFICULTY_SELECT_RES,
                                     SS2C_OPEN_LOBBY_MAP_RES, SC2S_OPEN_LOBBY_MAP_REQ)
 from dndserver.sessions import sessions
+from dndserver.handlers import character
 
 
 def enter_lobby(ctx, msg):
@@ -16,6 +17,7 @@ def enter_lobby(ctx, msg):
     query = db.query(Character).filter_by(id=req.characterId).first()
     res = SS2C_LOBBY_ENTER_RES(result=pc.SUCCESS, accountId=str(query.user_id))
     sessions[ctx.transport]["character"] = query
+    ctx.send(character.character_info(ctx, msg))
     return res
 
 
