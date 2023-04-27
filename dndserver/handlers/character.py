@@ -27,7 +27,7 @@ from dndserver.protos.CharacterClass import (
 )
 from dndserver.protos.Customize import SS2C_CUSTOMIZE_CHARACTER_INFO_RES
 from dndserver.protos.Item import SCUSTOMIZE_CHARACTER
-from dndserver.protos.Defines import Define_Character, Define_Class
+from dndserver.protos.Defines import Define_Character, Define_Class, Define_Item
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 from dndserver.protos.Inventory import SC2S_INVENTORY_SINGLE_UPDATE_REQ, SS2C_INVENTORY_SINGLE_UPDATE_RES
 from dndserver.sessions import sessions
@@ -47,29 +47,37 @@ def list_characters(ctx, msg):
     end = start + 7
 
     for result in query[start:end]:
-        res.characterList.append(
-            SLOGIN_CHARACTER_INFO(
-                characterId=str(result.id),
-                nickName=SACCOUNT_NICKNAME(
-                    originalNickName=result.nickname, streamingModeNickName=result.streaming_nickname
-                ),
-                level=result.level,
-                characterClass=CharacterClass(result.character_class).value,
-                gender=Gender(result.gender).value,
-                equipItemList=[
-                    objects.items.generate_torch(),
-                    objects.items.generate_roundshield(),
-                    objects.items.generate_lantern(),
-                    objects.items.generate_sword(),
-                    objects.items.generate_pants(),
-                    objects.items.generate_tunic(),
-                    objects.items.generate_bandage(),
-                    objects.items.generate_helm(),
-                ],
-                createAt=result.created_at.int_timestamp,
-                # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
-            )
+        info = SLOGIN_CHARACTER_INFO(
+            characterId=str(result.id),
+            nickName=SACCOUNT_NICKNAME(
+                originalNickName=result.nickname, streamingModeNickName=result.streaming_nickname
+            ),
+            level=result.level,
+            characterClass=CharacterClass(result.character_class).value,
+            gender=Gender(result.gender).value,
+            createAt=result.created_at.int_timestamp,
+            # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
         )
+
+        items = db.query(Item).filter_by(character_id=result.id)
+
+        for item in items:
+            if item.inventory_id != Define_Item.InventoryId.EQUIPMENT:
+                continue
+
+            it = pItem.SItem(
+                itemUniqueId=item.id,
+                itemId=item.item_id,
+                itemCount=item.quantity,
+                inventoryId=item.inventory_id,
+                slotId=item.slot_id,
+                itemAmmoCount=item.id,
+                itemContentsCount=item.id,
+            )
+
+            info.equipItemList.append(it)
+
+        res.characterList.append(info)
 
     return res
 
