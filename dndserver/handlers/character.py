@@ -23,6 +23,7 @@ from dndserver.protos.CharacterClass import (
     SC2S_CLASS_ITEM_MOVE_REQ,
     SS2C_CLASS_ITEM_MOVE_RES,
     SS2C_CLASS_SKILL_LIST_RES,
+    SS2C_CLASS_LEVEL_INFO_RES,
 )
 from dndserver.protos.Defines import Define_Character, Define_Class
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
@@ -150,6 +151,21 @@ def character_info(ctx, msg):
             ],
         ),
     )
+    return res
+
+
+def get_experience(ctx, msg):
+    """Occurs when the user loads into the lobby."""
+    query = db.query(Character).filter_by(user_id=sessions[ctx.transport]["user"].id).first()
+    res = SS2C_CLASS_LEVEL_INFO_RES()
+
+    res.level = query.level
+    res.exp = query.experience
+    res.expBegin = 0
+
+    # 1 - 4 = 40 exp, 5 - 9 = 60 exp, 10 - 14 = 80 exp, 15 - 19 = 100
+    res.expLimit = 40 + (int(query.level / 5) * 20)
+
     return res
 
 
