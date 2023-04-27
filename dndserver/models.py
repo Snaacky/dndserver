@@ -36,6 +36,7 @@ class Character(base):
     character_class = Column(Enum(CharacterClass))
     created_at = Column(ArrowType, default=arrow.utcnow())
     level = Column(Integer, default=1)
+    experience = Column(Integer, default=0)
     karma_rating = Column(Integer, default=0)
     perk0 = Column(String, default="")
     perk1 = Column(String, default="")
