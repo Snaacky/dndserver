@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: 1b448e063351
+Revision ID: 1e34cc7ebc1c
 Revises: 
-Create Date: 2023-04-26 11:17:53.776492
+Create Date: 2023-04-27 09:50:30.690665
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 import sqlalchemy_utils
 
 # revision identifiers, used by Alembic.
-revision = '1b448e063351'
+revision = '1e34cc7ebc1c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -36,7 +36,31 @@ def upgrade() -> None:
     sa.Column('character_class', sa.Enum('BARBARIAN', 'BARD', 'CLERIC', 'FIGHTER', 'RANGER', 'ROGUE', 'WIZARD', name='characterclass'), nullable=True),
     sa.Column('created_at', sqlalchemy_utils.types.arrow.ArrowType(), nullable=True),
     sa.Column('level', sa.Integer(), nullable=True),
+    sa.Column('experience', sa.Integer(), nullable=True),
     sa.Column('karma_rating', sa.Integer(), nullable=True),
+    sa.Column('streaming_nickname', sa.String(length=15), nullable=True),
+    sa.Column('perk0', sa.String(), nullable=True),
+    sa.Column('perk1', sa.String(), nullable=True),
+    sa.Column('perk2', sa.String(), nullable=True),
+    sa.Column('perk3', sa.String(), nullable=True),
+    sa.Column('skill0', sa.String(), nullable=True),
+    sa.Column('skill1', sa.String(), nullable=True),
+    sa.Column('spell0', sa.String(), nullable=True),
+    sa.Column('spell1', sa.String(), nullable=True),
+    sa.Column('spell2', sa.String(), nullable=True),
+    sa.Column('spell3', sa.String(), nullable=True),
+    sa.Column('spell4', sa.String(), nullable=True),
+    sa.Column('spell5', sa.String(), nullable=True),
+    sa.Column('spell6', sa.String(), nullable=True),
+    sa.Column('spell7', sa.String(), nullable=True),
+    sa.Column('spell8', sa.String(), nullable=True),
+    sa.Column('spell9', sa.String(), nullable=True),
+    sa.Column('ranking_coin', sa.Integer(), nullable=True),
+    sa.Column('ranking_kill', sa.Integer(), nullable=True),
+    sa.Column('ranking_escape', sa.Integer(), nullable=True),
+    sa.Column('ranking_adventure', sa.Integer(), nullable=True),
+    sa.Column('ranking_lich', sa.Integer(), nullable=True),
+    sa.Column('ranking_ghostking', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('nickname')
     )
