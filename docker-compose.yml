@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  dndserver:
+    build: .
+    image: dndserver
+    container_name: dndserver
+    ports:
+      - 13337:13337
+    # volumes:
+    #   - ./data:/app/dndserver.db
