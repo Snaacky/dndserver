@@ -2,7 +2,7 @@ import random
 
 from dndserver.database import db
 from dndserver.enums import CharacterClass, Gender
-from dndserver.models import Character, Item
+from dndserver.models import Character, Item, ItemAttribute
 from dndserver import objects
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos import Item as pItem
@@ -35,6 +35,28 @@ from dndserver.data import perks as pk
 from dndserver.data import skills as sk
 
 
+def item_to_proto_item(item, attributes):
+    ret = pItem.SItem()
+
+    ret.itemUniqueId = item.id
+    ret.itemId = item.item_id
+    ret.itemCount = item.quantity
+    ret.inventoryId = item.inventory_id
+    ret.slotId = item.slot_id
+    ret.itemAmmoCount = item.id
+    ret.itemContentsCount = item.id
+
+    for attribute in attributes:
+        property = pItem.SItemProperty(propertyTypeId=attribute.property, propertyValue=attribute.value)
+
+        if attribute.primary:
+            ret.primaryPropertyArray.append(property)
+        else:
+            ret.secondaryPropertyArray.append(property)
+
+    return ret
+
+
 def list_characters(ctx, msg):
     """Occurs when the user loads in to the character selection screen."""
     req = SC2S_ACCOUNT_CHARACTER_LIST_REQ()
@@ -65,17 +87,8 @@ def list_characters(ctx, msg):
             if item.inventory_id != Define_Item.InventoryId.EQUIPMENT:
                 continue
 
-            it = pItem.SItem(
-                itemUniqueId=item.id,
-                itemId=item.item_id,
-                itemCount=item.quantity,
-                inventoryId=item.inventory_id,
-                slotId=item.slot_id,
-                itemAmmoCount=item.id,
-                itemContentsCount=item.id,
-            )
-
-            info.equipItemList.append(it)
+            attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
+            info.equipItemList.append(item_to_proto_item(item, attributes))
 
         res.characterList.append(info)
 
@@ -128,15 +141,33 @@ def create_character(ctx, msg):
     # give the character a starter set
     for item in starter_items:
         # we ignore the unique id here of the item. The database knows best what the id should be
-        it = Item(
-            character_id=char.id,
-            item_id=item.itemId,
-            quantity=item.itemCount,
-            inventory_id=item.inventoryId,
-            slot_id=item.slotId,
-        )
+        it = Item()
+        it.character_id = char.id
+        it.item_id = item.itemId
+        it.quantity = item.itemCount
+        it.inventory_id = item.inventoryId
+        it.slot_id = item.slotId
 
         it.save()
+
+        # add the attributes to the items
+        for attribute in item.primaryPropertyArray:
+            attr = ItemAttribute()
+            attr.item_id = it.id
+            attr.primary = True
+            attr.property = attribute.propertyTypeId
+            attr.value = attribute.propertyValue
+
+            attr.save()
+
+        for attribute in item.secondaryPropertyArray:
+            attr = ItemAttribute()
+            attr.item_id = it.id
+            attr.primary = False
+            attr.property = attribute.propertyTypeId
+            attr.value = attribute.propertyValue
+
+            attr.save()
 
     return res
 
@@ -157,6 +188,12 @@ def delete_character(ctx, msg):
     # also delete all the items this character has
     items = db.query(Item).filter_by(character_id=req.characterId)
     for item in items:
+        # delete all the attributes of the items we are deleting
+        attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
+
+        for attribute in attributes:
+            attribute.delete()
+
         item.delete()
 
     # delete the character after we have removed all the other items
@@ -189,17 +226,10 @@ def character_info(ctx, msg):
     )
 
     for item in query:
-        it = pItem.SItem(
-            itemUniqueId=item.id,
-            itemId=item.item_id,
-            itemCount=item.quantity,
-            inventoryId=item.inventory_id,
-            slotId=item.slot_id,
-            itemAmmoCount=item.id,
-            itemContentsCount=item.id,
-        )
+        # add all the items and the attributes of the items
+        attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
 
-        char_info.CharacterItemList.append(it)
+        char_info.CharacterItemList.append(item_to_proto_item(item, attributes))
 
     res = SS2C_LOBBY_CHARACTER_INFO_RES(result=pc.SUCCESS, characterDataBase=char_info)
 
