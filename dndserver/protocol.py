@@ -48,6 +48,7 @@ class GameProtocol(Protocol):
                 pc.C2S_CLASS_SKILL_LIST_REQ: character.list_skills,
                 pc.C2S_CLASS_EQUIP_INFO_REQ: character.get_perks_and_skills,
                 pc.C2S_CLASS_ITEM_MOVE_REQ: character.move_perks_and_skills,
+                pc.C2S_CLASS_LEVEL_INFO_REQ: character.get_experience,
                 pc.C2S_INVENTORY_SINGLE_UPDATE_REQ: character.move_item,
                 pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,
                 pc.C2S_OPEN_LOBBY_MAP_REQ: lobby.open_lobby_map,
