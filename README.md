@@ -21,6 +21,7 @@ Dark and Darker private server implementation written in Python.
 
 ### Requirements
 
+- [Playtest 5 beta files + hotfix 2 (0.5.0.1173)](https://discord.gg/darkanddarker)
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker-compose](https://docs.docker.com/compose/install/)
 
