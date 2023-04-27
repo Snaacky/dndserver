@@ -119,7 +119,7 @@ def delete_character(ctx, msg):
     res = SS2C_ACCOUNT_CHARACTER_DELETE_RES(result=pc.SUCCESS)
 
     # Prevents characters from maliciously deleting others characters.
-    if query.user_id != sessions[ctx.transport].user.id:
+    if query.user_id != sessions[ctx.transport].account.id:
         res.result = pc.FAIL_GENERAL
         return res
 
