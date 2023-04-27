@@ -14,15 +14,9 @@ Dark and Darker private server implementation written in Python.
 - `cd dndserver`
 - `poetry install`
 - `poetry shell`
+- `alembic upgrade head` 
 - `python -m dndserver.server`
 - Add `-server=dcweb.pages.dev:80` to your game's launch options.
-
-## Database migrations
-
-Optional, only if you modify the database models:
-- `python -m alembic revision --autogenerate -m "Revision information go here"` 
-Creates database setting it to the latest revision:
-- `python -m alembic upgrade head` 
 
 ## Roadmap
 
