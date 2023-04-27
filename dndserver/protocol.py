@@ -46,7 +46,7 @@ class GameProtocol(Protocol):
                 pc.C2S_ACCOUNT_CHARACTER_CREATE_REQ: character.create_character,
                 pc.C2S_ACCOUNT_CHARACTER_DELETE_REQ: character.delete_character,
                 pc.C2S_ACCOUNT_CHARACTER_LIST_REQ: character.list_characters,
-                pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.customise_character_info,
+                pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.character_info,
                 pc.C2S_CLASS_PERK_LIST_REQ: character.list_perks,
                 pc.C2S_CLASS_SKILL_LIST_REQ: character.list_skills,
                 pc.C2S_CLASS_EQUIP_INFO_REQ: character.get_perks_and_skills,
