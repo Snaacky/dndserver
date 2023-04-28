@@ -162,6 +162,7 @@ def character_info(ctx, msg):
             ],
         ),
     )
+    return res
 
 
 def get_experience(ctx, msg):
