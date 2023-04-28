@@ -17,6 +17,7 @@ class CharacterClass(Enum):
     RANGER = "DesignDataPlayerCharacter:Id_PlayerCharacter_Ranger"
     ROGUE = "DesignDataPlayerCharacter:Id_PlayerCharacter_Rogue"
     WIZARD = "DesignDataPlayerCharacter:Id_PlayerCharacter_Wizard"
+    NONE = ""
 
 
 class Gender(Enum):

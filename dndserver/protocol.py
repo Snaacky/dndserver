@@ -66,6 +66,7 @@ class GameProtocol(Protocol):
                 pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
                 pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
                 pc.C2S_RANKING_RANGE_REQ: ranking.get_ranking,
+                pc.C2S_RANKING_CHARACTER_REQ: ranking.get_character_ranking,
             }
             handler = [k for k in handlers.keys() if k == _id]
             if not handler:
