@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  dndserver:
+    build: .
+    image: dndserver
+    ports:
+      - "13337:13337"
+      
+  nginx_server:
+    build: ./nginx-docker
+    image: nginx_server
+    ports:
+      - "80:80"
