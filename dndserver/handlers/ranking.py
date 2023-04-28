@@ -1,10 +1,48 @@
-import random
-
 from dndserver.database import db
 from dndserver.models import Character
 from dndserver.protos.Character import SACCOUNT_NICKNAME
-from dndserver.protos.Ranking import SRankRecord, SC2S_RANKING_RANGE_REQ, SS2C_RANKING_RANGE_RES, RANKING_TYPE
+from dndserver.protos.Ranking import (
+    SRankRecord,
+    SC2S_RANKING_RANGE_REQ,
+    SS2C_RANKING_RANGE_RES,
+    RANKING_TYPE,
+    SC2S_RANKING_CHARACTER_REQ,
+    SS2C_RANKING_CHARACTER_RES,
+)
 from dndserver.protos import PacketCommand as pc
+from dndserver.enums import CharacterClass
+from dndserver.sessions import sessions
+
+
+def get_character_ranking(ctx, msg):
+    """Occurs when the user opens the leaderboards to view the rank in the leaderboard."""
+    req = SC2S_RANKING_CHARACTER_REQ()
+    req.ParseFromString(msg)
+
+    res = SS2C_RANKING_CHARACTER_RES()
+    res.result = pc.SUCCESS
+    res.rankType = req.rankType
+    res.allRowCount = 1
+    res.characterClass = req.characterClass
+
+    character = sessions[ctx.transport].character
+
+    # TODO: get the acctual ranking of the character (for now set everything
+    # to 0 to hide the user)
+    record = SRankRecord()
+    record.score = 0
+    record.percentage = 0
+    record.accountId = str(character.user_id)
+    record.pageIndex = 0
+    record.rank = 0
+    record.characterClass = req.characterClass
+    nickname = SACCOUNT_NICKNAME(
+        originalNickName=character.nickname, streamingModeNickName=character.streaming_nickname
+    )
+    record.nickName.CopyFrom(nickname)
+
+    res.rankRecord.CopyFrom(record)
+    return res
 
 
 def get_ranking(ctx, msg):
@@ -12,29 +50,35 @@ def get_ranking(ctx, msg):
     req = SC2S_RANKING_RANGE_REQ()
     req.ParseFromString(msg)
 
+    query = db.query(Character)
+
+    # check if we need to update the query
+    if CharacterClass(req.characterClass) != CharacterClass.NONE:
+        query = query.filter_by(character_class=CharacterClass(req.characterClass))
+
     # TODO: implement some caching so the database is not hit every time a user requests the rankings
     if req.rankType == RANKING_TYPE.COIN:
-        query = db.query(Character).order_by(Character.ranking_coin.desc())
+        query = query.order_by(Character.ranking_coin.desc())
     elif req.rankType == RANKING_TYPE.KILL:
-        query = db.query(Character).order_by(Character.ranking_kill.desc())
+        query = query.order_by(Character.ranking_kill.desc())
     elif req.rankType == RANKING_TYPE.ESCAPE:
-        query = db.query(Character).order_by(Character.ranking_escape.desc())
+        query = query.order_by(Character.ranking_escape.desc())
     elif req.rankType == RANKING_TYPE.ADVENTURE:
-        query = db.query(Character).order_by(Character.ranking_adventure.desc())
+        query = query.order_by(Character.ranking_adventure.desc())
     elif req.rankType == RANKING_TYPE.BOSSKILL_LICH:
-        query = db.query(Character).order_by(Character.ranking_lich.desc())
+        query = query.order_by(Character.ranking_lich.desc())
     elif req.rankType == RANKING_TYPE.BOSSKILL_GHOSTKING:
-        query = db.query(Character).order_by(Character.ranking_ghostking.desc())
+        query = query.order_by(Character.ranking_ghostking.desc())
     else:
         # we dont know this type. Give a error
         return SS2C_RANKING_RANGE_RES(result=pc.FAIL_NO_VALUE)
 
     res = SS2C_RANKING_RANGE_RES()
-    res.result = pc.SUCCESS
+    res.result = pc.SUCCESS if query.count() else pc.FAIL_NO_VALUE
     res.rankType = req.rankType
     res.startIndex = req.startIndex
-    res.endIndex = req.endIndex
-    res.characterClass = ""
+    res.endIndex = min(query.count(), req.endIndex)
+    res.characterClass = req.characterClass
     res.allRowCount = query.count()
 
     for index, (character, _) in enumerate(zip(query, range(min(query.count(), req.endIndex)))):
@@ -63,9 +107,11 @@ def get_ranking(ctx, msg):
         record.accountId = str(character.user_id)
         record.pageIndex = index
         record.rank = index + 1
+        record.characterClass = CharacterClass(character.character_class).value
 
         nickname = SACCOUNT_NICKNAME(
-            originalNickName=character.nickname, streamingModeNickName=f"Fighter#{random.randrange(1000000, 1700000)}"
+            originalNickName=character.nickname,
+            streamingModeNickName=character.streaming_nickname,
         )
 
         record.nickName.CopyFrom(nickname)
