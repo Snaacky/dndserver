@@ -7,7 +7,7 @@ chmod +x ./entrypoint.sh
 python -m pip install poetry
 
 # Run poetry install
-python -m poetry install --no-dev --no-interaction --no-ansi
+python -m poetry install --only main --no-interaction --no-ansi
 
 # Run Alembic upgrade
 python -m alembic upgrade head
