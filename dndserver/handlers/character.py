@@ -168,15 +168,15 @@ def character_info(ctx, msg):
 
 def get_experience(ctx, msg):
     """Occurs when the user loads into the lobby."""
-    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
+    character = sessions[ctx.transport].character
     res = SS2C_CLASS_LEVEL_INFO_RES()
 
-    res.level = query.level
-    res.exp = query.experience
+    res.level = character.level
+    res.exp = character.experience
     res.expBegin = 0
 
     # 1 - 4 = 40 exp, 5 - 9 = 60 exp, 10 - 14 = 80 exp, 15 - 19 = 100
-    res.expLimit = 40 + (int(query.level / 5) * 20)
+    res.expLimit = 40 + (int(character.level / 5) * 20)
 
     return res
 
@@ -190,11 +190,11 @@ def move_item(ctx, msg):
 
 def list_perks(ctx, msg):
     """Occurs when user selects the class menu."""
-    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
-    selected_perks = [query.perk0, query.perk1, query.perk2, query.perk3]
+    character = sessions[ctx.transport].character
+    selected_perks = [character.perk0, character.perk1, character.perk2, character.perk3]
 
     res = SS2C_CLASS_PERK_LIST_RES()
-    perks = pk.perks[query.character_class]
+    perks = pk.perks[character.character_class]
     index = 0
 
     # Generate the response. Do not send the perks we have selected already
@@ -208,11 +208,11 @@ def list_perks(ctx, msg):
 
 def list_skills(ctx, msg):
     """Occurs when user selects the class menu."""
-    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
-    selected_skills = [query.skill0, query.skill1]
+    character = sessions[ctx.transport].character
+    selected_skills = [character.skill0, character.skill1]
 
     res = SS2C_CLASS_SKILL_LIST_RES()
-    skills = sk.skills[query.character_class]
+    skills = sk.skills[character.character_class]
     index = 0
 
     # Generate the response. Do not send the skills we have selected already
@@ -226,12 +226,12 @@ def list_skills(ctx, msg):
 
 def get_perks_and_skills(ctx, msg):
     """Occurs when the user loads in the game or loads into the class menu."""
-    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
+    character = sessions[ctx.transport].character
     res = SS2C_CLASS_EQUIP_INFO_RES()
 
     # level requirements for the 4 perks
     level = [1, 5, 10, 15]
-    perks = [query.perk0, query.perk1, query.perk2, query.perk3]
+    perks = [character.perk0, character.perk1, character.perk2, character.perk3]
 
     for index, perk in enumerate(perks):
         res.equips.append(
@@ -244,7 +244,7 @@ def get_perks_and_skills(ctx, msg):
             )
         )
 
-    skills = [query.skill0, query.skill1]
+    skills = [character.skill0, character.skill1]
     for index, skill in enumerate(skills):
         res.equips.append(
             SCLASS_EQUIP_INFO(
@@ -264,7 +264,7 @@ def move_perks_and_skills(ctx, msg):
     req = SC2S_CLASS_ITEM_MOVE_REQ()
     req.ParseFromString(msg)
 
-    query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
+    char = sessions[ctx.transport].character
     items = [req.oldMove, req.newMove]
 
     # process all the move requests
@@ -278,7 +278,7 @@ def move_perks_and_skills(ctx, msg):
             continue
 
         # get all the perks and the perks we have selected
-        perks_skills = [query.perk0, query.perk1, query.perk2, query.perk3, query.skill0, query.skill1]
+        perks_skills = [char.perk0, char.perk1, char.perk2, char.perk3, char.skill0, char.skill1]
 
         # update the perks
         if it.move == Define_Class.Move.EQUIP:
@@ -287,6 +287,6 @@ def move_perks_and_skills(ctx, msg):
             perks_skills[it.index - 1] = ""
 
         # store the perks and skills back
-        query.perk0, query.perk1, query.perk2, query.perk3, query.skill0, query.skill1 = perks_skills
+        char.perk0, char.perk1, char.perk2, char.perk3, char.skill0, char.skill1 = perks_skills
 
     return SS2C_CLASS_ITEM_MOVE_RES(result=pc.SUCCESS, oldMove=req.oldMove, newMove=req.newMove)
