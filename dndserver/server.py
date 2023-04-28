@@ -11,8 +11,6 @@ from dndserver.protocol import GameFactory
 
 async def main():
     """Entrypoint where the server first initializes"""
-    # Creates any missing SQLite tables.
-    base.metadata.create_all(engine)
 
     # Sets up the factory for the game server traffic.
     tcpFactory = GameFactory()
