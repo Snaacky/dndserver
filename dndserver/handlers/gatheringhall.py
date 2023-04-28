@@ -12,10 +12,10 @@ def gathering_hall_channel_list(ctx, msg):
     req = SC2S_GATHERING_HALL_CHANNEL_LIST_REQ()
     req.ParseFromString(msg)
     channel = SGATHERING_HALL_CHANNEL(
-        channelIndex=sessions[ctx.transport].ingame.channel_index,
-        channelId=sessions[ctx.transport].ingame.channel_index,
+        channelIndex=sessions[ctx.transport].gatheringhall.channel_index,
+        channelId=sessions[ctx.transport].gatheringhall.channel_index,
         memberCount=sessions[ctx.transport].party.players,
-        groupIndex=sessions[ctx.transport].ingame.channel_index
+        groupIndex=sessions[ctx.transport].gatheringhall.channel_index
     )
     res = SS2C_GATHERING_HALL_CHANNEL_LIST_RES(channels=channel)
     return res
@@ -23,7 +23,7 @@ def gathering_hall_channel_list(ctx, msg):
 def gathering_hall_select_channel(ctx, msg):
     req = SC2S_GATHERING_HALL_CHANNEL_SELECT_REQ()
     req.ParseFromString(msg)
-    sessions[ctx.transport].ingame.channel_index = req.channelIndex
+    sessions[ctx.transport].gatheringhall.channel_index = req.channelIndex
     res = SS2C_GATHERING_HALL_CHANNEL_SELECT_RES(result=pc.SUCCESS)
     return res
 
