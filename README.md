@@ -18,6 +18,13 @@ Dark and Darker private server implementation written in Python.
 - `python -m dndserver.server`
 - Add `-server=dcweb.pages.dev:80` to your game's launch options.
 
+## Docker
+
+- `git clone git@github.com:Snaacky/dndserver.git`
+- `cd dndserver`
+- `docker compose up`
+- Add `-server=127.0.0.1:80` to your game's launch options.
+
 ## Roadmap
 
 Refer to [our project board](https://github.com/users/Snaacky/projects/4?query=is%3Aopen+sort%3Aupdated-desc).
