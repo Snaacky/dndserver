@@ -151,21 +151,43 @@ def character_info(ctx, msg):
             characterId=str(character.id),
             gender=Gender(character.gender).value,
             level=character.level,
-            CharacterItemList=[
-                items.generate_helm(),
-                items.generate_torch(),
-                items.generate_lantern(),
-                items.generate_sword(),
-                items.generate_pants(),
-                items.generate_tunic(),
-                items.generate_bandage(),
-            ],
+            CharacterItemList=getClassItems(CharacterClass(character.character_class).value),
         ),
     )
 
     return res
 
 
+def getClassItems(character_class):
+    """"Occurs when the user creates a charcter."""
+    baseItems = [   
+                    items.generate_torch(),
+                    items.generate_roundshield(),
+                    items.generate_lantern(),
+                    items.generate_sword(),
+                    items.generate_pants(),
+                    items.generate_tunic(),
+                    items.generate_bandage(),
+                    items.generate_helm()
+                ]
+    
+    match character_class:
+        case CharacterClass.BARBARIAN:
+            return baseItems
+        case CharacterClass.BARD:
+            return baseItems
+        case CharacterClass.CLERIC:
+            return baseItems
+        case CharacterClass.FIGHTER:
+            return baseItems
+        case CharacterClass.RANGER:
+            return baseItems
+        case CharacterClass.ROUGE:
+            return baseItems
+        case CharacterClass.WIZARD:
+            return baseItems
+    
+    
 def get_experience(ctx, msg):
     """Occurs when the user loads into the lobby."""
     query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
