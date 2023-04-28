@@ -1,7 +1,6 @@
 # Choose a base Python image
 FROM python:3.11.3-bullseye
 
-
 # Install Poetry
 RUN curl -sSL https://install.python-poetry.org | python -
 
