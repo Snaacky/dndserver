@@ -29,13 +29,13 @@ from dndserver.protos.Customize import SS2C_CUSTOMIZE_CHARACTER_INFO_RES
 from dndserver.protos.Item import SCUSTOMIZE_CHARACTER
 from dndserver.protos.Defines import Define_Character, Define_Class, Define_Item
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
-from dndserver.protos.Inventory import SC2S_INVENTORY_SINGLE_UPDATE_REQ, SS2C_INVENTORY_SINGLE_UPDATE_RES
 from dndserver.sessions import sessions
 from dndserver.data import perks as pk
 from dndserver.data import skills as sk
 
 
 def item_to_proto_item(item, attributes):
+    """Helper function to create a proto item from a database item and attributes"""
     ret = pItem.SItem()
 
     ret.itemUniqueId = item.id
@@ -53,6 +53,21 @@ def item_to_proto_item(item, attributes):
             ret.primaryPropertyArray.append(property)
         else:
             ret.secondaryPropertyArray.append(property)
+
+    return ret
+
+
+def get_all_items(character_id):
+    """Helper function to get all items for a character id"""
+    query = db.query(Item).filter_by(character_id=character_id)
+    ret = list()
+
+    for item in query:
+        # add the attributes of the item
+        attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
+
+        # add the attributes and the item
+        ret.append((item, attributes))
 
     return ret
 
@@ -81,13 +96,10 @@ def list_characters(ctx, msg):
             # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
         )
 
-        items = db.query(Item).filter_by(character_id=result.id)
-
-        for item in items:
+        for item, attributes in get_all_items(result.id):
             if item.inventory_id != Define_Item.InventoryId.EQUIPMENT:
                 continue
 
-            attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
             info.equipItemList.append(item_to_proto_item(item, attributes))
 
         res.characterList.append(info)
@@ -212,7 +224,6 @@ def customise_character_info(ctx, msg):
 def character_info(ctx, msg):
     """Occurs when the user loads into the lobby/tavern."""
     character = sessions[ctx.transport].character
-    query = db.query(Item).filter_by(character_id=sessions[ctx.transport].character.id)
 
     char_info = SCHARACTER_INFO(
         accountId=str(sessions[ctx.transport].account.id),
@@ -225,10 +236,8 @@ def character_info(ctx, msg):
         level=character.level,
     )
 
-    for item in query:
-        # add all the items and the attributes of the items
-        attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
-
+    # get all the items and attributes of the character
+    for item, attributes in get_all_items(character.id):
         char_info.CharacterItemList.append(item_to_proto_item(item, attributes))
 
     res = SS2C_LOBBY_CHARACTER_INFO_RES(result=pc.SUCCESS, characterDataBase=char_info)
@@ -248,30 +257,6 @@ def get_experience(ctx, msg):
     # 1 - 4 = 40 exp, 5 - 9 = 60 exp, 10 - 14 = 80 exp, 15 - 19 = 100
     res.expLimit = 40 + (int(query.level / 5) * 20)
 
-    return res
-
-
-def move_item(ctx, msg):
-    req = SC2S_INVENTORY_SINGLE_UPDATE_REQ()
-    req.ParseFromString(msg)
-
-    # get the current character
-    char_query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
-
-    for old, new in zip(list(req.oldItem), list(req.newItem)):
-        # get the current item in the database
-        item_query = db.query(Item).filter_by(character_id=char_query.id).filter_by(id=new.itemUniqueId).first()
-
-        # check if we have the item in the database
-        if item_query is None:
-            return SS2C_INVENTORY_SINGLE_UPDATE_RES(result=pc.FAIL_GENERAL, oldItem=req.oldItem, newItem=req.newItem)
-
-        # handle the move request
-        if req.singleUpdateFlag == 0:
-            item_query.inventory_id = new.inventoryId
-            item_query.slot_id = new.slotId
-
-    res = SS2C_INVENTORY_SINGLE_UPDATE_RES(result=pc.SUCCESS, oldItem=req.oldItem, newItem=req.newItem)
     return res
 
 
