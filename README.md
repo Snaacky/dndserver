@@ -22,7 +22,7 @@ Dark and Darker private server implementation written in Python.
 
 - `git clone git@github.com:Snaacky/dndserver.git`
 - `cd dndserver`
-- `docker compose up`
+- `docker compose up -d`
 - Add `-server=127.0.0.1:80` to your game's launch options.
 
 ## Roadmap
