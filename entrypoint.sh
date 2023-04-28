@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Entrypoint script for the D&D server
-chmod +x /entrypoint.sh
+chmod +x ./entrypoint.sh
 
 # Install poetry
 python -m pip install poetry
