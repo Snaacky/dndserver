@@ -1,5 +1,5 @@
 # Choose a base Python image
-FROM python:3.11.3-bullseye
+FROM python:3.11.3-slim-buster
 
 # Install Poetry
 RUN curl -sSL https://install.python-poetry.org | python -
