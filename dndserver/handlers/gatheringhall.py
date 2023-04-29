@@ -70,8 +70,11 @@ def gathering_hall_channel_exit(ctx, msg):
     # If a channel was found, remove the client from the channel
     if current_channel:
         channels[current_channel]['clients'].remove(ctx)
-
     res = SS2C_GATHERING_HALL_CHANNEL_EXIT_RES(result=pc.SUCCESS)
+    
+    # Refreshes user count 
+    ctx.reply(gathering_hall_channel_list(ctx, msg))
+    
     return res
 
 def broadcast_chat(ctx, msg):
@@ -100,7 +103,7 @@ def chat(ctx, msg):
     req = SC2S_GATHERING_HALL_CHANNEL_CHAT_REQ()
     req.ParseFromString(msg)
 
-    query = db.query(Character).filter_by(id=f"{sessions[ctx.transport].account.id}").first()
+    query = db.query(Character).filter_by(user_id=f"{sessions[ctx.transport].account.id}").first()
 
     req.chat
 
