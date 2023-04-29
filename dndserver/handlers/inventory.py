@@ -35,7 +35,7 @@ def delete_item(character_id, item):
         return False
 
     # delete all the attributes the item has
-    attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
+    attributes = db.query(ItemAttribute).filter_by(item_id=item.itemId).all()
     for attribute in attributes:
         attribute.delete()
 
@@ -54,6 +54,31 @@ def add_item(item):
 
     for attribute in attributes:
         attribute.save()
+
+
+def get_stack_limit(item):
+    """Helper function to the get the amount we can stack a item"""
+    # TODO: this should be read from the item directly
+    if "Id_Item_Bandage" in item or "Potion" in item:
+        return 3
+    elif "Id_Item_GoldCoinPurse" in item or "Id_Item_GoldCoinChest" in item or "Id_Item_GoldCoinBag" in item:
+        return 1
+    elif "Id_Item_GoldCoins" in item:
+        return 10
+    else:
+        return 0
+
+
+def get_inv_limit(item):
+    # TODO: get real values for limits
+    if "Id_Item_GoldCoinPurse" in item:
+        return 50
+    elif "Id_Item_GoldCoinChest" in item:
+        return 200
+    elif "Id_Item_GoldCoinBag" in item:
+        return 1000
+
+    return 0
 
 
 def move_item(ctx, msg):
@@ -79,20 +104,89 @@ def move_single_item(ctx, msg):
     req = SC2S_INVENTORY_SINGLE_UPDATE_REQ()
     req.ParseFromString(msg)
 
-    # get the current character
-    char_query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
+    if req.singleUpdateFlag != 0:
+        # for now only 0 is supported (handles all the moving in the inventory)
+        return SS2C_INVENTORY_SINGLE_UPDATE_RES(result=pc.SUCCESS, oldItem=req.oldItem, newItem=req.newItem)
+
+    # get the character
+    character = sessions[ctx.transport].character
 
     for old, new in zip(list(req.oldItem), list(req.newItem)):
         # get the current item in the database
-        item_query = db.query(Item).filter_by(character_id=char_query.id).filter_by(id=new.itemUniqueId).first()
+        old_query = db.query(Item).filter_by(character_id=character.id).filter_by(id=old.itemUniqueId).first()
 
         # check if we have the item in the database
-        if item_query is None:
-            return SS2C_INVENTORY_SINGLE_UPDATE_RES(result=pc.FAIL_GENERAL, oldItem=req.oldItem, newItem=req.newItem)
+        if old_query is None:
+            continue
 
-        # handle the move request
-        if req.singleUpdateFlag == 0:
-            item_query.inventory_id = new.inventoryId
-            item_query.slot_id = new.slotId
+        # check for a simple move
+        if old.itemUniqueId == new.itemUniqueId:
+            # we have a simple move move request, handle it
+            old_query.inventory_id = new.inventoryId
+            old_query.slot_id = new.slotId
+
+            continue
+
+        # Not a simple move, search for the item we are updating to
+        new_query = db.query(Item).filter_by(character_id=character.id).filter_by(id=new.itemUniqueId).first()
+
+        # check if we have the new item in the database
+        if new_query is None:
+            # The new item is not in the database. This means it has split. decrement the old item
+            old_query.quantity -= old.itemCount
+
+            # create a new item in the database
+            it = Item()
+            it.character_id = old_query.character_id
+            it.item_id = old.itemId
+            it.quantity = new.itemCount
+            it.inventory_id = new.inventoryId
+            it.slot_id = new.slotId
+            it.save()
+
+            # # copy all the attributes
+            attributes = db.query(ItemAttribute).filter_by(item_id=old.itemUniqueId).all()
+            for attribute in attributes:
+                attr = attribute
+                attr.item_id = it.id
+                attr.save()
+
+            # update the unique id to notify the client what id to use
+            new.itemUniqueId = it.id
+
+        elif new.itemContentsCount:
+            # we have a item with a inventory. Put the item in the inventory and delete the other one
+            total_count = new_query.inv_count + old.itemCount
+            inventory_limit = get_inv_limit(new.itemId)
+
+            # limit the amount of items in the inventory
+            if total_count > inventory_limit:
+                # we have a overflow. Keep the old item and decrease it. Increase the amount on the new item
+                old_query.quantity = total_count - inventory_limit
+                new_query.inv_count = inventory_limit
+
+            else:
+                new_query.inv_count = total_count
+
+                # delete the item
+                delete_item(character.id, old)
+
+        else:
+            # we have both items. Merge them
+            total_count = old.itemCount + new.itemCount
+            stack_limit = get_stack_limit(new.itemId)
+
+            # limit the amount of items in a stack. The game expects this and wont update otherwise
+            if total_count > stack_limit:
+                # we have a overflow. Keep the old item and decrease it. Increase the amount on the new item
+                old_query.quantity = total_count - stack_limit
+                new_query.quantity = stack_limit
+
+            else:
+                # Everything fits in the new item. Merge and delete the old item
+                new_query.quantity = total_count
+
+                # delete the item
+                delete_item(character.id, old)
 
     return SS2C_INVENTORY_SINGLE_UPDATE_RES(result=pc.SUCCESS, oldItem=req.oldItem, newItem=req.newItem)

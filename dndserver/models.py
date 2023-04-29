@@ -86,6 +86,7 @@ class Item(base):
     slot_id = Column(Integer)
 
     ammo_count = Column(Integer, default=0)
+    inv_count = Column(Integer, default=0)
 
     def save(self):
         db.add(self)

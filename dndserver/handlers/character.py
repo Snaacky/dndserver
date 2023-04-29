@@ -44,8 +44,8 @@ def item_to_proto_item(item, attributes):
     ret.itemCount = item.quantity
     ret.inventoryId = item.inventory_id
     ret.slotId = item.slot_id
-    ret.itemAmmoCount = 0
-    ret.itemContentsCount = 0
+    ret.itemAmmoCount = item.ammo_count
+    ret.itemContentsCount = item.inv_count
 
     for attribute in attributes:
         property = pItem.SItemProperty(propertyTypeId=attribute.property, propertyValue=attribute.value)
