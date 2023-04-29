@@ -8,7 +8,52 @@ from dndserver.protos.Inventory import (
     SS2C_INVENTORY_MOVE_RES,
 )
 from dndserver.sessions import sessions
-from dndserver.models import Character, Item
+from dndserver.models import Character, Item, ItemAttribute
+
+
+def get_all_items(character_id):
+    """Helper function to get all items for a character id"""
+    query = db.query(Item).filter_by(character_id=character_id)
+    ret = list()
+
+    for item in query:
+        # add the attributes of the item
+        attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
+
+        # add the attributes and the item
+        ret.append((item, attributes))
+
+    return ret
+
+
+def delete_item(character_id, item):
+    """Helper function to remove a item from a character"""
+    query = db.query(Item).filter_by(character_id=character_id).filter_by(id=item.itemUniqueId).first()
+
+    # check if we have the item
+    if query is None:
+        return False
+
+    # delete all the attributes the item has
+    attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
+    for attribute in attributes:
+        attribute.delete()
+
+    # delete the item
+    query.delete()
+
+    return True
+
+
+def add_item(item):
+    """Helper function to add a item to a character"""
+    it, attributes = item
+
+    # store the item
+    it.save()
+
+    for attribute in attributes:
+        attribute.save()
 
 
 def move_item(ctx, msg):
