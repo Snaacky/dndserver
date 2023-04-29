@@ -29,7 +29,7 @@ def enter_lobby(ctx, msg):
 
 
 def region_select(ctx, msg):
-    """Currently unused."""
+    """Occurs when a user changes the game server region."""
     req = SC2S_LOBBY_REGION_SELECT_REQ()
     req.ParseFromString(msg)
     res = SS2C_LOBBY_REGION_SELECT_RES(result=pc.SUCCESS, region=req.region)
