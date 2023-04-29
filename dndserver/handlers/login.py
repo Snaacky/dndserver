@@ -17,7 +17,7 @@ def process_login(ctx, msg):
     # TODO: Not all SS2C_ACCOUNT_LOGIN_RES fields are implemented.
     res = SS2C_ACCOUNT_LOGIN_RES(serverLocation=1)
 
-    account = db.query(Account).filter_by(username=req.loginId).first()
+    account = db.query(Account).filter(Account.username.ilike(req.loginId)).first()
     if not account:
         account = Account(
             username=req.loginId,
