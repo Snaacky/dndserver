@@ -63,7 +63,7 @@ def get_stack_limit(item):
         return 3
     elif "Id_Item_GoldCoinPurse" in item or "Id_Item_GoldCoinChest" in item or "Id_Item_GoldCoinBag" in item:
         return 1
-    elif "Id_Item_GoldCoins" in item:
+    elif "Id_Item_GoldCoins" or "Id_Item_SilverCoin" in item:
         return 10
     else:
         return 0
