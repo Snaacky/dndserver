@@ -31,7 +31,6 @@ class Item:
             new_prop.propertyValue = prop[1]
             new_item.primaryPropertyArray.append(new_prop)
 
-# TODO The name should probably be in an ENUM that contains all item names available
 def generate_item(name, type, rarity, inventoryId, slotId, itemCount = 1, uniqueId = None):
     newItem = item.SItem()
     newItem.inventoryId = inventoryId
@@ -41,7 +40,7 @@ def generate_item(name, type, rarity, inventoryId, slotId, itemCount = 1, unique
     if uniqueId is not None:
         newItem.itemUniqueId = uniqueId
 
-    itemValues = generateItem(name, type, rarity, itemCount)
+    itemValues = generateItem(name.value, type, rarity, itemCount)
     if(itemValues):
         newItem.itemId = itemValues["itemId"]
         newItem.itemCount = int(itemValues.get("itemCount", itemCount))

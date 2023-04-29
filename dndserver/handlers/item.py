@@ -1,28 +1,7 @@
 import os
 import json
 import random
-from enum import Enum
-
-# TODO We should have a list of all items as enum stored for reference to avoid misspelling mistakes
-
-class Rarity(Enum):
-    JUNK = 0
-    POOR = 1
-    COMMON = 2
-    UNCOMMON = 3
-    RARE = 4
-    EPIC = 5
-    LEGENDARY = 6
-    UNIQUE = 7
-
-class ItemType(Enum):
-    WEAPONS = "weapons"
-    ARMORS = "armors"
-    CONSUMABLES = "consumables"
-    UTILITY = "utility"
-    LOOTABLES = "lootables"
-    JEWELRY = "jewelry"
-    OTHERS = "others"
+from dndserver.enums.items import ItemType, Rarity
 
 # TODO We might want to store this somewhere else, and only call it once, when server starts
 json_data = {}
@@ -50,7 +29,12 @@ def getContent(name, type, rarity):
   content = {}
   dynamic_file_name = ""
   typeValue = str(type.value)
-  if(type != ItemType.WEAPONS and type != ItemType.ARMORS):
+  file_name_no_rarity = name + ".json"
+  
+  if rarity == Rarity.NONE.value:
+      if file_name_no_rarity in json_data.get(typeValue, {}):
+        content = json_data[typeValue][file_name_no_rarity][0]
+  elif(type != ItemType.WEAPONS and type != ItemType.ARMORS):
       dynamic_file_name = name + "_" + rarity + "001.json"
       if dynamic_file_name in json_data.get(typeValue, {}):
         content = json_data[typeValue][dynamic_file_name][0]
@@ -76,7 +60,11 @@ def generateItem(name, type, rarity, itemCount):
         
 # Raw data for non weapons/armors are different, so need to be fetched differently for now
 def formatOtherData(data, name, rarity, itemCount):
-    finalData = {"itemId": "DesignDataItem:Id_Item_" + name + "_" + rarity + "001"}
+    itemId = "DesignDataItem:Id_Item_" + name + "_" + rarity + "001"
+    if(rarity == Rarity.NONE.value):
+        itemId = "DesignDataItem:Id_Item_" + name
+
+    finalData = {"itemId": itemId}
     maxCount = int(data["Properties"]["Item"]["MaxCount"])
     if(maxCount and itemCount < maxCount):
         finalData["itemCount"] = itemCount
@@ -114,6 +102,8 @@ def adjustStatsBasedOnRanges(propertyArray):
 # Formats the itemId and properties by calling other formatters, formats the response to be consumed
 def formatData(data, name, rarity):
     itemId = "DesignDataItem:Id_Item_" + name + "_" + rarity + "001"
+    if(rarity == Rarity.NONE.value):
+        itemId = "DesignDataItem:Id_Item_" + name
     primaryPropertyArray = adjustStatsBasedOnRanges(parsePropertiesToArray(data, rarity))
     return {
         "itemId": itemId,

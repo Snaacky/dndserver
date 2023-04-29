@@ -1,5 +1,5 @@
 from dndserver.database import db
-from dndserver.enums import CharacterClass
+from dndserver.enums.classes import CharacterClass
 from dndserver.models import Character
 from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc

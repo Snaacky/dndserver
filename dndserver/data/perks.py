@@ -1,4 +1,4 @@
-from dndserver.enums import CharacterClass
+from dndserver.enums.classes import CharacterClass
 
 
 level_requirements = [1, 5, 10, 15]

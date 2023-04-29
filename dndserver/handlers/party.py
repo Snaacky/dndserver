@@ -1,16 +1,5 @@
-from dndserver.enums import CharacterClass, Gender
-from dndserver.objects.items import (
-    generate_bandage,
-    generate_helm,
-    generate_lantern,
-    generate_pants,
-    generate_roundshield,
-    generate_sword,
-    generate_torch,
-    generate_tunic,
-)
+from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.persistent import sessions
-from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_PARTY_INFO
 from dndserver.protos.Party import (
     SC2S_PARTY_INVITE_ANSWER_REQ,

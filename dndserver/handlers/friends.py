@@ -1,6 +1,6 @@
 import random
 
-from dndserver.enums import CharacterClass, Gender
+from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_FRIEND_INFO

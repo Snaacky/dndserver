@@ -1,4 +1,4 @@
-from dndserver.enums import CharacterClass
+from dndserver.enums.classes import CharacterClass
 
 
 barbarian = [
