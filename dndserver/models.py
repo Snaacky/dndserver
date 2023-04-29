@@ -97,7 +97,7 @@ class Item(base):
 
 
 class ItemAttribute(base):
-    __tablename__ = "item_attribute"
+    __tablename__ = "item_attributes"
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
     item_id = Column(Integer)

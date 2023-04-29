@@ -1,5 +1,3 @@
-from loguru import logger
-
 from dndserver.enums import CharacterClass, Gender
 from dndserver.objects.items import (generate_helm, generate_torch, generate_roundshield,
                                      generate_lantern, generate_sword, generate_pants,
@@ -32,10 +30,8 @@ def accept_invite(ctx, msg):
     # req.returnAccountId == inviter
     req = SC2S_PARTY_INVITE_ANSWER_REQ()
     req.ParseFromString(msg)
-    logger.debug(req)
 
     res = SS2C_PARTY_INVITE_ANSWER_RES(result=pc.SUCCESS)
-    logger.debug(res)
 
     # send a notification to the inviter that the invitee accepted
     send_accept_notification(ctx, req)
