@@ -341,7 +341,7 @@ def move_perks_and_skills(ctx, msg):
     # first check if we have the correct level to do this action
     for it in items:
         # check if the level requirements are met
-        if it.index and char.level < pk.level_requirements[it.index - 1]:
+        if it.index > 0 and it.index <= len(pk.level_requirements) and char.level < pk.level_requirements[it.index - 1]:
             return SS2C_CLASS_ITEM_MOVE_RES(result=pc.SUCCESS)
 
     # process all the move requests
