@@ -101,7 +101,6 @@ class ItemAttribute(base):
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
     item_id = Column(Integer)
-
     primary = Column(Boolean)
     property = Column(String)
     value = Column(Integer)
@@ -117,16 +116,44 @@ class ItemAttribute(base):
 
 class Hwid(base):
     __tablename__ = "hwids"
+
     id = Column(Integer, primary_key=True, autoincrement="auto")
     user_id = Column(Integer)
     hwid = Column(String(64), unique=True)
     is_banned = Column(Boolean)
     seen_at = Column(ArrowType, default=arrow.utcnow())
 
+    def save(self):
+        db.add(self)
+        db.commit()
 
+    def delete(self):
+        db.delete(self)
+        db.commit()
+
+
+class BlockedUser(base):
+    __tablename__ = "blocked_users"
+
+    id = Column(Integer, primary_key=True, autoincrement="auto")
+    blockee_character_id = Column(Integer)
+    blocked_account_id = Column(Integer)
+    blocked_character_id = Column(Integer)
+    blocked_nickname = Column(String(20))
+    blocked_gender = Column(Enum(Gender))
+    blocked_character_class = Column(Enum(CharacterClass))
+    blocked_at = Column(ArrowType, default=arrow.utcnow())
+
+    def save(self):
+        db.add(self)
+        db.commit()
+
+    def delete(self):
+        db.delete(self)
+        db.commit()
+
+
+# characters: store all logins in a database and grab the latest from that
 # class Login(base):
 #     __tablename__ = "logins"
 #     id = Column(Integer, primary_key=True, autoincrement="auto")
-
-# characters: store all logins in a database and grab the latest from that
-# Attempts to initialize the database for the first time.
