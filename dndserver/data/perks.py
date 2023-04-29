@@ -1,5 +1,6 @@
 from dndserver.enums import CharacterClass
 
+level_requirements = [1, 5, 10, 15]
 
 barbarian = [
     "DesignDataPerk:Id_Perk_AxeSpecialization",

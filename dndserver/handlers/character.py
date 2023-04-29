@@ -135,7 +135,7 @@ def create_character(ctx, msg):
     )
 
     # select the default perks and skills
-    char.perk0, char.perk1, char.perk2, char.perk3 = pk.perks[CharacterClass(req.characterClass)][0:4]
+    char.perk0 = pk.perks[CharacterClass(req.characterClass)][0]
     char.skill0, char.skill1 = sk.skills[CharacterClass(req.characterClass)][0:2]
     char.save()
 
@@ -302,7 +302,6 @@ def get_perks_and_skills(ctx, msg):
     res = SS2C_CLASS_EQUIP_INFO_RES()
 
     # level requirements for the 4 perks
-    level = [1, 5, 10, 15]
     perks = [character.perk0, character.perk1, character.perk2, character.perk3]
 
     for index, perk in enumerate(perks):
@@ -310,7 +309,7 @@ def get_perks_and_skills(ctx, msg):
             SCLASS_EQUIP_INFO(
                 index=index + 1,
                 isAvailableSlot=True,
-                requiredLevel=level[index],
+                requiredLevel=pk.level_requirements[index],
                 type=Define_Class.Type.PERK,
                 equipId=perk,
             )
@@ -338,6 +337,12 @@ def move_perks_and_skills(ctx, msg):
 
     char = sessions[ctx.transport].character
     items = [req.oldMove, req.newMove]
+
+    # first check if we have the correct level to do this action
+    for it in items:
+        # check if the level requirements are met
+        if it.index and char.level < pk.level_requirements[it.index - 1]:
+            return SS2C_CLASS_ITEM_MOVE_RES(result=pc.SUCCESS)
 
     # process all the move requests
     for it in items:
