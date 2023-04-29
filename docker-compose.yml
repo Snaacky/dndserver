@@ -1,0 +1,10 @@
+version: '3.9'
+services:
+  dndserver:
+    container_name: dndserver
+    image: ghcr.io/snaacky/dndserver:latest
+    restart: unless-stopped
+    volumes:
+      - ./config/dndserver.db:/app/dndserver.db
+    ports:
+      - "13337:13337"
