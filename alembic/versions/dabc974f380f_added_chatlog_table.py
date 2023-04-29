@@ -1,7 +1,7 @@
 """Added chatlog table
 
 Revision ID: dabc974f380f
-Revises: 3316d022ea2c
+Revises: 07685a4b5061
 Create Date: 2023-04-29 11:36:30.553202
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy_utils
 
 # revision identifiers, used by Alembic.
 revision = "dabc974f380f"
-down_revision = "3316d022ea2c"
+down_revision = "e8da5956d6a3"
 branch_labels = None
 depends_on = None
 
