@@ -115,29 +115,22 @@ def create_character(ctx, msg):
         res.result = pc.FAIL_DUPLICATE_NICKNAME
         return res
 
+    char_class = CharacterClass(req.characterClass)
     char = Character(
         user_id=sessions[ctx.transport].account.id,
         nickname=req.nickName,
         streaming_nickname=f"Fighter#{random.randrange(1000000, 1700000)}",
         gender=Gender(req.gender),
-        character_class=CharacterClass(req.characterClass),
+        character_class=char_class,
     )
 
     # select the default perks and skills
-    char.perk0 = pk.perks[CharacterClass(req.characterClass)][0]
-    char.skill0, char.skill1 = sk.skills[CharacterClass(req.characterClass)][0:2]
+    char.perk0, char.perk1, char.perk2, char.perk3 = pk.perks[char_class][0:4]
+    char.skill0, char.skill1 = sk.skills[char_class][0:2]
     char.save()
 
     # TODO: make this dependend on the character class
-    starter_items = [
-        items.generate_helm(),
-        items.generate_torch(),
-        items.generate_lantern(),
-        items.generate_sword(),
-        items.generate_pants(),
-        items.generate_tunic(),
-        items.generate_bandage(),
-    ]
+    starter_items = create_items_per_class(char_class)
 
     # give the character a starter set
     for item in starter_items:
@@ -356,91 +349,93 @@ def move_perks_and_skills(ctx, msg):
         char.perk0, char.perk1, char.perk2, char.perk3, char.skill0, char.skill1 = perks_skills
 
     return SS2C_CLASS_ITEM_MOVE_RES(result=pc.SUCCESS, oldMove=req.oldMove, newMove=req.newMove)
-def create_items_per_class(char_class):
-    if(CharacterClass.BARBARIAN.value == char_class):
-        return [items.generate_item("BattleAxe", ItemType.WEAPONS, Rarity.JUNK, 3, 10, 1),
-                items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 8, 2),
-                items.generate_item("FranciscaAxe", ItemType.UTILITY, Rarity.JUNK, 3, 14, 3, 3),
-                items.generate_item("HeavyBoots", ItemType.ARMORS, Rarity.JUNK, 3, 5, 4),
-                items.generate_item("Gjermundbu", ItemType.ARMORS, Rarity.JUNK, 3, 1, 5),
-                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4, 6),
-                # TODO These are just for demo purposes, remove after
-                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19, 7),
-                items.generate_item("Ale", ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9, 8)]
 
-    if(CharacterClass.BARD.value == char_class):
-        return [items.generate_item("Lute", ItemType.WEAPONS, Rarity.JUNK, 3, 10, 3, 11),
-                items.generate_item("Torch", ItemType.WEAPONS, Rarity.JUNK, 3, 13, 12),
-                items.generate_item("Rapier", ItemType.WEAPONS, Rarity.JUNK, 3, 12, 13),
-                items.generate_item("Bandage", ItemType.CONSUMABLES, Rarity.JUNK, 3, 8, 14),
-                items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 14, 15),
-                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4, 16),
-                items.generate_item("WandererAttire", ItemType.ARMORS, Rarity.JUNK, 3, 2, 17),
+def create_items_per_class(char_class):
+    if(CharacterClass.BARBARIAN == char_class):
+        return [items.generate_item("BattleAxe", ItemType.WEAPONS, Rarity.JUNK, 3,10),
+                items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 8),
+                items.generate_item("FranciscaAxe", ItemType.UTILITY, Rarity.JUNK, 3, 14, 3),
+                items.generate_item("HeavyBoots", ItemType.ARMORS, Rarity.JUNK, 3, 5),
+                items.generate_item("Gjermundbu", ItemType.ARMORS, Rarity.JUNK, 3, 1),
+                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4),
                 # TODO These are just for demo purposes, remove after
-                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19, 18),
-                items.generate_item("Ale", ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9, 19)]
+                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+                items.generate_item("Ale", ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9)]
+
+    if(CharacterClass.BARD == char_class):
+        return [items.generate_item("Lute", ItemType.WEAPONS, Rarity.JUNK, 3, 10),
+                items.generate_item("Torch", ItemType.WEAPONS, Rarity.JUNK, 3, 13),
+                items.generate_item("Rapier", ItemType.WEAPONS, Rarity.JUNK, 3, 12),
+                items.generate_item("Bandage", ItemType.CONSUMABLES, Rarity.JUNK, 3, 8),
+                items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 14),
+                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4),
+                items.generate_item("WandererAttire", ItemType.ARMORS, Rarity.JUNK, 3, 2),
+                # TODO These are just for demo purposes, remove after
+                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+                items.generate_item("Ale", ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9)]
     
-    if(CharacterClass.CLERIC.value == char_class):
-        return [items.generate_item("FlangedMace", ItemType.WEAPONS, Rarity.JUNK, 3, 10, 21),
-                items.generate_item("Buckler", ItemType.WEAPONS, Rarity.JUNK, 3, 11, 22),
-                items.generate_item("WizardStaff", ItemType.WEAPONS, Rarity.JUNK, 3, 12, 23),
-                items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 8, 24),
-                items.generate_item("Bandage", ItemType.UTILITY, Rarity.JUNK, 3, 14, 25),
-                items.generate_item("Frock", ItemType.ARMORS, Rarity.JUNK, 3, 2, 26),
-                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4, 27),
-                items.generate_item("Bandage", ItemType.CONSUMABLES, Rarity.JUNK, 3, 14, 28),
+    if(CharacterClass.CLERIC == char_class):
+        return [items.generate_item("FlangedMace", ItemType.WEAPONS, Rarity.JUNK, 3, 10),
+                items.generate_item("Buckler", ItemType.WEAPONS, Rarity.JUNK, 3, 11),
+                items.generate_item("WizardStaff", ItemType.WEAPONS, Rarity.JUNK, 3, 12),
+                items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 8),
+                items.generate_item("Bandage", ItemType.UTILITY, Rarity.JUNK, 3, 14),
+                items.generate_item("Frock", ItemType.ARMORS, Rarity.JUNK, 3, 2),
+                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4),
+                items.generate_item("Bandage", ItemType.CONSUMABLES, Rarity.JUNK, 3, 14),
                 # TODO These are just for demo purposes, remove after
-                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19, 29),
-                items.generate_item("Ale", ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9, 30)]
+                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+                items.generate_item("Ale", ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9)]
     
-    if(CharacterClass.FIGHTER.value == char_class):
-        return [items.generate_item("ArmingSword", ItemType.WEAPONS, Rarity.JUNK, 3, 10, 31),
-                items.generate_item("RoundShield", ItemType.WEAPONS, Rarity.JUNK, 3, 11, 32),
-                items.generate_item("Torch", ItemType.WEAPONS, Rarity.JUNK, 3, 12, 33),
-                items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 8, 34),
-                items.generate_item("Bandage", ItemType.CONSUMABLES, Rarity.JUNK, 3, 14, 35),
-                items.generate_item("PaddedTunic", ItemType.ARMORS, Rarity.JUNK, 3, 2, 36),
-                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4, 37),
+    if(CharacterClass.FIGHTER == char_class):
+        return [items.generate_item("ArmingSword", ItemType.WEAPONS, Rarity.JUNK, 3, 10),
+                items.generate_item("RoundShield", ItemType.WEAPONS, Rarity.JUNK, 3, 11),
+                items.generate_item("Torch", ItemType.WEAPONS, Rarity.JUNK, 3, 12),
+                items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 8),
+                items.generate_item("Bandage", ItemType.CONSUMABLES, Rarity.JUNK, 3, 14),
+                items.generate_item("PaddedTunic", ItemType.ARMORS, Rarity.JUNK, 3, 2),
+                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4),
                 # TODO These are just for demo purposes, remove after
-                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19, 38),
-                items.generate_item("Ale", ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9, 39)]
+                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+                items.generate_item("Ale", ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9)]
     
-    if(CharacterClass.RANGER.value == char_class):
-        return [items.generate_item("RecurveBow", ItemType.WEAPONS, Rarity.JUNK, 3, 10, 41),
-                items.generate_item("ShortSword", ItemType.WEAPONS, Rarity.JUNK, 3, 12, 42),
-                items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 8, 43),
-                items.generate_item("HuntingTrap", ItemType.UTILITY, Rarity.JUNK, 3, 14, 44),
-                items.generate_item("CampfireKit", ItemType.UTILITY, Rarity.JUNK, 3, 15, 45),
-                items.generate_item("Doublet", ItemType.ARMORS, Rarity.JUNK, 3, 2, 46),
-                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4, 47),
-                items.generate_item("RangerHood", ItemType.ARMORS, Rarity.JUNK, 3, 1, 48),
-                items.generate_item("Arrow", ItemType.CONSUMABLES, Rarity.JUNK, 2, 0, 49, 15),
+    if(CharacterClass.RANGER == char_class):
+        return [items.generate_item("RecurveBow", ItemType.WEAPONS, Rarity.JUNK, 3, 10),
+                items.generate_item("ShortSword", ItemType.WEAPONS, Rarity.JUNK, 3, 12),
+                items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 8),
+                items.generate_item("HuntingTrap", ItemType.UTILITY, Rarity.JUNK, 3, 14),
+                items.generate_item("CampfireKit", ItemType.UTILITY, Rarity.JUNK, 3, 15),
+                items.generate_item("Doublet", ItemType.ARMORS, Rarity.JUNK, 3, 2),
+                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4),
+                items.generate_item("RangerHood", ItemType.ARMORS, Rarity.JUNK, 3, 1),
+                items.generate_item("Arrow", ItemType.CONSUMABLES, Rarity.JUNK, 2, 0, 15),
                 # TODO These are just for demo purposes, remove after
-                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19, 50),
-                items.generate_item("Ale", ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9, 51)]
+                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+                items.generate_item("Ale", ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9)]
     
-    if(CharacterClass.ROGUE.value == char_class):
-        return [items.generate_item("RondelDagger", ItemType.WEAPONS, Rarity.JUNK, 3, 10, 51),
-                items.generate_item("CastillonDagger", ItemType.WEAPONS, Rarity.JUNK, 3, 11, 52),
-                items.generate_item("Torch", ItemType.WEAPONS, Rarity.JUNK, 3, 12, 53),
-                items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 8, 54),
-                items.generate_item("ThrowingKnife", ItemType.UTILITY, Rarity.JUNK, 3, 14, 55, 3),
-                items.generate_item("Doublet", ItemType.ARMORS, Rarity.JUNK, 3, 2, 56),
-                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4, 57),
-                items.generate_item("RogueCowl", ItemType.ARMORS, Rarity.JUNK, 3, 1, 58),
+    if(CharacterClass.ROGUE == char_class):
+        return [items.generate_item("RondelDagger", ItemType.WEAPONS, Rarity.JUNK, 3, 10),
+                items.generate_item("CastillonDagger", ItemType.WEAPONS, Rarity.JUNK, 3, 11),
+                items.generate_item("Torch", ItemType.WEAPONS, Rarity.JUNK, 3, 12),
+                items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 8),
+                items.generate_item("ThrowingKnife", ItemType.UTILITY, Rarity.JUNK, 3, 14, 3),
+                items.generate_item("Doublet", ItemType.ARMORS, Rarity.JUNK, 3, 2),
+                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4),
+                items.generate_item("RogueCowl", ItemType.ARMORS, Rarity.JUNK, 3, 1),
                 # TODO These are just for demo purposes, remove after
-                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19, 59),
-                items.generate_item("Ale", ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9, 60)]
+                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+                items.generate_item("Ale", ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9)]
     
-    if(CharacterClass.WIZARD.value == char_class):
-        return [items.generate_item("WizardStaff", ItemType.WEAPONS, Rarity.JUNK, 3, 10, 51),
-                items.generate_item("Torch", ItemType.WEAPONS, Rarity.JUNK, 3, 12, 53),
-                items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 8, 54),
-                items.generate_item("ProtectionPotion", ItemType.CONSUMABLES, Rarity.JUNK, 3, 14, 55),
-                items.generate_item("Frock", ItemType.ARMORS, Rarity.JUNK, 3, 2, 56),
-                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4, 57),
-                items.generate_item("WizardHat", ItemType.ARMORS, Rarity.JUNK, 3, 1, 58),
-                items.generate_item("WizardShoes", ItemType.ARMORS, Rarity.JUNK, 3, 5, 59),
+    if(CharacterClass.WIZARD == char_class):
+        return [items.generate_item("WizardStaff", ItemType.WEAPONS, Rarity.JUNK, 3, 10),
+                items.generate_item("Torch", ItemType.WEAPONS, Rarity.JUNK, 3, 12),
+                items.generate_item("Lantern", ItemType.UTILITY, Rarity.JUNK, 3, 8),
+                items.generate_item("ProtectionPotion", ItemType.CONSUMABLES, Rarity.JUNK, 3, 14),
+                items.generate_item("Frock", ItemType.ARMORS, Rarity.JUNK, 3, 2),
+                items.generate_item("ClothPants", ItemType.ARMORS, Rarity.JUNK, 3, 4),
+                items.generate_item("WizardHat", ItemType.ARMORS, Rarity.JUNK, 3, 1),
+                items.generate_item("WizardShoes", ItemType.ARMORS, Rarity.JUNK, 3, 5),
                 # TODO These are just for demo purposes, remove after
-                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19, 60),
-                items.generate_item("Ale", ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9, 61)]
+                items.generate_item("OxPendant", ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+                items.generate_item("Ale", ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9)]
+    return []

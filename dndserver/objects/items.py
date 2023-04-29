@@ -32,13 +32,14 @@ class Item:
             new_item.primaryPropertyArray.append(new_prop)
 
 # TODO The name should probably be in an ENUM that contains all item names available
-def generate_item(name, type, rarity, inventoryId, slotId, uniqueId, itemCount = 1):
+def generate_item(name, type, rarity, inventoryId, slotId, itemCount = 1, uniqueId = None):
     newItem = item.SItem()
     newItem.inventoryId = inventoryId
     newItem.slotId = slotId
 
-    # TODO Store Item in DB first and get unique ID from there to update this value
-    newItem.itemUniqueId = uniqueId
+    # TODO Remove uniqueId from arguments, only here temporary for the merchant items
+    if uniqueId is not None:
+        newItem.itemUniqueId = uniqueId
 
     itemValues = generateItem(name, type, rarity, itemCount)
     if(itemValues):
