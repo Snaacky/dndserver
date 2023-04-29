@@ -1,0 +1,120 @@
+from dndserver.database import db
+from dndserver.models import Character, ChatLog
+from dndserver.protos.Character import SACCOUNT_NICKNAME
+from dndserver.protos.GatheringHall import (
+    SC2S_GATHERING_HALL_CHANNEL_LIST_REQ, SS2C_GATHERING_HALL_CHANNEL_LIST_RES,
+    SC2S_GATHERING_HALL_CHANNEL_SELECT_REQ, SS2C_GATHERING_HALL_CHANNEL_SELECT_RES,
+    SC2S_GATHERING_HALL_TARGET_EQUIPPED_ITEM_REQ, SS2C_GATHERING_HALL_TARGET_EQUIPPED_ITEM_RES,
+    SGATHERING_HALL_CHANNEL, SC2S_GATHERING_HALL_CHANNEL_CHAT_REQ, SS2C_GATHERING_HALL_CHANNEL_CHAT_RES,
+    SGATHERING_HALL_CHAT_S2C, SC2S_GATHERING_HALL_CHANNEL_EXIT_REQ, SS2C_GATHERING_HALL_CHANNEL_EXIT_RES
+    )
+from dndserver.protos.Chat import *
+from dndserver.protos import PacketCommand as pc
+from dndserver.sessions import sessions
+from dndserver.handlers import character
+from dndserver.handlers import party
+
+channels = {}
+for i in range(1,7):
+    channels[f'channel{i}'] = { 'index' : i, 'members' : 0 }
+
+def gathering_hall_channel_list(ctx, msg):
+    req = SC2S_GATHERING_HALL_CHANNEL_LIST_REQ()
+    req.ParseFromString(msg)
+    res = SS2C_GATHERING_HALL_CHANNEL_LIST_RES()
+    for ch in channels:
+      res.channels.append(SGATHERING_HALL_CHANNEL(
+        channelIndex=channels[ch]['index'],
+        channelId=f"{channels[ch]['index']}",
+        memberCount=channels[ch]['members'],
+        groupIndex=channels[ch]['index']
+        ))
+    return res
+
+def gathering_hall_select_channel(ctx, msg):
+    req = SC2S_GATHERING_HALL_CHANNEL_SELECT_REQ()
+    req.ParseFromString(msg)
+     
+    channels[f'channel{req.channelIndex}']['members'] = channels[f'channel{req.channelIndex}']['members'] + 1 
+    res = SS2C_GATHERING_HALL_CHANNEL_SELECT_RES(result=pc.SUCCESS)
+    return res
+
+def gathering_hall_equip(ctx, msg):
+    req = SC2S_GATHERING_HALL_TARGET_EQUIPPED_ITEM_REQ()
+    req.ParseFromString(msg)
+
+    query = db.query(Character).filter_by(id=req.characterId).first()
+    charinfo = SCHARACTER_GATHERING_HALL_INFO(
+        accountId=req.accountId,
+            nickName=SACCOUNT_NICKNAME(
+                originalNickName=query.nickname,
+                streamingModeNickName=query.streaming_nickname
+            )
+        )
+    res = SS2C_GATHERING_HALL_TARGET_EQUIPPED_ITEM_RES(result=pc.SUCCESS, equippedItems=None, characterInfo=charinfo)
+    return res
+
+def gathering_hall_channel_exit(ctx, msg):
+    req = SC2S_GATHERING_HALL_CHANNEL_EXIT_REQ()
+    req.ParseFromString(msg)
+    channels[f'channel{req.channelIndex}']['members'] = channels[f'channel{req.channelIndex}']['members'] - 1 
+
+    res = SS2C_GATHERING_HALL_CHANNEL_EXIT_RES(result=pc.SUCCESS)
+    return res
+
+
+def chat(ctx, msg):
+    req = SC2S_GATHERING_HALL_CHANNEL_CHAT_REQ()
+    req.ParseFromString(msg)
+
+    query = db.query(Character).filter_by(id=f"{sessions[ctx.transport].account.id}").first()
+
+    req.chat
+
+    chat_type = req.chat.chatType
+    chat_str = req.chat.chatData.chatDataPieceArray[0].chatStr
+    uid = req.chat.chatData.chatDataPieceArray[0].chatDataPieceItem.uid
+    iid = req.chat.chatData.chatDataPieceArray[0].chatDataPieceItem.iid
+    pp_list = req.chat.chatData.chatDataPieceArray[0].chatDataPieceItem.pp
+
+    property_list = []
+    for pp in pp_list:
+        property_list.append(SCHATDATA_PIECE_ITEM_PROPERTY(pid=pp.pid, pv=pp.pv))
+
+    chat_piece_item_obj = SCHATDATA_PIECE_ITEM(uid=uid, iid=iid, pp=property_list)
+
+    chat_piece = SCHATDATA_PIECE()
+    chat_piece.chatStr = chat_str
+    chat_piece.chatDataPieceItem.CopyFrom(chat_piece_item_obj)
+
+    nickName = SACCOUNT_NICKNAME(
+        originalNickName=query.nickname,
+        streamingModeNickName=query.streaming_nickname
+    )
+    chat_data = SCHATDATA()
+    chat_data.accountId = f"{sessions[ctx.transport].account.id}"
+    chat_data.characterId = f"{sessions[ctx.transport].character.id}"
+    chat_data.nickname.CopyFrom(nickName)
+    chat_data.partyId = f"{sessions[ctx.transport].party.id}"
+    chat_data.chatDataPieceArray.append(chat_piece)
+
+    chat_hall = SGATHERING_HALL_CHAT_S2C()
+    chat_hall.chatIndex = 1
+    chat_hall.chatType = chat_type
+    chat_hall.time = 1
+    chat_hall.chatData.CopyFrom(chat_data)
+    logmsg = ChatLog(
+      message=req.chat.chatData.chatDataPieceArray[0].chatStr,
+      user_id=f"{sessions[ctx.transport].account.id}",
+      chat_type=chat_type,
+      chat_index=1,
+    )
+
+    logmsg.save()
+
+    res = SS2C_GATHERING_HALL_CHANNEL_CHAT_RES(
+        result=pc.SUCCESS,
+        chats=[chat_hall]
+        )
+
+    return res

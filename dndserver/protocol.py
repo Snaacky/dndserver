@@ -3,7 +3,7 @@ import struct
 from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
-from dndserver.handlers import character, friends, lobby, login, trade, menu, merchant, party, ranking, inventory
+from dndserver.handlers import character, friends, lobby, login, trade, menu, merchant, party, ranking, gatheringhall
 from dndserver.objects.user import User
 from dndserver.protos import PacketCommand as pc
 from dndserver.sessions import sessions
@@ -52,8 +52,11 @@ class GameProtocol(Protocol):
                 pc.C2S_CLASS_EQUIP_INFO_REQ: character.get_perks_and_skills,
                 pc.C2S_CLASS_ITEM_MOVE_REQ: character.move_perks_and_skills,
                 pc.C2S_CLASS_LEVEL_INFO_REQ: character.get_experience,
-                pc.C2S_INVENTORY_SINGLE_UPDATE_REQ: inventory.move_single_item,
-                pc.C2S_INVENTORY_MOVE_REQ: inventory.move_item,
+                pc.C2S_INVENTORY_SINGLE_UPDATE_REQ: character.move_item,
+                pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,
+                pc.C2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ: lobby.map_select,
+                pc.C2S_LOBBY_REGION_SELECT_REQ: lobby.region_select,
+                pc.C2S_OPEN_LOBBY_MAP_REQ: lobby.open_lobby_map,
                 pc.C2S_CHARACTER_SELECT_ENTER_REQ: lobby.enter_character_select,
                 pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,
                 pc.C2S_LOBBY_REGION_SELECT_REQ: lobby.region_select,
@@ -70,7 +73,11 @@ class GameProtocol(Protocol):
                 pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
                 pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
                 pc.C2S_RANKING_RANGE_REQ: ranking.get_ranking,
-                pc.C2S_RANKING_CHARACTER_REQ: ranking.get_character_ranking,
+                pc.C2S_GATHERING_HALL_CHANNEL_LIST_REQ: gatheringhall.gathering_hall_channel_list,
+                pc.C2S_GATHERING_HALL_CHANNEL_SELECT_REQ: gatheringhall.gathering_hall_select_channel,
+                pc.C2S_GATHERING_HALL_TARGET_EQUIPPED_ITEM_REQ: gatheringhall.gathering_hall_equip,
+                pc.C2S_GATHERING_HALL_CHANNEL_EXIT_REQ : gatheringhall.gathering_hall_channel_exit,
+                pc.C2S_GATHERING_HALL_CHANNEL_CHAT_REQ : gatheringhall.chat,
             }
             handler = [k for k in handlers.keys() if k == _id]
             if not handler:
