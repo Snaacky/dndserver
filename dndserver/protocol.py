@@ -18,6 +18,7 @@ class GameFactory(Factory):
 class GameProtocol(Protocol):
     def __init__(self) -> None:
         super().__init__()
+        self.buffer = b''
 
     def connectionMade(self) -> None:
         """Event for when a client connects to the server."""
@@ -32,13 +33,24 @@ class GameProtocol(Protocol):
 
     def dataReceived(self, data: bytes) -> None:
         """Main loop for receiving request packets and sending response packets."""
-        # process all the data
-        while len(data):
-            # TODO: Implement support for segemented packets based on the incoming data's length.
-            length, _id = struct.unpack("<hxxhxx", data[:8])
+        self.buffer += data
+
+        # Only begin parsing the message if there's at least enough data for
+        # the header to be present
+        while len(self.buffer) >= 8:
+            
+            length, _id = struct.unpack("<hxxhxx", self.buffer[:8])
+
+            # Break if there is not enough data in the buffer yet
+            # to parse the full message.
+            if len(self.buffer) < length:
+                break
 
             # create a message with the correct length
-            msg = data[8:length]
+            msg = self.buffer[8:length]
+
+            # remove the data just processed from the buffer
+            self.buffer = self.buffer[length:]
 
             handlers = {
                 pc.C2S_ALIVE_REQ: self.heartbeat,
@@ -79,9 +91,6 @@ class GameProtocol(Protocol):
 
             res = handlers[handler[0]](self, msg)
             self.reply(msg=res)
-
-            # remove the data we have processed
-            data = data[length:]
 
     def heartbeat(self):
         """Send a D&D keepalive packet."""
