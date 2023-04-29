@@ -73,12 +73,12 @@ def get_inv_limit(item):
     # TODO: get real values for limits
     if "Id_Item_GoldCoinPurse" in item:
         return 50
-    elif "Id_Item_GoldCoinChest" in item:
-        return 200
     elif "Id_Item_GoldCoinBag" in item:
+        return 200
+    elif "Id_Item_GoldCoinChest" in item:
         return 1000
-
-    return 0
+    else:
+        return 0
 
 
 def move_item(ctx, msg):
@@ -130,63 +130,103 @@ def move_single_item(ctx, msg):
         # Not a simple move, search for the item we are updating to
         new_query = db.query(Item).filter_by(character_id=character.id).filter_by(id=new.itemUniqueId).first()
 
-        # check if we have the new item in the database
+        # check if we have both items in the database
         if new_query is None:
-            # The new item is not in the database. This means it has split. decrement the old item
-            old_query.quantity -= old.itemCount
-
-            # create a new item in the database
             it = Item()
             it.character_id = old_query.character_id
-            it.item_id = old.itemId
             it.quantity = new.itemCount
             it.inventory_id = new.inventoryId
             it.slot_id = new.slotId
-            it.save()
 
-            # # copy all the attributes
-            attributes = db.query(ItemAttribute).filter_by(item_id=old.itemUniqueId).all()
-            for attribute in attributes:
-                attr = attribute
-                attr.item_id = it.id
-                attr.save()
+            attributes = list()
+
+            if get_inv_limit(old.itemId):
+                # move item out of purse. decrease the amount of items in the inventory. The amount
+                # of items we need to remove is stored in the item count
+                old_query.inv_count -= new.itemCount
+
+                # extract the item out of the inventory
+                it.item_id = new.itemId
+
+            else:
+                # The new item is not in the database. This means it has split. decrement the old item
+                old_query.quantity -= old.itemCount
+
+                # create a new item in the database
+                it.item_id = old.itemId
+
+                # copy all the attributes
+                item_attr = db.query(ItemAttribute).filter_by(item_id=old.itemUniqueId).all()
+                for attribute in item_attr:
+                    attr = ItemAttribute()
+                    attr.item_id = attribute.item_id
+                    attr.primary = attribute.primary
+                    attr.property = attribute.property
+                    attr.value = attribute.value
+
+                    attributes.append(attr)
+
+            # add the item ot the database
+            add_item((it, attributes))
 
             # update the unique id to notify the client what id to use
             new.itemUniqueId = it.id
 
-        elif new.itemContentsCount:
-            # we have a item with a inventory. Put the item in the inventory and delete the other one
-            total_count = new_query.inv_count + old.itemCount
-            inventory_limit = get_inv_limit(new.itemId)
-
-            # limit the amount of items in the inventory
-            if total_count > inventory_limit:
-                # we have a overflow. Keep the old item and decrease it. Increase the amount on the new item
-                old_query.quantity = total_count - inventory_limit
-                new_query.inv_count = inventory_limit
-
-            else:
-                new_query.inv_count = total_count
-
-                # delete the item
-                delete_item(character.id, old)
-
         else:
-            # we have both items. Merge them
-            total_count = old.itemCount + new.itemCount
-            stack_limit = get_stack_limit(new.itemId)
+            # check what action to do
+            if get_inv_limit(old.itemId) and get_inv_limit(new.itemId):
+                # move item from one purse to another
+                total_count = new_query.inv_count + new.itemContentsCount
+                inventory_limit = get_inv_limit(new.itemId)
 
-            # limit the amount of items in a stack. The game expects this and wont update otherwise
-            if total_count > stack_limit:
-                # we have a overflow. Keep the old item and decrease it. Increase the amount on the new item
-                old_query.quantity = total_count - stack_limit
-                new_query.quantity = stack_limit
+                # limit the amount of items in the inventory
+                if total_count > inventory_limit:
+                    # we have a overflow. Increase the amount on the new item till it does not fit anymore
+                    old_query.inv_count = total_count - inventory_limit
+                    new_query.inv_count = inventory_limit
+                else:
+                    old_query.inv_count = 0
+                    new_query.inv_count = total_count
+
+            elif get_inv_limit(new.itemId):
+                # move item into purse. Put the item in the inventory and delete the other one if everything fits
+                total_count = new_query.inv_count + old.itemCount
+                inventory_limit = get_inv_limit(new.itemId)
+
+                # limit the amount of items in the inventory
+                if total_count > inventory_limit:
+                    # we have a overflow. Keep the old item and decrease it. Increase the amount on the new item
+                    old_query.quantity = total_count - inventory_limit
+                    new_query.inv_count = inventory_limit
+
+                else:
+                    new_query.inv_count = total_count
+
+                    # delete the item
+                    delete_item(character.id, old)
+
+            elif get_stack_limit(new.itemId):
+                # we have both items. Merge them
+                total_count = old.itemCount + new.itemCount
+                stack_limit = get_stack_limit(new.itemId)
+
+                # limit the amount of items in a stack. The game expects this and wont update otherwise
+                if total_count > stack_limit:
+                    # we have a overflow. Keep the old item and decrease it. Increase the amount on the new item
+                    old_query.quantity = total_count - stack_limit
+                    new_query.quantity = stack_limit
+
+                else:
+                    # Everything fits in the new item. Merge and delete the old item
+                    new_query.quantity = total_count
+
+                    # delete the item
+                    delete_item(character.id, old)
 
             else:
-                # Everything fits in the new item. Merge and delete the old item
-                new_query.quantity = total_count
-
-                # delete the item
-                delete_item(character.id, old)
+                # return a error as we cannot process this request
+                return SS2C_INVENTORY_SINGLE_UPDATE_RES(
+                    result=pc.FAIL_NO_VALUE, oldItem=req.oldItem, newItem=req.newItem
+                )
 
     return SS2C_INVENTORY_SINGLE_UPDATE_RES(result=pc.SUCCESS, oldItem=req.oldItem, newItem=req.newItem)
