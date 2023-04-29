@@ -3,7 +3,7 @@ import struct
 from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
-from dndserver.handlers import character, friends, lobby, login, trade, menu, merchant, party, ranking
+from dndserver.handlers import character, friends, lobby, login, trade, menu, merchant, party, ranking, inventory
 from dndserver.objects.user import User
 from dndserver.protos import PacketCommand as pc
 from dndserver.sessions import sessions
@@ -52,7 +52,8 @@ class GameProtocol(Protocol):
                 pc.C2S_CLASS_EQUIP_INFO_REQ: character.get_perks_and_skills,
                 pc.C2S_CLASS_ITEM_MOVE_REQ: character.move_perks_and_skills,
                 pc.C2S_CLASS_LEVEL_INFO_REQ: character.get_experience,
-                pc.C2S_INVENTORY_SINGLE_UPDATE_REQ: character.move_item,
+                pc.C2S_INVENTORY_SINGLE_UPDATE_REQ: inventory.move_single_item,
+                pc.C2S_INVENTORY_MOVE_REQ: inventory.move_item,
                 pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,
                 pc.C2S_CHARACTER_SELECT_ENTER_REQ: lobby.enter_character_select,
                 pc.C2S_FRIEND_LIST_ALL_REQ: friends.list_friends,

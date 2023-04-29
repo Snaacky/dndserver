@@ -75,6 +75,46 @@ class Character(base):
         db.commit()
 
 
+class Item(base):
+    __tablename__ = "items"
+
+    id = Column(Integer, primary_key=True, autoincrement="auto")
+    character_id = Column(Integer)
+    item_id = Column(String)
+    quantity = Column(Integer)
+    inventory_id = Column(Integer)
+    slot_id = Column(Integer)
+
+    ammo_count = Column(Integer, default=0)
+
+    def save(self):
+        db.add(self)
+        db.commit()
+
+    def delete(self):
+        db.delete(self)
+        db.commit()
+
+
+class ItemAttribute(base):
+    __tablename__ = "item_attribute"
+
+    id = Column(Integer, primary_key=True, autoincrement="auto")
+    item_id = Column(Integer)
+
+    primary = Column(Boolean)
+    property = Column(String)
+    value = Column(Integer)
+
+    def save(self):
+        db.add(self)
+        db.commit()
+
+    def delete(self):
+        db.delete(self)
+        db.commit()
+
+
 class Hwid(base):
     __tablename__ = "hwids"
     id = Column(Integer, primary_key=True, autoincrement="auto")

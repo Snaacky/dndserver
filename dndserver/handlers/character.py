@@ -2,10 +2,10 @@ import random
 
 from dndserver.database import db
 from dndserver.enums import CharacterClass, Gender
-from dndserver.models import Character
-from dndserver.objects import items
+from dndserver.models import Character, Item, ItemAttribute
+from dndserver import objects
 from dndserver.protos import PacketCommand as pc
-from dndserver.protos import Item as item
+from dndserver.protos import Item as pItem
 from dndserver.protos.Account import (
     SC2S_ACCOUNT_CHARACTER_CREATE_REQ,
     SC2S_ACCOUNT_CHARACTER_DELETE_REQ,
@@ -27,12 +27,49 @@ from dndserver.protos.CharacterClass import (
 )
 from dndserver.protos.Customize import SS2C_CUSTOMIZE_CHARACTER_INFO_RES
 from dndserver.protos.Item import SCUSTOMIZE_CHARACTER
-from dndserver.protos.Defines import Define_Character, Define_Class
+from dndserver.protos.Defines import Define_Character, Define_Class, Define_Item
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
-from dndserver.protos.Inventory import SC2S_INVENTORY_SINGLE_UPDATE_REQ, SS2C_INVENTORY_SINGLE_UPDATE_RES
 from dndserver.sessions import sessions
 from dndserver.data import perks as pk
 from dndserver.data import skills as sk
+
+
+def item_to_proto_item(item, attributes):
+    """Helper function to create a proto item from a database item and attributes"""
+    ret = pItem.SItem()
+
+    ret.itemUniqueId = item.id
+    ret.itemId = item.item_id
+    ret.itemCount = item.quantity
+    ret.inventoryId = item.inventory_id
+    ret.slotId = item.slot_id
+    ret.itemAmmoCount = item.id
+    ret.itemContentsCount = item.id
+
+    for attribute in attributes:
+        property = pItem.SItemProperty(propertyTypeId=attribute.property, propertyValue=attribute.value)
+
+        if attribute.primary:
+            ret.primaryPropertyArray.append(property)
+        else:
+            ret.secondaryPropertyArray.append(property)
+
+    return ret
+
+
+def get_all_items(character_id):
+    """Helper function to get all items for a character id"""
+    query = db.query(Item).filter_by(character_id=character_id)
+    ret = list()
+
+    for item in query:
+        # add the attributes of the item
+        attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
+
+        # add the attributes and the item
+        ret.append((item, attributes))
+
+    return ret
 
 
 def list_characters(ctx, msg):
@@ -47,30 +84,25 @@ def list_characters(ctx, msg):
     end = start + 7
 
     for result in query[start:end]:
-        res.characterList.append(
-            SLOGIN_CHARACTER_INFO(
-                characterId=str(result.id),
-                nickName=SACCOUNT_NICKNAME(
-                    originalNickName=result.nickname,
-                    streamingModeNickName=result.streaming_nickname
-                ),
-                level=result.level,
-                characterClass=CharacterClass(result.character_class).value,
-                gender=Gender(result.gender).value,
-                equipItemList=[
-                    items.generate_torch(),
-                    items.generate_roundshield(),
-                    items.generate_lantern(),
-                    items.generate_sword(),
-                    items.generate_pants(),
-                    items.generate_tunic(),
-                    items.generate_bandage(),
-                    items.generate_helm()
-                ],
-                createAt=result.created_at.int_timestamp,
-                # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
-            )
+        info = SLOGIN_CHARACTER_INFO(
+            characterId=str(result.id),
+            nickName=SACCOUNT_NICKNAME(
+                originalNickName=result.nickname, streamingModeNickName=result.streaming_nickname
+            ),
+            level=result.level,
+            characterClass=CharacterClass(result.character_class).value,
+            gender=Gender(result.gender).value,
+            createAt=result.created_at.int_timestamp,
+            # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
         )
+
+        for item, attributes in get_all_items(result.id):
+            if item.inventory_id != Define_Item.InventoryId.EQUIPMENT:
+                continue
+
+            info.equipItemList.append(item_to_proto_item(item, attributes))
+
+        res.characterList.append(info)
 
     return res
 
@@ -107,6 +139,48 @@ def create_character(ctx, msg):
     char.skill0, char.skill1 = sk.skills[CharacterClass(req.characterClass)][0:2]
     char.save()
 
+    # TODO: make this dependend on the character class
+    starter_items = [
+        objects.items.generate_helm(),
+        objects.items.generate_torch(),
+        objects.items.generate_lantern(),
+        objects.items.generate_sword(),
+        objects.items.generate_pants(),
+        objects.items.generate_tunic(),
+        objects.items.generate_bandage(),
+    ]
+
+    # give the character a starter set
+    for item in starter_items:
+        # we ignore the unique id here of the item. The database knows best what the id should be
+        it = Item()
+        it.character_id = char.id
+        it.item_id = item.itemId
+        it.quantity = item.itemCount
+        it.inventory_id = item.inventoryId
+        it.slot_id = item.slotId
+
+        it.save()
+
+        # add the attributes to the items
+        for attribute in item.primaryPropertyArray:
+            attr = ItemAttribute()
+            attr.item_id = it.id
+            attr.primary = True
+            attr.property = attribute.propertyTypeId
+            attr.value = attribute.propertyValue
+
+            attr.save()
+
+        for attribute in item.secondaryPropertyArray:
+            attr = ItemAttribute()
+            attr.item_id = it.id
+            attr.primary = False
+            attr.property = attribute.propertyTypeId
+            attr.value = attribute.propertyValue
+
+            attr.save()
+
     return res
 
 
@@ -123,6 +197,18 @@ def delete_character(ctx, msg):
         res.result = pc.FAIL_GENERAL
         return res
 
+    # also delete all the items this character has
+    items = db.query(Item).filter_by(character_id=req.characterId)
+    for item in items:
+        # delete all the attributes of the items we are deleting
+        attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
+
+        for attribute in attributes:
+            attribute.delete()
+
+        item.delete()
+
+    # delete the character after we have removed all the other items
     query.delete()
     return res
 
@@ -139,29 +225,22 @@ def character_info(ctx, msg):
     """Occurs when the user loads into the lobby/tavern."""
     character = sessions[ctx.transport].character
 
-    res = SS2C_LOBBY_CHARACTER_INFO_RES(
-        result=pc.SUCCESS,
-        characterDataBase=SCHARACTER_INFO(
-            accountId=str(sessions[ctx.transport].account.id),
-            nickName=SACCOUNT_NICKNAME(
-                originalNickName=character.nickname,
-                streamingModeNickName=character.streaming_nickname
-            ),
-            characterClass=CharacterClass(character.character_class).value,
-            characterId=str(character.id),
-            gender=Gender(character.gender).value,
-            level=character.level,
-            CharacterItemList=[
-                items.generate_helm(),
-                items.generate_torch(),
-                items.generate_lantern(),
-                items.generate_sword(),
-                items.generate_pants(),
-                items.generate_tunic(),
-                items.generate_bandage(),
-            ],
+    char_info = SCHARACTER_INFO(
+        accountId=str(sessions[ctx.transport].account.id),
+        nickName=SACCOUNT_NICKNAME(
+            originalNickName=character.nickname, streamingModeNickName=character.streaming_nickname
         ),
+        characterClass=CharacterClass(character.character_class).value,
+        characterId=str(character.id),
+        gender=Gender(character.gender).value,
+        level=character.level,
     )
+
+    # get all the items and attributes of the character
+    for item, attributes in get_all_items(character.id):
+        char_info.CharacterItemList.append(item_to_proto_item(item, attributes))
+
+    res = SS2C_LOBBY_CHARACTER_INFO_RES(result=pc.SUCCESS, characterDataBase=char_info)
 
     return res
 
@@ -181,13 +260,6 @@ def get_experience(ctx, msg):
     return res
 
 
-def move_item(ctx, msg):
-    req = SC2S_INVENTORY_SINGLE_UPDATE_REQ()
-    req.ParseFromString(msg)
-    res = SS2C_INVENTORY_SINGLE_UPDATE_RES(result=pc.SUCCESS, oldItem=req.oldItem, newItem=req.newItem)
-    return res
-
-
 def list_perks(ctx, msg):
     """Occurs when user selects the class menu."""
     character = sessions[ctx.transport].character
@@ -200,7 +272,7 @@ def list_perks(ctx, msg):
     # Generate the response. Do not send the perks we have selected already
     for perk in perks:
         if perk not in selected_perks:
-            res.perks.append(item.SPerk(index=index, perkId=perk))
+            res.perks.append(pItem.SPerk(index=index, perkId=perk))
             index += 1
 
     return res
@@ -218,7 +290,7 @@ def list_skills(ctx, msg):
     # Generate the response. Do not send the skills we have selected already
     for skill in skills:
         if skill not in selected_skills:
-            res.skills.append(item.SSkill(index=index, skillId=skill))
+            res.skills.append(pItem.SSkill(index=index, skillId=skill))
             index += 1
 
     return res
