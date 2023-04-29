@@ -3,6 +3,8 @@ FROM python:3.11.3-slim-buster
 LABEL maintainer="https://github.com/snaacky/dndserver"
 
 # Install Poetry
+RUN apt update -y 
+RUN apt install --no-install-recommends -y curl
 RUN curl -sSL https://install.python-poetry.org | python -
 
 # Add Poetry path to PATH
