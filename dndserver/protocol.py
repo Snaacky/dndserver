@@ -57,6 +57,7 @@ class GameProtocol(Protocol):
                 pc.C2S_CHARACTER_SELECT_ENTER_REQ: lobby.enter_character_select,
                 pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,
                 pc.C2S_LOBBY_REGION_SELECT_REQ: lobby.region_select,
+                pc.C2S_OPEN_LOBBY_MAP_REQ: lobby.open_lobby_map,
                 pc.C2S_FRIEND_LIST_ALL_REQ: friends.list_friends,
                 pc.C2S_FRIEND_FIND_REQ: friends.find_user,
                 pc.C2S_META_LOCATION_REQ: menu.process_location,
