@@ -1,0 +1,40 @@
+name: Docker
+
+on: [push]
+
+env:
+  IMAGE_NAME: dndserver
+  REPOSITORY: ghcr.io
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Prepare metadata for build
+        id: prep
+        run: |
+          VERSION=edge
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          elif [[ $GITHUB_REF == refs/heads/* ]]; then
+            VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
+          elif [[ $GITHUB_REF == refs/pull/* ]]; then
+            VERSION=pr-${{ github.event.number }}
+          fi
+
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && VERSION=latest
+
+          echo ::set-output name=version::${VERSION}
+
+      - name: Build and publish Docker image (using cache)
+        uses: whoan/docker-build-with-cache-action@v5
+        with:
+          registry: ${{ env.REPOSITORY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          image_name: ${{ env.IMAGE_NAME }}
+          image_tag: ${{ steps.prep.outputs.version }}
