@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class CharacterClass(Enum):
     BARBARIAN = "DesignDataPlayerCharacter:Id_PlayerCharacter_Barbarian"
     BARD = "DesignDataPlayerCharacter:Id_PlayerCharacter_Bard"

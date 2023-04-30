@@ -31,7 +31,8 @@ class Item:
             new_prop.propertyValue = prop[1]
             new_item.primaryPropertyArray.append(new_prop)
 
-def generate_item(name, type, rarity, inventoryId, slotId, itemCount = 1, uniqueId = None):
+
+def generate_item(name, type, rarity, inventoryId, slotId, itemCount=1, uniqueId=None):
     newItem = item.SItem()
     newItem.inventoryId = inventoryId
     newItem.slotId = slotId
@@ -41,11 +42,11 @@ def generate_item(name, type, rarity, inventoryId, slotId, itemCount = 1, unique
         newItem.itemUniqueId = uniqueId
 
     itemValues = generateItem(name.value, type, rarity, itemCount)
-    if(itemValues):
+    if itemValues:
         newItem.itemId = itemValues["itemId"]
         newItem.itemCount = int(itemValues.get("itemCount", itemCount))
         propertiesArray = itemValues.get("primaryPropertyArray", [])
-        if(propertiesArray and len(propertiesArray) > 1):
+        if propertiesArray and len(propertiesArray) > 1:
             for property in itemValues["primaryPropertyArray"]:
                 itemProperty = item.SItemProperty()
                 itemProperty.propertyTypeId = property["propertyTypeId"]

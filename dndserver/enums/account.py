@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class BanType(Enum):
     FAIL_LOGIN_BAN_USER = 12
     FAIL_LOGIN_BAN_USER_CHEATER = 13
