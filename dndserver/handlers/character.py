@@ -32,6 +32,7 @@ from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 from dndserver.sessions import sessions
 from dndserver.data import perks as pk
 from dndserver.data import skills as sk
+from dndserver.handlers import inventory
 
 
 def item_to_proto_item(item, attributes):
@@ -43,8 +44,8 @@ def item_to_proto_item(item, attributes):
     ret.itemCount = item.quantity
     ret.inventoryId = item.inventory_id
     ret.slotId = item.slot_id
-    ret.itemAmmoCount = item.id
-    ret.itemContentsCount = item.id
+    ret.itemAmmoCount = item.ammo_count
+    ret.itemContentsCount = item.inv_count
 
     for attribute in attributes:
         property = pItem.SItemProperty(propertyTypeId=attribute.property, propertyValue=attribute.value)
@@ -53,21 +54,6 @@ def item_to_proto_item(item, attributes):
             ret.primaryPropertyArray.append(property)
         else:
             ret.secondaryPropertyArray.append(property)
-
-    return ret
-
-
-def get_all_items(character_id):
-    """Helper function to get all items for a character id"""
-    query = db.query(Item).filter_by(character_id=character_id)
-    ret = list()
-
-    for item in query:
-        # add the attributes of the item
-        attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
-
-        # add the attributes and the item
-        ret.append((item, attributes))
 
     return ret
 
@@ -96,7 +82,7 @@ def list_characters(ctx, msg):
             # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
         )
 
-        for item, attributes in get_all_items(result.id):
+        for item, attributes in inventory.get_all_items(result.id):
             if item.inventory_id != Define_Item.InventoryId.EQUIPMENT:
                 continue
 
@@ -237,7 +223,7 @@ def character_info(ctx, msg):
     )
 
     # get all the items and attributes of the character
-    for item, attributes in get_all_items(character.id):
+    for item, attributes in inventory.get_all_items(character.id):
         char_info.CharacterItemList.append(item_to_proto_item(item, attributes))
 
     res = SS2C_LOBBY_CHARACTER_INFO_RES(result=pc.SUCCESS, characterDataBase=char_info)
