@@ -17,18 +17,6 @@ def process_login(ctx, msg):
     # TODO: Not all SS2C_ACCOUNT_LOGIN_RES fields are implemented.
     res = SS2C_ACCOUNT_LOGIN_RES(serverLocation=1)
 
-    account = db.query(Account).filter(Account.username.ilike(req.loginId)).first()
-    if not account:
-        account = Account(
-            username=req.loginId,
-            password=argon2.PasswordHasher().hash(req.password),
-            secret_token=''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
-        )
-        account.save()
-
-        # TODO: Create new hwid objects and save them to the db here
-        res.secretToken = account.secret_token
-
     # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password.
     if len(req.loginId) <= 2 or len(req.password) <= 2:
         res.Result = res.FAIL_SHORT_ID_OR_PASSWORD
@@ -38,6 +26,18 @@ def process_login(ctx, msg):
     if len(req.loginId) > 20:
         res.Result = res.FAIL_OVERFLOW_ID_OR_PASSWORD
         return res
+
+    account = db.query(Account).filter(Account.username.ilike(req.loginId)).first()
+    if not account:
+        account = Account(
+            username=req.loginId,
+            password=argon2.PasswordHasher().hash(req.password),
+            secret_token="".join(random.choices(string.ascii_uppercase + string.digits, k=21)),
+        )
+        account.save()
+
+        # TODO: Create new hwid objects and save them to the db here
+        res.secretToken = account.secret_token
 
     # Return FAIL_PASSWORD on invalid password.
     try:
