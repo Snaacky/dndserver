@@ -1,8 +1,8 @@
 """Added inventory count
 
-Revision ID: e80361e4431e
-Revises: 07685a4b5061
-Create Date: 2023-04-29 16:25:56.044312
+Revision ID: 666ee8c39e0e
+Revises: dabc974f380f
+Create Date: 2023-04-30 02:04:10.027857
 
 """
 from alembic import op
@@ -11,8 +11,8 @@ import sqlalchemy_utils
 
 
 # revision identifiers, used by Alembic.
-revision = "e80361e4431e"
-down_revision = "07685a4b5061"
+revision = "666ee8c39e0e"
+down_revision = "dabc974f380f"
 branch_labels = None
 depends_on = None
 
