@@ -4,10 +4,13 @@ from dndserver import objects
 from dndserver.data import perks as pk
 from dndserver.data import skills as sk
 from dndserver.database import db
-from dndserver.enums import CharacterClass, Gender
+from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.handlers import inventory
 from dndserver.models import Character, Item, ItemAttribute
 from dndserver.persistent import sessions
+from dndserver.objects import items
+from dndserver.enums.items import ItemType, Rarity, Item as ItemEnum
+from dndserver.protos import PacketCommand as pc
 from dndserver.protos import Item as pItem
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Account import (
@@ -112,29 +115,21 @@ def create_character(ctx, msg):
         res.result = pc.FAIL_DUPLICATE_NICKNAME
         return res
 
+    char_class = CharacterClass(req.characterClass)
     char = Character(
         user_id=sessions[ctx.transport].account.id,
         nickname=req.nickName,
         streaming_nickname=f"Fighter#{random.randrange(1000000, 1700000)}",
         gender=Gender(req.gender),
-        character_class=CharacterClass(req.characterClass),
+        character_class=char_class,
     )
 
     # select the default perks and skills
-    char.perk0 = pk.perks[CharacterClass(req.characterClass)][0]
-    char.skill0, char.skill1 = sk.skills[CharacterClass(req.characterClass)][0:2]
+    char.perk0, char.perk1, char.perk2, char.perk3 = pk.perks[char_class][0:4]
+    char.skill0, char.skill1 = sk.skills[char_class][0:2]
     char.save()
 
-    # TODO: make this dependend on the character class
-    starter_items = [
-        objects.items.generate_helm(),
-        objects.items.generate_torch(),
-        objects.items.generate_lantern(),
-        objects.items.generate_sword(),
-        objects.items.generate_pants(),
-        objects.items.generate_tunic(),
-        objects.items.generate_bandage(),
-    ]
+    starter_items = create_items_per_class(char_class)
 
     # give the character a starter set
     for item in starter_items:
@@ -353,3 +348,151 @@ def move_perks_and_skills(ctx, msg):
         char.perk0, char.perk1, char.perk2, char.perk3, char.skill0, char.skill1 = perks_skills
 
     return SS2C_CLASS_ITEM_MOVE_RES(result=pc.SUCCESS, oldMove=req.oldMove, newMove=req.newMove)
+
+
+def create_items_per_class(char_class):
+    match char_class:
+        case CharacterClass.BARBARIAN:
+            return [
+            items.generate_item(ItemEnum.BATTLEAXE, ItemType.WEAPONS, Rarity.JUNK, 3, 10),
+            items.generate_item(ItemEnum.LANTERN, ItemType.UTILITY, Rarity.JUNK, 3, 8),
+            items.generate_item(ItemEnum.FRANCISCAAXE, ItemType.UTILITY, Rarity.JUNK, 3, 14, 3),
+            items.generate_item(ItemEnum.HEAVYBOOTS, ItemType.ARMORS, Rarity.JUNK, 3, 5),
+            items.generate_item(ItemEnum.GJERMUNDBU, ItemType.ARMORS, Rarity.JUNK, 3, 1),
+            items.generate_item(ItemEnum.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4),
+            # TODO These are just for demo purposes, remove after
+            items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+            items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
+            items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+            items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+            items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+            items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+            items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+            items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+        ]
+
+        case CharacterClass.BARD:
+            return [
+                items.generate_item(ItemEnum.LUTE, ItemType.WEAPONS, Rarity.JUNK, 3, 10),
+                items.generate_item(ItemEnum.TORCH, ItemType.WEAPONS, Rarity.JUNK, 3, 13),
+                items.generate_item(ItemEnum.RAPIER, ItemType.WEAPONS, Rarity.JUNK, 3, 12),
+                items.generate_item(ItemEnum.BANDAGE, ItemType.CONSUMABLES, Rarity.JUNK, 3, 8),
+                items.generate_item(ItemEnum.LANTERN, ItemType.UTILITY, Rarity.JUNK, 3, 14),
+                items.generate_item(ItemEnum.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4),
+                items.generate_item(ItemEnum.WANDERERATTIRE, ItemType.ARMORS, Rarity.JUNK, 3, 2),
+                # TODO These are just for demo purposes, remove after
+                items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+                items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+            ]
+
+        case CharacterClass.CLERIC:
+            return [
+                items.generate_item(ItemEnum.FLANGEDMACE, ItemType.WEAPONS, Rarity.JUNK, 3, 10),
+                items.generate_item(ItemEnum.BUCKLER, ItemType.WEAPONS, Rarity.JUNK, 3, 11),
+                items.generate_item(ItemEnum.WIZARDSTAFF, ItemType.WEAPONS, Rarity.JUNK, 3, 12),
+                items.generate_item(ItemEnum.LANTERN, ItemType.UTILITY, Rarity.JUNK, 3, 8),
+                items.generate_item(ItemEnum.BANDAGE, ItemType.UTILITY, Rarity.JUNK, 3, 14),
+                items.generate_item(ItemEnum.FROCK, ItemType.ARMORS, Rarity.JUNK, 3, 2),
+                items.generate_item(ItemEnum.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4),
+                items.generate_item(ItemEnum.BANDAGE, ItemType.CONSUMABLES, Rarity.JUNK, 3, 14),
+                # TODO These are just for demo purposes, remove after
+                items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+                items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+            ]
+
+        case CharacterClass.FIGHTER:
+            return [
+                items.generate_item(ItemEnum.ARMINGSWORD, ItemType.WEAPONS, Rarity.JUNK, 3, 10),
+                items.generate_item(ItemEnum.ROUNDSHIELD, ItemType.WEAPONS, Rarity.JUNK, 3, 11),
+                items.generate_item(ItemEnum.TORCH, ItemType.WEAPONS, Rarity.JUNK, 3, 12),
+                items.generate_item(ItemEnum.LANTERN, ItemType.UTILITY, Rarity.JUNK, 3, 8),
+                items.generate_item(ItemEnum.BANDAGE, ItemType.CONSUMABLES, Rarity.JUNK, 3, 14),
+                items.generate_item(ItemEnum.PADDEDTUNIC, ItemType.ARMORS, Rarity.JUNK, 3, 2),
+                items.generate_item(ItemEnum.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4),
+                # TODO These are just for demo purposes, remove after
+                items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+                items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+            ]
+
+        case CharacterClass.RANGER:
+            return [
+                items.generate_item(ItemEnum.RECURVEBOW, ItemType.WEAPONS, Rarity.JUNK, 3, 10),
+                items.generate_item(ItemEnum.SHORTSWORD, ItemType.WEAPONS, Rarity.JUNK, 3, 12),
+                items.generate_item(ItemEnum.LANTERN, ItemType.UTILITY, Rarity.JUNK, 3, 8),
+                items.generate_item(ItemEnum.HUNTINGTRAP, ItemType.UTILITY, Rarity.JUNK, 3, 14),
+                items.generate_item(ItemEnum.CAMPFIREKIT, ItemType.UTILITY, Rarity.JUNK, 3, 15),
+                items.generate_item(ItemEnum.DOUBLET, ItemType.ARMORS, Rarity.JUNK, 3, 2),
+                items.generate_item(ItemEnum.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4),
+                items.generate_item(ItemEnum.RANGERHOOD, ItemType.ARMORS, Rarity.JUNK, 3, 1),
+                items.generate_item(ItemEnum.ARROW, ItemType.CONSUMABLES, Rarity.JUNK, 2, 0, 15),
+                # TODO These are just for demo purposes, remove after
+                items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+                items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+            ]
+
+        case CharacterClass.ROGUE:
+            return [
+                items.generate_item(ItemEnum.RONDELDAGGER, ItemType.WEAPONS, Rarity.JUNK, 3, 10),
+                items.generate_item(ItemEnum.CASTILLONDAGGER, ItemType.WEAPONS, Rarity.JUNK, 3, 11),
+                items.generate_item(ItemEnum.TORCH, ItemType.WEAPONS, Rarity.JUNK, 3, 12),
+                items.generate_item(ItemEnum.LANTERN, ItemType.UTILITY, Rarity.JUNK, 3, 8),
+                items.generate_item(ItemEnum.THROWINGKNIFE, ItemType.UTILITY, Rarity.JUNK, 3, 14, 3),
+                items.generate_item(ItemEnum.DOUBLET, ItemType.ARMORS, Rarity.JUNK, 3, 2),
+                items.generate_item(ItemEnum.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4),
+                items.generate_item(ItemEnum.ROGUECOWL, ItemType.ARMORS, Rarity.JUNK, 3, 1),
+                # TODO These are just for demo purposes, remove after
+                items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+                items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+            ]
+
+        case CharacterClass.WIZARD:
+            return [
+                items.generate_item(ItemEnum.WIZARDSTAFF, ItemType.WEAPONS, Rarity.JUNK, 3, 10),
+                items.generate_item(ItemEnum.TORCH, ItemType.WEAPONS, Rarity.JUNK, 3, 12),
+                items.generate_item(ItemEnum.LANTERN, ItemType.UTILITY, Rarity.JUNK, 3, 8),
+                items.generate_item(ItemEnum.PROTECTIONPOTION, ItemType.CONSUMABLES, Rarity.JUNK, 3, 14),
+                items.generate_item(ItemEnum.FROCK, ItemType.ARMORS, Rarity.JUNK, 3, 2),
+                items.generate_item(ItemEnum.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4),
+                items.generate_item(ItemEnum.WIZARDHAT, ItemType.ARMORS, Rarity.JUNK, 3, 1),
+                items.generate_item(ItemEnum.WIZARDSHOES, ItemType.ARMORS, Rarity.JUNK, 3, 5),
+                # TODO These are just for demo purposes, remove after
+                items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+                items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+            ]
+    return []

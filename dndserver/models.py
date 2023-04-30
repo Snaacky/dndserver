@@ -5,7 +5,7 @@ from sqlalchemy.types import Boolean, Enum, Integer, String, Text
 from sqlalchemy_utils import ArrowType
 
 from dndserver.database import db
-from dndserver.enums import CharacterClass, Gender
+from dndserver.enums.classes import CharacterClass, Gender
 
 
 base = declarative_base()

@@ -2,6 +2,7 @@ from dndserver.data import merchant as Merchant
 from dndserver.objects import items
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Defines import Define_Message
+from dndserver.enums.items import ItemType, Rarity, Item
 from dndserver.protos.Merchant import (
     SC2S_MERCHANT_STOCK_BUY_ITEM_LIST_REQ,
     SC2S_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_REQ,
@@ -69,32 +70,32 @@ def get_buy_list(ctx, msg):
                 SMERCHANT_STOCK_BUY_ITEM_INFO(
                     stockBuyId="DesignDataStockBuy:Id_StockBuy_Alchemist_01",
                     stockUniqueId=1,
-                    itemInfo=items.generate_bandage(),
+                    itemInfo=items.generate_item(Item.BANDAGE, ItemType.CONSUMABLES, Rarity.JUNK, 3, 14, 1, 1111111),
                 ),
                 SMERCHANT_STOCK_BUY_ITEM_INFO(
                     stockBuyId="DesignDataStockBuy:Id_StockBuy_Alchemist_02",
                     stockUniqueId=2,
-                    itemInfo=items.generate_torch(),
+                    itemInfo=items.generate_item(Item.TORCH, ItemType.WEAPONS, Rarity.JUNK, 3, 13, 1, 1111112),
                 ),
                 SMERCHANT_STOCK_BUY_ITEM_INFO(
                     stockBuyId="DesignDataStockBuy:Id_StockBuy_Alchemist_03",
                     stockUniqueId=3,
-                    itemInfo=items.generate_roundshield(),
+                    itemInfo=items.generate_item(Item.ROUNDSHIELD, ItemType.WEAPONS, Rarity.JUNK, 3, 11, 1, 1111113),
                 ),
                 SMERCHANT_STOCK_BUY_ITEM_INFO(
                     stockBuyId="DesignDataStockBuy:Id_StockBuy_Alchemist_04",
                     stockUniqueId=4,
-                    itemInfo=items.generate_lantern(),
+                    itemInfo=items.generate_item(Item.LANTERN, ItemType.UTILITY, Rarity.JUNK, 3, 8, 1, 1111114),
                 ),
                 SMERCHANT_STOCK_BUY_ITEM_INFO(
                     stockBuyId="DesignDataStockBuy:Id_StockBuy_Alchemist_05",
                     stockUniqueId=5,
-                    itemInfo=items.generate_sword(),
+                    itemInfo=items.generate_item(Item.ARMINGSWORD, ItemType.WEAPONS, Rarity.JUNK, 3, 10, 1, 1111115),
                 ),
                 SMERCHANT_STOCK_BUY_ITEM_INFO(
                     stockBuyId="DesignDataStockBuy:Id_StockBuy_Alchemist_06",
                     stockUniqueId=6,
-                    itemInfo=items.generate_pants(),
+                    itemInfo=items.generate_item(Item.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4, 1, 1111116),
                 ),
             ],
         )
