@@ -55,6 +55,17 @@ def process_login(ctx, msg):
     info = SLOGIN_ACCOUNT_INFO(AccountID=str(account.id))
     res.AccountInfo.CopyFrom(info)
 
+    kick_concurrent_user(account)
+
     sessions[ctx.transport].account = account
 
     return res
+
+
+def kick_concurrent_user(newly_connected_account):
+    """Searches for already connected account and kicks if a match is found."""
+    for transport, user in sessions.items():
+        # case where a duplicate account is found
+        if user.account == newly_connected_account:
+            transport.loseConnection()
+            break
