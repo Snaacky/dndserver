@@ -1,8 +1,5 @@
 import struct
 
-from loguru import logger
-
-from dndserver.parties import parties
 from dndserver.protos import PacketCommand as pc
 from dndserver.sessions import sessions
 
@@ -31,5 +28,5 @@ def get_user_by_account_id(account_id: int):
 
 
 def get_party_by_account_id(account_id: int):
-    transport, session = get_user_by_account_id(account_id)
+    _, session = get_user_by_account_id(account_id)
     return session.party
