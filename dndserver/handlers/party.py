@@ -1,3 +1,4 @@
+from dndserver.database import db
 from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.persistent import sessions
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_PARTY_INFO
@@ -10,8 +11,10 @@ from dndserver.protos.Party import (
     SS2C_PARTY_INVITE_RES,
     SS2C_PARTY_MEMBER_INFO_NOT,
 )
+from dndserver.protos.Defines import Define_Item
 from dndserver.protos import PacketCommand as pc
-from dndserver.handlers.character import create_items_per_class
+from dndserver.handlers import inventory
+from dndserver.handlers import character as Char
 from dndserver.utils import get_party_by_account_id, get_user_by_account_id, get_user_by_nickname, make_header
 
 
@@ -90,7 +93,7 @@ def send_accept_notification(ctx, req):
     transport.write(header + notify.SerializeToString())
 
 
-def send_party_info_notification(party, user):
+def send_party_info_notification(party, current_user):
     # message SS2C_PARTY_MEMBER_INFO_NOT {
     #     repeated .DC.Packet.SCHARACTER_PARTY_INFO playPartyUserInfoData = 1;
     # }
@@ -123,10 +126,13 @@ def send_party_info_notification(party, user):
         info.characterId = str(user.character.id)
         info.gender = Gender(user.character.gender).value
         info.level = user.character.level
-        info.isPartyLeader = True if party.leader == user else False
+        info.isPartyLeader = True if party.leader.account.id == user.account.id else False
         info.isReady = 0  # Need to unhardcode these 2
         info.isInGame = 0
-        info.equipItemList.extend(create_items_per_class(CharacterClass(user.character.character_class)))
+
+        for item, attribute in inventory.get_all_items(user.character.id, Define_Item.InventoryId.EQUIPMENT):
+            info.equipItemList.extend([Char.item_to_proto_item(item, attribute)])
+
         info.partyIdx = party.id
         notify.playPartyUserInfoData.append(info)
 
