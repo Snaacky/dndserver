@@ -108,7 +108,7 @@ def create_character(ctx, msg):
         res.result = pc.FAIL_CHARACTER_NICKNAME_LENGTH_OVER
         return res
 
-    if db.query(Character).filter_by(nickname=req.nickName).first():
+    if db.query(Character).filter(Character.nickname.ilike(req.nickName)).first():
         res.result = pc.FAIL_DUPLICATE_NICKNAME
         return res
 

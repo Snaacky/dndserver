@@ -29,7 +29,7 @@ def enter_lobby(ctx, msg):
 
 
 def region_select(ctx, msg):
-    """Currently unused."""
+    """Occurs when a user changes the game server region."""
     req = SC2S_LOBBY_REGION_SELECT_REQ()
     req.ParseFromString(msg)
     res = SS2C_LOBBY_REGION_SELECT_RES(result=pc.SUCCESS, region=req.region)
@@ -58,7 +58,8 @@ def map_select(ctx, msg):
     return res
 
 
-def open_lobby_map(ctx, msg):
+def open_map_select(ctx, msg):
+    """Occurs when client opens the map selector."""
     req = SC2S_OPEN_LOBBY_MAP_REQ()
     req.ParseFromString(msg)
     res = SS2C_OPEN_LOBBY_MAP_RES()

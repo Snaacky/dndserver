@@ -98,7 +98,7 @@ class Item(base):
 
 
 class ItemAttribute(base):
-    __tablename__ = "item_attribute"
+    __tablename__ = "item_attributes"
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
     item_id = Column(Integer)
@@ -125,6 +125,22 @@ class Hwid(base):
     seen_at = Column(ArrowType, default=arrow.utcnow())
 
 
+class ChatLog(base):
+    __tablename__ = "chatlog"
+    id = Column(Integer, primary_key=True, autoincrement="auto")
+    message = Column(String(64))
+    user_id = Column(String(64))
+    chat_type = Column(Integer)
+    chat_index = Column(Integer)
+    ts = Column(ArrowType, default=arrow.utcnow())
+
+    def save(self):
+        db.add(self)
+        db.commit()
+
+    def delete(self):
+        db.delete(self)
+        db.commit()
 # class Login(base):
 #     __tablename__ = "logins"
 #     id = Column(Integer, primary_key=True, autoincrement="auto")

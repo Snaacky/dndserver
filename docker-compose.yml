@@ -6,5 +6,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./config/dndserver.db:/app/dndserver.db
+      - ./config/config.yml:/app/config.yml
     ports:
       - "13337:13337"

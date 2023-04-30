@@ -44,8 +44,8 @@ def find_user(ctx, msg):
     res = SS2C_FRIEND_FIND_RES(result=pc.SUCCESS)
 
     # Makes it so users can't search for or invite themselves.
-    # if req.nickName.originalNickName == sessions[ctx.transport]["character"].nickname:
-    #     return res
+    if req.nickName.originalNickName == sessions[ctx.transport].character.nickname:
+        return res
 
     _, session = get_user_by_nickname(nickname=req.nickName.originalNickName)
     if session:
