@@ -1,7 +1,7 @@
 from dndserver.protos import Item as item
 
 
-class Item():
+class Item:
     def __init__(
         self,
         unique_id: int,
@@ -9,7 +9,7 @@ class Item():
         item_count: int,
         inventory_id: int,
         slot_id: int,
-        primary_properties: list[tuple[str, int]]
+        primary_properties: list[tuple[str, int]],
     ) -> None:
         self.unique_id = unique_id
         self.item_id = item_id

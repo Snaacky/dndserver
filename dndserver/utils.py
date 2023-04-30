@@ -1,7 +1,7 @@
 import struct
 
+from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
-from dndserver.sessions import sessions
 
 
 def make_header(msg: bytes):

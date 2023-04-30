@@ -1,21 +1,27 @@
 from dndserver.database import db
 from dndserver.models import Character, ChatLog
-from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_GATHERING_HALL_INFO
-from dndserver.protos.GatheringHall import (
-    SC2S_GATHERING_HALL_CHANNEL_LIST_REQ, SS2C_GATHERING_HALL_CHANNEL_LIST_RES,
-    SC2S_GATHERING_HALL_CHANNEL_SELECT_REQ, SS2C_GATHERING_HALL_CHANNEL_SELECT_RES,
-    SC2S_GATHERING_HALL_TARGET_EQUIPPED_ITEM_REQ, SS2C_GATHERING_HALL_TARGET_EQUIPPED_ITEM_RES,
-    SGATHERING_HALL_CHANNEL, SC2S_GATHERING_HALL_CHANNEL_CHAT_REQ, SS2C_GATHERING_HALL_CHANNEL_CHAT_RES,
-    SGATHERING_HALL_CHAT_S2C, SC2S_GATHERING_HALL_CHANNEL_EXIT_REQ, SS2C_GATHERING_HALL_CHANNEL_EXIT_RES,
-)
-from dndserver.protos.Chat import SCHATDATA_PIECE_ITEM_PROPERTY, SCHATDATA_PIECE_ITEM, SCHATDATA_PIECE, SCHATDATA
+from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
-from dndserver.sessions import sessions
-
+from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_GATHERING_HALL_INFO
+from dndserver.protos.Chat import SCHATDATA, SCHATDATA_PIECE, SCHATDATA_PIECE_ITEM, SCHATDATA_PIECE_ITEM_PROPERTY
+from dndserver.protos.GatheringHall import (
+    SC2S_GATHERING_HALL_CHANNEL_CHAT_REQ,
+    SC2S_GATHERING_HALL_CHANNEL_EXIT_REQ,
+    SC2S_GATHERING_HALL_CHANNEL_LIST_REQ,
+    SC2S_GATHERING_HALL_CHANNEL_SELECT_REQ,
+    SC2S_GATHERING_HALL_TARGET_EQUIPPED_ITEM_REQ,
+    SGATHERING_HALL_CHANNEL,
+    SGATHERING_HALL_CHAT_S2C,
+    SS2C_GATHERING_HALL_CHANNEL_CHAT_RES,
+    SS2C_GATHERING_HALL_CHANNEL_EXIT_RES,
+    SS2C_GATHERING_HALL_CHANNEL_LIST_RES,
+    SS2C_GATHERING_HALL_CHANNEL_SELECT_RES,
+    SS2C_GATHERING_HALL_TARGET_EQUIPPED_ITEM_RES,
+)
 
 channels = {}
 for i in range(1, 7):
-    channels[f'channel{i}'] = {'index': i, 'clients': []}
+    channels[f"channel{i}"] = {"index": i, "clients": []}
 
 
 def gathering_hall_channel_list(ctx, msg):
@@ -23,19 +29,21 @@ def gathering_hall_channel_list(ctx, msg):
     req.ParseFromString(msg)
     res = SS2C_GATHERING_HALL_CHANNEL_LIST_RES()
     for ch in channels:
-        res.channels.append(SGATHERING_HALL_CHANNEL(
-            channelIndex=channels[ch]['index'],
-            channelId=f"{channels[ch]['index']}",
-            memberCount=len(channels[ch]['clients']),
-            groupIndex=channels[ch]['index']
-        ))
+        res.channels.append(
+            SGATHERING_HALL_CHANNEL(
+                channelIndex=channels[ch]["index"],
+                channelId=f"{channels[ch]['index']}",
+                memberCount=len(channels[ch]["clients"]),
+                groupIndex=channels[ch]["index"],
+            )
+        )
     return res
 
 
 def gathering_hall_select_channel(ctx, msg):
     req = SC2S_GATHERING_HALL_CHANNEL_SELECT_REQ()
     req.ParseFromString(msg)
-    channels[f'channel{req.channelIndex}']['clients'].append(ctx)
+    channels[f"channel{req.channelIndex}"]["clients"].append(ctx)
     return SS2C_GATHERING_HALL_CHANNEL_SELECT_RES(result=pc.SUCCESS)
 
 
@@ -45,10 +53,7 @@ def gathering_hall_equip(ctx, msg):
     query = db.query(Character).filter_by(id=req.characterId).first()
     charinfo = SCHARACTER_GATHERING_HALL_INFO(
         accountId=req.accountId,
-        nickName=SACCOUNT_NICKNAME(
-            originalNickName=query.nickname,
-            streamingModeNickName=query.streaming_nickname
-        )
+        nickName=SACCOUNT_NICKNAME(originalNickName=query.nickname, streamingModeNickName=query.streaming_nickname),
     )
     return SS2C_GATHERING_HALL_TARGET_EQUIPPED_ITEM_RES(result=pc.SUCCESS, equippedItems=None, characterInfo=charinfo)
 
@@ -60,13 +65,13 @@ def gathering_hall_channel_exit(ctx, msg):
     # Find the client's channel
     current_channel = None
     for ch in channels:
-        if ctx in channels[ch]['clients']:
+        if ctx in channels[ch]["clients"]:
             current_channel = ch
             break
 
     # If a channel was found, remove the client from the channel
     if current_channel:
-        channels[current_channel]['clients'].remove(ctx)
+        channels[current_channel]["clients"].remove(ctx)
     res = SS2C_GATHERING_HALL_CHANNEL_EXIT_RES(result=pc.SUCCESS)
 
     # Refreshes user count
@@ -77,20 +82,17 @@ def gathering_hall_channel_exit(ctx, msg):
 
 def broadcast_chat(ctx, msg):
     # Broadcast the message to other clients
-    res = SS2C_GATHERING_HALL_CHANNEL_CHAT_RES(
-        result=pc.SUCCESS,
-        chats=msg
-    )
+    res = SS2C_GATHERING_HALL_CHANNEL_CHAT_RES(result=pc.SUCCESS, chats=msg)
 
     # Find the client's channel
     current_channel = None
     for ch in channels:
-        if ctx in channels[ch]['clients']:
+        if ctx in channels[ch]["clients"]:
             current_channel = ch
             break
 
     if current_channel:
-        for client in channels[current_channel]['clients']:
+        for client in channels[current_channel]["clients"]:
             # Send the chat message to each client in the channel except the sender
             if client != ctx:
                 client.reply(res)

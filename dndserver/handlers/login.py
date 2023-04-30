@@ -5,8 +5,8 @@ import argon2
 
 from dndserver.database import db
 from dndserver.models import Account
-from dndserver.protos.Account import SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES, SC2S_ACCOUNT_LOGIN_REQ
-from dndserver.sessions import sessions
+from dndserver.persistent import sessions
+from dndserver.protos.Account import SC2S_ACCOUNT_LOGIN_REQ, SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES
 
 
 def process_login(ctx, msg):

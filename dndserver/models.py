@@ -141,6 +141,8 @@ class ChatLog(base):
     def delete(self):
         db.delete(self)
         db.commit()
+
+
 # class Login(base):
 #     __tablename__ = "logins"
 #     id = Column(Integer, primary_key=True, autoincrement="auto")

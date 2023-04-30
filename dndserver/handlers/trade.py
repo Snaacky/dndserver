@@ -1,6 +1,9 @@
 from dndserver.protos import PacketCommand as pc
-from dndserver.protos.Trade import (SS2C_TRADE_MEMBERSHIP_REQUIREMENT_RES, STRADE_MEMBERSHIP_REQUIREMENT,
-                                    SS2C_TRADE_MEMBERSHIP_RES)
+from dndserver.protos.Trade import (
+    SS2C_TRADE_MEMBERSHIP_REQUIREMENT_RES,
+    SS2C_TRADE_MEMBERSHIP_RES,
+    STRADE_MEMBERSHIP_REQUIREMENT,
+)
 
 
 def get_trade_reqs(ctx, msg):
