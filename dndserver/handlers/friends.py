@@ -1,10 +1,10 @@
 import random
 
 from dndserver.enums import CharacterClass, Gender
+from dndserver.persistent import sessions
+from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_FRIEND_INFO
 from dndserver.protos.Friend import SC2S_FRIEND_FIND_REQ, SS2C_FRIEND_FIND_RES, SS2C_FRIEND_LIST_ALL_RES
-from dndserver.protos import PacketCommand as pc
-from dndserver.sessions import sessions
 from dndserver.utils import get_user_by_nickname
 
 
@@ -24,12 +24,12 @@ def list_friends(ctx, msg):
     friend_info.PartyMemeberCount = 1
     friend_info.PartyMaxMemeberCount = 3
 
-    res = SS2C_FRIEND_LIST_ALL_RES()           # message SS2C_FRIEND_LIST_ALL_RES {
-    res.friendInfoList.extend([friend_info])   # repeated .DC.Packet.SCHARACTER_FRIEND_INFO friendInfoList = 1;
-    res.loopFlag = 1                           # uint32 loopFlag = 2;
-    res.totalUserCount = 2                     # uint32 totalUserCount = 3;
-    res.lobbyLocateCount = 1                   # uint32 lobbyLocateCount = 4;
-    res.dungeonLocateCount = 1                 # uint32 dungeonLocateCount = 5
+    res = SS2C_FRIEND_LIST_ALL_RES()  # message SS2C_FRIEND_LIST_ALL_RES {
+    res.friendInfoList.extend([friend_info])  # repeated .DC.Packet.SCHARACTER_FRIEND_INFO friendInfoList = 1;
+    res.loopFlag = 1  # uint32 loopFlag = 2;
+    res.totalUserCount = 2  # uint32 totalUserCount = 3;
+    res.lobbyLocateCount = 1  # uint32 lobbyLocateCount = 4;
+    res.dungeonLocateCount = 1  # uint32 dungeonLocateCount = 5
 
     return res
 
@@ -61,7 +61,7 @@ def find_user(ctx, msg):
             level=session.character.level,
             locationStatus=1,  # TODO: Remove the hardcoding from these bottom 3.
             PartyMemeberCount=1,
-            PartyMaxMemeberCount=3
+            PartyMaxMemeberCount=3,
         )
         res.friendInfo.CopyFrom(friend)
 

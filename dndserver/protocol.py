@@ -6,19 +6,19 @@ from twisted.internet.protocol import Factory, Protocol
 from dndserver.handlers import (
     character,
     friends,
+    gatheringhall,
+    inventory,
     lobby,
     login,
-    trade,
     menu,
     merchant,
     party,
     ranking,
-    inventory,
-    gatheringhall,
+    trade,
 )
 from dndserver.objects.user import User
+from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
-from dndserver.sessions import sessions
 from dndserver.utils import make_header
 
 

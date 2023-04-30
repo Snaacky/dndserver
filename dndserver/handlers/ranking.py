@@ -1,17 +1,17 @@
 from dndserver.database import db
+from dndserver.enums import CharacterClass
 from dndserver.models import Character
+from dndserver.persistent import sessions
+from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Character import SACCOUNT_NICKNAME
 from dndserver.protos.Ranking import (
-    SRankRecord,
-    SC2S_RANKING_RANGE_REQ,
-    SS2C_RANKING_RANGE_RES,
     RANKING_TYPE,
     SC2S_RANKING_CHARACTER_REQ,
+    SC2S_RANKING_RANGE_REQ,
     SS2C_RANKING_CHARACTER_RES,
+    SS2C_RANKING_RANGE_RES,
+    SRankRecord,
 )
-from dndserver.protos import PacketCommand as pc
-from dndserver.enums import CharacterClass
-from dndserver.sessions import sessions
 
 
 def get_character_ranking(ctx, msg):

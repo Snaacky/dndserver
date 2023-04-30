@@ -1,7 +1,7 @@
 from dndserver.objects.user import User
 
 
-class Party():
+class Party:
     def __init__(self, _id: int, player_1: User) -> None:
         self.id = _id
         self.players = [player_1]

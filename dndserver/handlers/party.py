@@ -1,13 +1,26 @@
 from dndserver.enums import CharacterClass, Gender
-from dndserver.objects.items import (generate_helm, generate_torch, generate_roundshield,
-                                     generate_lantern, generate_sword, generate_pants,
-                                     generate_tunic, generate_bandage)
-from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_PARTY_INFO
-from dndserver.protos.Party import (SS2C_PARTY_INVITE_NOT, SC2S_PARTY_INVITE_REQ, SC2S_PARTY_INVITE_ANSWER_REQ,
-                                    SS2C_PARTY_INVITE_RES, SS2C_PARTY_INVITE_ANSWER_RES,
-                                    SS2C_PARTY_INVITE_ANSWER_RESULT_NOT, SS2C_PARTY_MEMBER_INFO_NOT)
+from dndserver.objects.items import (
+    generate_bandage,
+    generate_helm,
+    generate_lantern,
+    generate_pants,
+    generate_roundshield,
+    generate_sword,
+    generate_torch,
+    generate_tunic,
+)
+from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
-from dndserver.sessions import sessions
+from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_PARTY_INFO
+from dndserver.protos.Party import (
+    SC2S_PARTY_INVITE_ANSWER_REQ,
+    SC2S_PARTY_INVITE_REQ,
+    SS2C_PARTY_INVITE_ANSWER_RES,
+    SS2C_PARTY_INVITE_ANSWER_RESULT_NOT,
+    SS2C_PARTY_INVITE_NOT,
+    SS2C_PARTY_INVITE_RES,
+    SS2C_PARTY_MEMBER_INFO_NOT,
+)
 from dndserver.utils import get_party_by_account_id, get_user_by_account_id, get_user_by_nickname, make_header
 
 
@@ -41,7 +54,9 @@ def accept_invite(ctx, msg):
         del sessions[ctx.transport].party
 
     # add user to the inviters party object
-    party = get_party_by_account_id(int(req.returnAccountId))  # todo: we're storing the first player as a transport and the next as a user object
+    party = get_party_by_account_id(
+        int(req.returnAccountId)
+    )  # todo: we're storing the first player as a transport and the next as a user object
     party.add_member(sessions[ctx.transport])
 
     # set the invitees party to the inviters party
@@ -58,10 +73,10 @@ def send_invite_notification(ctx, req):
         InviteeNickName=SACCOUNT_NICKNAME(
             originalNickName=sessions[ctx.transport].character.nickname,
             streamingModeNickName=sessions[ctx.transport].character.streaming_nickname,
-            karmaRating=sessions[ctx.transport].character.karma_rating
+            karmaRating=sessions[ctx.transport].character.karma_rating,
         ),
         InviteeAccountId=str(sessions[ctx.transport].account.id),
-        InviteeCharacterId=str(sessions[ctx.transport].character.id)
+        InviteeCharacterId=str(sessions[ctx.transport].character.id),
     )
 
     # TODO: This can probably be refactored in a cleaner way in protocol.py.
@@ -76,9 +91,9 @@ def send_accept_notification(ctx, req):
         nickName=SACCOUNT_NICKNAME(
             originalNickName=sessions[ctx.transport].character.nickname,
             streamingModeNickName=sessions[ctx.transport].character.streaming_nickname,
-            karmaRating=sessions[ctx.transport].character.karma_rating
+            karmaRating=sessions[ctx.transport].character.karma_rating,
         ),
-        inviteResult=pc.SUCCESS
+        inviteResult=pc.SUCCESS,
     )
     header = make_header(notify)
     transport.write(header + notify.SerializeToString())
@@ -108,7 +123,7 @@ def send_party_info_notification(party, user):
         nick = SACCOUNT_NICKNAME(
             originalNickName=user.character.nickname,
             streamingModeNickName=user.character.streaming_nickname,
-            karmaRating=user.character.karma_rating
+            karmaRating=user.character.karma_rating,
         )
         info = SCHARACTER_PARTY_INFO()
         info.accountId = str(user.account.id)
@@ -120,11 +135,18 @@ def send_party_info_notification(party, user):
         info.isPartyLeader = True if party.leader == user else False
         info.isReady = 0  # Need to unhardcode these 2
         info.isInGame = 0
-        info.equipItemList.extend([
-            generate_helm(), generate_torch(), generate_roundshield(),
-            generate_lantern(), generate_sword(), generate_pants(),
-            generate_tunic(), generate_bandage()
-        ])
+        info.equipItemList.extend(
+            [
+                generate_helm(),
+                generate_torch(),
+                generate_roundshield(),
+                generate_lantern(),
+                generate_sword(),
+                generate_pants(),
+                generate_tunic(),
+                generate_bandage(),
+            ]
+        )
         info.partyIdx = party.id
         notify.playPartyUserInfoData.append(info)
 
