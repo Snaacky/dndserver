@@ -3,7 +3,19 @@ import struct
 from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
 
-from dndserver.handlers import character, friends, lobby, login, trade, menu, merchant, party, ranking, inventory, gatheringhall
+from dndserver.handlers import (
+    character,
+    friends,
+    lobby,
+    login,
+    trade,
+    menu,
+    merchant,
+    party,
+    ranking,
+    inventory,
+    gatheringhall,
+)
 from dndserver.objects.user import User
 from dndserver.protos import PacketCommand as pc
 from dndserver.sessions import sessions
@@ -18,6 +30,7 @@ class GameFactory(Factory):
 class GameProtocol(Protocol):
     def __init__(self) -> None:
         super().__init__()
+        self.buffer = b""
 
     def connectionMade(self) -> None:
         """Event for when a client connects to the server."""
@@ -32,13 +45,21 @@ class GameProtocol(Protocol):
 
     def dataReceived(self, data: bytes) -> None:
         """Main loop for receiving request packets and sending response packets."""
-        # process all the data
-        while len(data):
-            # TODO: Implement support for segemented packets based on the incoming data's length.
-            length, _id = struct.unpack("<hxxhxx", data[:8])
+        self.buffer += data
+
+        # Only begin parsing the message if there's at least enough data for the header to be present
+        while len(self.buffer) >= 8:
+            length, _id = struct.unpack("<hxxhxx", self.buffer[:8])
+
+            # Break if there is not enough data in the buffer yet to parse the full message.
+            if len(self.buffer) < length:
+                break
 
             # create a message with the correct length
-            msg = data[8:length]
+            msg = self.buffer[8:length]
+
+            # remove the data just processed from the buffer
+            self.buffer = self.buffer[length:]
 
             handlers = {
                 pc.C2S_ALIVE_REQ: self.heartbeat,
@@ -71,10 +92,10 @@ class GameProtocol(Protocol):
                 pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
                 pc.C2S_RANKING_RANGE_REQ: ranking.get_ranking,
                 pc.C2S_RANKING_CHARACTER_REQ: ranking.get_character_ranking,
-                pc.C2S_GATHERING_HALL_CHANNEL_CHAT_REQ : gatheringhall.chat,
+                pc.C2S_GATHERING_HALL_CHANNEL_CHAT_REQ: gatheringhall.chat,
                 pc.C2S_GATHERING_HALL_CHANNEL_LIST_REQ: gatheringhall.gathering_hall_channel_list,
                 pc.C2S_GATHERING_HALL_CHANNEL_SELECT_REQ: gatheringhall.gathering_hall_select_channel,
-                pc.C2S_GATHERING_HALL_CHANNEL_EXIT_REQ : gatheringhall.gathering_hall_channel_exit,
+                pc.C2S_GATHERING_HALL_CHANNEL_EXIT_REQ: gatheringhall.gathering_hall_channel_exit,
                 pc.C2S_GATHERING_HALL_TARGET_EQUIPPED_ITEM_REQ: gatheringhall.gathering_hall_equip,
             }
             handler = [k for k in handlers.keys() if k == _id]
@@ -87,9 +108,6 @@ class GameProtocol(Protocol):
 
             res = handlers[handler[0]](self, msg)
             self.reply(msg=res)
-
-            # remove the data we have processed
-            data = data[length:]
 
     def heartbeat(self):
         """Send a D&D keepalive packet."""
