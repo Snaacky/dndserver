@@ -10,9 +10,13 @@ from dndserver.protos.Inventory import (
 )
 
 
-def get_all_items(character_id):
+def get_all_items(character_id, inventory_id=None):
     """Helper function to get all items for a character id"""
     query = db.query(Item).filter_by(character_id=character_id)
+
+    if inventory_id is not None:
+        query.filter_by(inventory_id=inventory_id)
+
     ret = list()
 
     for item in query:
