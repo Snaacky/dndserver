@@ -3,21 +3,18 @@
 Thank you for your interest in contributing to dndserver! There are many ways to contribute and we appreciate all of them.
 
 ## Communications
-Our communications are done over Discord. You can join our Discord server [here](https://discord.gg/JdUWpdyvKr). 
+Our communications are done over Discord. You can join our Discord server [here](https://discord.gg/JdUWpdyvKr). Before starting on development on a new PR, please reach out to the core developers to make sure that your idea aligns with our plans for the project and that someone isn't working on it already.
 
-## Roadmap
-See [here](https://github.com/users/Snaacky/projects/4).
-
-## What sort of contributions are you looking for?
+## What sort of contributions are we looking for?
 ### Software engineers
 
 We are looking for contributors who are fluent in Python and have an understanding of data structures, packet analysis, and protobufs for furthering development. 
 
 ### Reverse engineers
 
-We are looking for contributors who are fluent in C/asm (x64) with reverse engineering experience (hooking, detours, injection, IDA/Ghidra/x64dbg, etc.) who can help with creating patches for bugs and helping us further understand how the server interacts with the client and vice-versa.
+We are looking for contributors who are fluent in C/asm (x64) with reverse engineering experience who can help with creating patches for bugs and helping us further understand how the server interacts with the client.
 
-### UE4/UE5 network engineers
+### Unreal Engine network engineers
 
 We are looking for contributors who have a fluent understanding and experience with the native UE4/UE5 networking stack at a low-level to help flesh out the UDP game server. 
 
