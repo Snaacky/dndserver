@@ -26,7 +26,10 @@ def enter_lobby(ctx, msg):
     res = SS2C_LOBBY_ENTER_RES(result=pc.SUCCESS, accountId=str(query.id))
 
     sessions[ctx.transport].character = query
-    sessions[ctx.transport].party = Party(_id=len(parties) + 1, player_1=sessions[ctx.transport])
+
+    party = Party(player_1=sessions[ctx.transport])
+    sessions[ctx.transport].party = party
+    parties.append(party)
 
     ctx.reply(character.character_info(ctx, msg))
 

@@ -1,32 +1,29 @@
 from dndserver.enums.classes import CharacterClass, Gender
-from dndserver.persistent import sessions
+from dndserver.handlers.character import create_items_per_class
+from dndserver.objects.party import Party
+from dndserver.persistent import parties, sessions
+from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_PARTY_INFO
 from dndserver.protos.Party import (
+    SC2S_PARTY_EXIT_REQ,
     SC2S_PARTY_INVITE_ANSWER_REQ,
     SC2S_PARTY_INVITE_REQ,
+    SS2C_PARTY_EXIT_RES,
     SS2C_PARTY_INVITE_ANSWER_RES,
     SS2C_PARTY_INVITE_ANSWER_RESULT_NOT,
     SS2C_PARTY_INVITE_NOT,
     SS2C_PARTY_INVITE_RES,
     SS2C_PARTY_MEMBER_INFO_NOT,
 )
-from dndserver.protos import PacketCommand as pc
-from dndserver.handlers.character import create_items_per_class
-from dndserver.utils import get_party_by_account_id, get_user_by_account_id, get_user_by_nickname, make_header
+from dndserver.utils import get_party, get_user, make_header
 
 
 def party_invite(ctx, msg):
     """Occurs when a user sends a party to another user."""
-    # message SC2S_PARTY_INVITE_REQ {
-    #   .DC.Packet.SACCOUNT_NICKNAME findNickName = 1;
-    #   string findAccountId = 2;
-    #   string findCharacterId = 3;
-    # }
     req = SC2S_PARTY_INVITE_REQ()
     req.ParseFromString(msg)
-    res = SS2C_PARTY_INVITE_RES(result=pc.SUCCESS)
     send_invite_notification(ctx, req)
-    return res
+    return SS2C_PARTY_INVITE_RES(result=pc.SUCCESS)
 
 
 def accept_invite(ctx, msg):
@@ -35,28 +32,24 @@ def accept_invite(ctx, msg):
     req = SC2S_PARTY_INVITE_ANSWER_REQ()
     req.ParseFromString(msg)
 
-    res = SS2C_PARTY_INVITE_ANSWER_RES(result=pc.SUCCESS)
-
     # send a notification to the inviter that the invitee accepted
     send_accept_notification(ctx, req)
 
     # delete empty party if the user joining the party was the only member
     if len(sessions[ctx.transport].party.players) == 1:
+        del parties[sessions[ctx.transport].party.id - 1]
         del sessions[ctx.transport].party
 
     # add user to the inviters party object
-    party = get_party_by_account_id(
-        int(req.returnAccountId)
-    )  # todo: we're storing the first player as a transport and the next as a user object
+    party = get_party(account_id=int(req.returnAccountId))
     party.add_member(sessions[ctx.transport])
 
     # set the invitees party to the inviters party
     sessions[ctx.transport].party = party
 
-    for user in party.players:
-        send_party_info_notification(party, user)
+    send_party_info_notification(party)
 
-    return res
+    return SS2C_PARTY_INVITE_ANSWER_RES(result=pc.SUCCESS)
 
 
 def send_invite_notification(ctx, req):
@@ -72,12 +65,12 @@ def send_invite_notification(ctx, req):
 
     # TODO: This can probably be refactored in a cleaner way in protocol.py.
     header = make_header(notify)
-    transport, _ = get_user_by_nickname(nickname=req.findNickName.originalNickName)
+    transport, _ = get_user(nickname=req.findNickName.originalNickName)
     transport.write(header + notify.SerializeToString())
 
 
 def send_accept_notification(ctx, req):
-    transport, _ = get_user_by_account_id(int(req.returnAccountId))
+    transport, _ = get_user(account_id=int(req.returnAccountId))
     notify = SS2C_PARTY_INVITE_ANSWER_RESULT_NOT(
         nickName=SACCOUNT_NICKNAME(
             originalNickName=sessions[ctx.transport].character.nickname,
@@ -90,25 +83,8 @@ def send_accept_notification(ctx, req):
     transport.write(header + notify.SerializeToString())
 
 
-def send_party_info_notification(party, user):
-    # message SS2C_PARTY_MEMBER_INFO_NOT {
-    #     repeated .DC.Packet.SCHARACTER_PARTY_INFO playPartyUserInfoData = 1;
-    # }
-
-    #     message SCHARACTER_PARTY_INFO {
-    #   string accountId = 1;
-    #   .DC.Packet.SACCOUNT_NICKNAME nickName = 2;
-    #   string characterClass = 3;
-    #   string characterId = 4;
-    #   uint32 gender = 5;
-    #   uint32 level = 6;
-    #   uint32 isPartyLeader = 7;
-    #   uint32 isReady = 8;
-    #   uint32 isInGame = 9;
-    #   repeated .DC.Packet.SItem equipItemList = 10;
-    #   uint32 partyIdx = 11;
-    # }
-
+def send_party_info_notification(party):
+    """Notification sent to all players in the lobby that updates the current party player list."""
     notify = SS2C_PARTY_MEMBER_INFO_NOT()
     for user in party.players:
         nick = SACCOUNT_NICKNAME(
@@ -124,29 +100,42 @@ def send_party_info_notification(party, user):
         info.gender = Gender(user.character.gender).value
         info.level = user.character.level
         info.isPartyLeader = True if party.leader == user else False
-        info.isReady = 0  # Need to unhardcode these 2
+        info.isReady = 0  # TODO: Need to unhardcode these 2
         info.isInGame = 0
-        info.equipItemList.extend(create_items_per_class(CharacterClass(user.character_class).value))
+        info.equipItemList.extend(create_items_per_class(CharacterClass(user.character.character_class)))
         info.partyIdx = party.id
         notify.playPartyUserInfoData.append(info)
 
     header = make_header(notify)
     for user in party.players:
-        transport, _ = get_user_by_account_id(user.account.id)
+        transport, _ = get_user(account_id=user.account.id)
         transport.write(header + notify.SerializeToString())
-        # header = make_header(notify)
-        # transport.write(header + notify.SerializeToString())
 
-    # SCHARACTER_PARTY_INFO {
-    #     string accountId = 1;
-    #     .DC.Packet.SACCOUNT_NICKNAME nickName = 2;
-    #     string characterClass = 3;
-    #     string characterId = 4;
-    #     uint32 gender = 5;
-    #     uint32 level = 6;
-    #     uint32 isPartyLeader = 7;
-    #     uint32 isReady = 8;
-    #     uint32 isInGame = 9;
-    #     repeated .DC.Packet.SItem equipItemList = 10;
-    #     uint32 partyIdx = 11;
-    # }
+
+def leave_party(ctx, msg):
+    """Occurs when a user leaves the party."""
+    req = SC2S_PARTY_EXIT_REQ()
+    req.ParseFromString(msg)
+
+    user_leaving = sessions[ctx.transport]
+
+    party = get_party(account_id=user_leaving.account.id)
+    if not party:
+        return SS2C_PARTY_EXIT_RES(result=pc.FAIL_GENERAL)
+
+    # Party leader needs to be passed if the leader is leaving..
+    if party.leader == user_leaving:
+        for user in party.players:
+            if user != user_leaving:
+                party.leader = user
+                break
+
+    party.remove_member(user_leaving)
+    new_party = Party(player_1=sessions[ctx.transport])
+    new_party.leader = user_leaving
+    parties.append(new_party)
+    sessions[ctx.transport].party = new_party
+
+    send_party_info_notification(party)
+    send_party_info_notification(new_party)
+    return SS2C_PARTY_EXIT_RES(result=pc.SUCCESS)
