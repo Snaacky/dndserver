@@ -85,10 +85,7 @@ def list_characters(ctx, msg):
             # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
         )
 
-        for item, attributes in inventory.get_all_items(result.id):
-            if item.inventory_id != Define_Item.InventoryId.EQUIPMENT:
-                continue
-
+        for item, attributes in inventory.get_all_items(result.id, Define_Item.InventoryId.EQUIPMENT):
             info.equipItemList.append(item_to_proto_item(item, attributes))
 
         res.characterList.append(info)

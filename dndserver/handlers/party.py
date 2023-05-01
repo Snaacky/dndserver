@@ -1,9 +1,10 @@
-from dndserver.database import db
 from dndserver.enums.classes import CharacterClass, Gender
-from dndserver.handlers.character import create_items_per_class
+from dndserver.handlers import inventory
+from dndserver.handlers import character as Char
 from dndserver.objects.party import Party
 from dndserver.persistent import parties, sessions
 from dndserver.protos import PacketCommand as pc
+from dndserver.protos.Defines import Define_Item
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_PARTY_INFO
 from dndserver.protos.Party import (
     SC2S_PARTY_EXIT_REQ,
