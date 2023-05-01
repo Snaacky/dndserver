@@ -5,7 +5,7 @@ from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_FRIEND_INFO
 from dndserver.protos.Friend import SC2S_FRIEND_FIND_REQ, SS2C_FRIEND_FIND_RES, SS2C_FRIEND_LIST_ALL_RES
-from dndserver.utils import get_user_by_nickname
+from dndserver.utils import get_user
 
 
 def list_friends(ctx, msg):
@@ -47,7 +47,7 @@ def find_user(ctx, msg):
     if req.nickName.originalNickName == sessions[ctx.transport].character.nickname:
         return res
 
-    _, session = get_user_by_nickname(nickname=req.nickName.originalNickName)
+    _, session = get_user(nickname=req.nickName.originalNickName)
     if session:
         friend = SCHARACTER_FRIEND_INFO(
             accountId=str(session.account.id),
