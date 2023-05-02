@@ -92,7 +92,7 @@ def block_user(ctx, msg):
         return SS2C_BLOCK_CHARACTER_RES(result=pc.FAIL_BLOCK_CHARACTER_ALREADY)
 
     blocks = db.query(BlockedUser).filter_by(blocked_by=blocker.character.id).count()
-    if blocks > config.game.settings.max_blocked_characters:
+    if blocks >= config.game.settings.max_blocked_characters:
         return SS2C_BLOCK_CHARACTER_RES(result=pc.FAIL_BLOCK_CHARACTER_LIMIT)
 
     user = BlockedUser(
