@@ -168,29 +168,40 @@ def add_to_inventory_merchant(trade_id, info, character_id):
     if item is None or item.remaining == 0:
         return False
 
-    # create a new item for the user. Copy the item from the db to the
-    it = Item()
-    it.item_id = item.item_id
-    it.quantity = item.quantity
-    it.ammo_count = item.ammo_count
-    it.inv_count = item.inv_count
+    # check if we have a item at that position already.
+    item_at_location = inventory.get_all_items(character_id, info.inventoryId, info.slotId)
 
-    it.character_id = character_id
-    it.inventory_id = info.inventoryId
-    it.slot_id = info.slotId
+    # check if we have a item at the location
+    if len(item_at_location) == 0:
+        # create a new item for the user. Copy the item from the db to the
+        it = Item()
+        it.item_id = item.item_id
+        it.quantity = item.quantity
+        it.ammo_count = item.ammo_count
+        it.inv_count = item.inv_count
 
-    it.save()
+        it.character_id = character_id
+        it.inventory_id = info.inventoryId
+        it.slot_id = info.slotId
 
-    # get all the attributes the item has
-    attributes = db.query(MerchantItemAttribute).filter_by(item_id=item.id).all()
-    for attribute in attributes:
-        attr = ItemAttribute()
-        attr.item_id = it.id
-        attr.primary = attribute.primary
-        attr.property = attribute.property
-        attr.value = attribute.value
+        it.save()
 
-        attr.save()
+        # get all the attributes the item has
+        attributes = db.query(MerchantItemAttribute).filter_by(item_id=item.id).all()
+        for attribute in attributes:
+            attr = ItemAttribute()
+            attr.item_id = it.id
+            attr.primary = attribute.primary
+            attr.property = attribute.property
+            attr.value = attribute.value
+
+            attr.save()
+    else:
+        # get the item at the location
+        it = db.query(Item).filter_by(id=item_at_location[0][0].id).first()
+
+        # increment the item with the item count
+        it.quantity += item.quantity
 
     # remove 1 item from the item we bought
     item.remaining -= 1
