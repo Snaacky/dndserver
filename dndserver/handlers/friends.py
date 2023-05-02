@@ -1,11 +1,16 @@
 import random
 
+from dndserver.config import config
 from dndserver.database import db
 from dndserver.enums import CharacterClass, Gender
-from dndserver.models import BlockedUser
+from dndserver.models import Account, BlockedUser, Character
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_FRIEND_INFO, SBLOCK_CHARACTER
-from dndserver.protos.Common import (SC2S_BLOCK_CHARACTER_REQ, SS2C_BLOCK_CHARACTER_RES,
-                                     SC2S_UNBLOCK_CHARACTER_REQ, SS2C_UNBLOCK_CHARACTER_RES)
+from dndserver.protos.Common import (
+    SC2S_BLOCK_CHARACTER_REQ,
+    SS2C_BLOCK_CHARACTER_RES,
+    SC2S_UNBLOCK_CHARACTER_REQ,
+    SS2C_UNBLOCK_CHARACTER_RES,
+)
 from dndserver.protos.Friend import SC2S_FRIEND_FIND_REQ, SS2C_FRIEND_FIND_RES, SS2C_FRIEND_LIST_ALL_RES
 from dndserver.protos import PacketCommand as pc
 from dndserver.sessions import sessions
@@ -28,12 +33,12 @@ def list_friends(ctx, msg):
     friend_info.PartyMemeberCount = 1
     friend_info.PartyMaxMemeberCount = 3
 
-    res = SS2C_FRIEND_LIST_ALL_RES()           # message SS2C_FRIEND_LIST_ALL_RES {
-    res.friendInfoList.extend([friend_info])   # repeated .DC.Packet.SCHARACTER_FRIEND_INFO friendInfoList = 1;
-    res.loopFlag = 1                           # uint32 loopFlag = 2;
-    res.totalUserCount = 2                     # uint32 totalUserCount = 3;
-    res.lobbyLocateCount = 1                   # uint32 lobbyLocateCount = 4;
-    res.dungeonLocateCount = 1                 # uint32 dungeonLocateCount = 5
+    res = SS2C_FRIEND_LIST_ALL_RES()  # message SS2C_FRIEND_LIST_ALL_RES {
+    res.friendInfoList.extend([friend_info])  # repeated .DC.Packet.SCHARACTER_FRIEND_INFO friendInfoList = 1;
+    res.loopFlag = 1  # uint32 loopFlag = 2;
+    res.totalUserCount = 2  # uint32 totalUserCount = 3;
+    res.lobbyLocateCount = 1  # uint32 lobbyLocateCount = 4;
+    res.dungeonLocateCount = 1  # uint32 dungeonLocateCount = 5
 
     return res
 
@@ -65,7 +70,7 @@ def find_user(ctx, msg):
             level=session.character.level,
             locationStatus=1,  # TODO: Remove the hardcoding from these bottom 3.
             PartyMemeberCount=1,
-            PartyMaxMemeberCount=3
+            PartyMaxMemeberCount=3,
         )
         res.friendInfo.CopyFrom(friend)
 
@@ -77,30 +82,42 @@ def block_user(ctx, msg):
     req = SC2S_BLOCK_CHARACTER_REQ()
     req.ParseFromString(msg)
 
-    _, session = get_user_by_account_id(int(req.targetAccountId))
+    blocker = sessions[ctx.transport]
+    blocked_char = db.query(Character).filter_by(id=req.targetCharacterId, user_id=req.targetAccountId).first()
+    if not blocked_char:
+        return SS2C_BLOCK_CHARACTER_RES(result=pc.FAIL_BLOCK_CHARACTER_NOT_FOUND)
+
+    dupe = db.query(BlockedUser).filter_by(blocked_by=blocker.character.id, account_id=blocked_char.user_id).first()
+    if dupe:
+        return SS2C_BLOCK_CHARACTER_RES(result=pc.FAIL_BLOCK_CHARACTER_ALREADY)
+
+    blocks = db.query(BlockedUser).filter_by(blocked_by=blocker.character.id).count()
+    if blocks > config.game.settings.max_blocked_characters:
+        return SS2C_BLOCK_CHARACTER_RES(result=pc.FAIL_BLOCK_CHARACTER_LIMIT)
+
     user = BlockedUser(
-        blockee_character_id=sessions[ctx.transport].character.id,
-        blocked_account_id=int(req.targetAccountId),
-        blocked_character_id=int(req.targetCharacterId),
-        blocked_nickname=session.character.nickname,
-        blocked_character_class=CharacterClass(session.character.character_class),
-        blocked_gender=Gender(session.character.gender),
+        blocked_by=blocker.character.id,
+        account_id=int(blocked_char.user_id),
+        character_id=int(blocked_char.id),
+        nickname=blocked_char.nickname,
+        character_class=CharacterClass(blocked_char.character_class),
+        gender=Gender(blocked_char.gender),
     )
     user.save()
 
     res = SS2C_BLOCK_CHARACTER_RES(
         result=pc.SUCCESS,
         targetCharacterInfo=SBLOCK_CHARACTER(
-            accountId=req.targetAccountId,
-            characterId=req.targetCharacterId,
+            accountId=str(blocked_char.user_id),
+            characterId=str(blocked_char.id),
             nickName=SACCOUNT_NICKNAME(
-                originalNickName=session.character.nickname,
-                streamingModeNickName=session.character.streaming_nickname,
-                karmaRating=session.character.karma_rating
+                originalNickName=blocked_char.nickname,
+                streamingModeNickName=blocked_char.streaming_nickname,
+                karmaRating=blocked_char.karma_rating,
             ),
-            characterClass=session.character.character_class.value,
-            gender=session.character.gender.value
-        )
+            characterClass=CharacterClass(blocked_char.character_class).value,
+            gender=Gender(blocked_char.gender).value,
+        ),
     )
     return res
 
@@ -108,16 +125,15 @@ def block_user(ctx, msg):
 def unblock_user(ctx, msg):
     req = SC2S_UNBLOCK_CHARACTER_REQ()
     req.ParseFromString(msg)
-    res = SS2C_UNBLOCK_CHARACTER_RES()
 
-    query = db.query(BlockedUser).filter_by(
-        blockee_character_id=sessions[ctx.transport].character.id,
-        blocked_character_id=int(req.targetCharacterId)
-    ).first()
+    query = (
+        db.query(BlockedUser)
+        .filter_by(blocked_by=sessions[ctx.transport].character.id, character_id=int(req.targetCharacterId))
+        .first()
+    )
     query.delete()
 
-    res = SS2C_UNBLOCK_CHARACTER_RES(result=pc.SUCCESS, targetCharacterId=req.targetCharacterId)
-    return res
+    return SS2C_UNBLOCK_CHARACTER_RES(result=pc.SUCCESS, targetCharacterId=req.targetCharacterId)
 
 
 # def get_blocked_users(ctx, msg):
@@ -131,18 +147,10 @@ def unblock_user(ctx, msg):
 #     res = S2C_BLOCK_CHARACTER_LIST_RES()
 #     query = db.query(BlockedUser).filter_by(user_id=sessions[ctx.transport].account.id).all()
 
-    # message SBLOCK_CHARACTER {
-    #   string accountId = 1;
-    #   string characterId = 2;
-    #   .DC.Packet.SACCOUNT_NICKNAME nickName = 3;
-    #   string characterClass = 4;
-    #   uint32 gender = 5;
-    # }
-
-    # blockee_character_id =
-    # blocked_account_id =
-    # blocked_character_id =
-    # blocked_nickname =
-    # blocked_gender =
-    # blocked_character_class =
-    # blocked_at =
+# message SBLOCK_CHARACTER {
+#   string accountId = 1;
+#   string characterId = 2;
+#   .DC.Packet.SACCOUNT_NICKNAME nickName = 3;
+#   string characterClass = 4;
+#   uint32 gender = 5;
+# }
