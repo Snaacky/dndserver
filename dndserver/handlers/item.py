@@ -65,13 +65,14 @@ def get_content_based_on(material, item_type):
 def new_parser(content, how_many):
     final_result = {}
 
-    for dictionary in random.sample(content, how_many):
+    # random index
+    random_indexes = random.sample(range(len(content)), how_many)
+    for i in random_indexes:
+        dictionary = content[i]
         for key1, value in dictionary.items():
-            for key2, value in value.items():
+            for key2, value2 in value.items():
                 if key2 != "stats":
-                    print(key2, ':', value)
-            print("\n")
-    
+                    final_result[key1] = key2 + str(value2)
     return final_result
 
 #testing shit
