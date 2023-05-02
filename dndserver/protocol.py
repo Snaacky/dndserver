@@ -61,6 +61,7 @@ class GameProtocol(Protocol):
                 pc.C2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ: lobby.map_select,
                 pc.C2S_FRIEND_LIST_ALL_REQ: friends.list_friends,
                 pc.C2S_FRIEND_FIND_REQ: friends.find_user,
+                pc.C2S_BLOCK_CHARACTER_LIST_REQ: friends.get_blocked_users,
                 pc.C2S_BLOCK_CHARACTER_REQ: friends.block_user,
                 pc.C2S_UNBLOCK_CHARACTER_REQ: friends.unblock_user,
                 pc.C2S_META_LOCATION_REQ: menu.process_location,

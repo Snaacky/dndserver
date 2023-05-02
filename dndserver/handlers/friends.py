@@ -156,13 +156,26 @@ def get_blocked_users(ctx, msg):
     #   repeated .DC.Packet.SBLOCK_CHARACTER blockCharacters = 1;
     # }
     res = SS2C_BLOCK_CHARACTER_LIST_RES()
+
     query = db.query(BlockedUser).filter_by(account_id=sessions[ctx.transport].account.id).all()
+    if not query:
+        return res
 
-
-# message SBLOCK_CHARACTER {
-#   string accountId = 1;
-#   string characterId = 2;
-#   .DC.Packet.SACCOUNT_NICKNAME nickName = 3;
-#   string characterClass = 4;
-#   uint32 gender = 5;
-# }
+    for block in query:
+        # The block doesn't contain the streaming mode nickname or karma rating.
+        # TODO: Are these even needed for this?
+        char = db.query(Character).filter_by(id=block.character_id).first()
+        res.blockCharacters.append(
+            SBLOCK_CHARACTER(
+                accountId=str(block.account_id),
+                characterId=str(block.character_id),
+                nickName=SACCOUNT_NICKNAME(
+                    originalNickName=block.nickname,
+                    streamingModeNickName=char.streaming_nickname,
+                    karmaRating=char.karma_rating,
+                ),
+                characterClass=CharacterClass(block.character_class).value,
+                gender=Gender(block.gender).value,
+            )
+        )
+    return res
