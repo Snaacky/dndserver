@@ -86,6 +86,7 @@ class GameProtocol(Protocol):
                 pc.C2S_MERCHANT_LIST_REQ: merchant.get_merchant_list,
                 pc.C2S_MERCHANT_STOCK_BUY_ITEM_LIST_REQ: merchant.get_buy_list,
                 pc.C2S_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_REQ: merchant.get_sellback_list,
+                pc.C2S_MERCHANT_STOCK_BUY_REQ: merchant.buy_item,
                 pc.C2S_PARTY_INVITE_REQ: party.party_invite,
                 pc.C2S_PARTY_EXIT_REQ: party.leave_party,
                 pc.C2S_PARTY_INVITE_ANSWER_REQ: party.accept_invite,

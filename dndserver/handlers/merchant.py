@@ -1,12 +1,15 @@
 import arrow
+import re
+
 from dndserver.database import db
 from dndserver.data import merchant as MerchantData
 from dndserver.enums.classes import MerchantClass
-from dndserver.models import Merchant, MerchantItem, MerchantItemAttribute
+from dndserver.models import Merchant, MerchantItem, MerchantItemAttribute, ItemAttribute, Item
 from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Defines import Define_Message
-from dndserver.enums.items import ItemType, Rarity, Item
+from dndserver.enums.items import ItemType, Rarity
+from dndserver.enums.items import Item as eItem
 from dndserver.objects import items as ObjItems
 from dndserver.protos.Merchant import (
     SC2S_MERCHANT_STOCK_BUY_ITEM_LIST_REQ,
@@ -15,10 +18,20 @@ from dndserver.protos.Merchant import (
     SMERCHANT_STOCK_BUY_ITEM_INFO,
     SMERCHANT_STOCK_SELL_BACK_ITEM_INFO,
     SS2C_MERCHANT_LIST_RES,
+    SC2S_MERCHANT_STOCK_BUY_REQ,
+    SS2C_MERCHANT_STOCK_BUY_RES,
     SS2C_MERCHANT_STOCK_BUY_ITEM_LIST_RES,
     SS2C_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_RES,
 )
-from dndserver.handlers import character
+from dndserver.handlers import character, inventory
+
+
+def create_merchants(character_id):
+    """Helper function to create merchants for a character"""
+    # create all the merchants for the user
+    for merchant in MerchantClass:
+        # create the merchant. Set the refresh to 15 minutes
+        db_create_merchant(character_id, merchant, arrow.utcnow().shift(minutes=15))
 
 
 def get_stockbuy_id(merchant, index):
@@ -63,11 +76,6 @@ def get_stock_unique_id(merchant, index):
     return index
 
 
-def create_merchant(name, remaining_time):
-    """Helper function to create a merchant"""
-    return SMERCHANT_INFO(merchantId=MerchantClass(name).value, faction=0, remainTime=remaining_time, isUnidentified=0)
-
-
 def db_create_merchant(character_id, merchant_class, refresh_time):
     """Helper function to create a merchant in the database"""
     merchant = Merchant()
@@ -76,8 +84,6 @@ def db_create_merchant(character_id, merchant_class, refresh_time):
     merchant.refresh_time = refresh_time
 
     merchant.save()
-
-    return merchant.id
 
 
 def db_create_merchant_item(merchant_id, item, index, remaining):
@@ -116,77 +122,119 @@ def db_create_merchant_item(merchant_id, item, index, remaining):
 
 
 def generate_items_merchant(character_id, merchant_id, remaining):
+    """Helper to generate items for a merchant"""
     # TODO: this should generate items specific for the merchant
     items = [
-        ObjItems.generate_item(Item.BANDAGE, ItemType.CONSUMABLES, Rarity.JUNK, 3, 14, 1, 1111111),
-        ObjItems.generate_item(Item.TORCH, ItemType.WEAPONS, Rarity.JUNK, 3, 13, 1, 1111112),
-        ObjItems.generate_item(Item.ROUNDSHIELD, ItemType.WEAPONS, Rarity.JUNK, 3, 11, 1, 1111113),
-        ObjItems.generate_item(Item.LANTERN, ItemType.UTILITY, Rarity.JUNK, 3, 8, 1, 1111114),
-        ObjItems.generate_item(Item.ARMINGSWORD, ItemType.WEAPONS, Rarity.JUNK, 3, 10, 1, 1111115),
-        ObjItems.generate_item(Item.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4, 1, 1111116),
+        ObjItems.generate_item(eItem.BANDAGE, ItemType.CONSUMABLES, Rarity.JUNK, 3, 14, 1, 1111111),
+        ObjItems.generate_item(eItem.TORCH, ItemType.WEAPONS, Rarity.JUNK, 3, 13, 1, 1111112),
+        ObjItems.generate_item(eItem.ROUNDSHIELD, ItemType.WEAPONS, Rarity.JUNK, 3, 11, 1, 1111113),
+        ObjItems.generate_item(eItem.LANTERN, ItemType.UTILITY, Rarity.JUNK, 3, 8, 1, 1111114),
+        ObjItems.generate_item(eItem.ARMINGSWORD, ItemType.WEAPONS, Rarity.JUNK, 3, 10, 1, 1111115),
+        ObjItems.generate_item(eItem.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4, 1, 1111116),
     ]
 
     for index, item in enumerate(items):
         # create the default items for every merchant
-        db_create_merchant_item(merchant_id, item, index, remaining)
+        db_create_merchant_item(merchant_id, item, index + 1, remaining)
+
+
+def add_to_inventory_merchant(trade_id, info, character_id):
+    """Helper function to add a bought item to the inventory of the character"""
+    # get the item from the database. Get the unique id is always 0. Check what item we
+    # got by getting the merchant id and the index from the trade id
+    index = int(re.sub("\\D", "", trade_id))
+    re_merchant = re.search(".*Id_StockBuy_(.*?)_.*", trade_id)
+
+    # make sure we have a valid regex
+    if re_merchant is None:
+        return False
+
+    # get the merchant from the name
+    merchant = (
+        db.query(Merchant)
+        .filter_by(
+            character_id=character_id, merchant=MerchantClass("DesignDataMerchant:Id_Merchant_" + re_merchant.group(1))
+        )
+        .first()
+    )
+
+    if merchant is None:
+        return False
+
+    # get the selected item
+    item = db.query(MerchantItem).filter_by(merchant_id=merchant.id).filter_by(index=index).first()
+
+    # check if we have the item
+    if item is None or item.remaining == 0:
+        return False
+
+    # create a new item for the user. Copy the item from the db to the
+    it = Item()
+    it.item_id = item.item_id
+    it.quantity = item.quantity
+    it.ammo_count = item.ammo_count
+    it.inv_count = item.inv_count
+
+    it.character_id = character_id
+    it.inventory_id = info.inventoryId
+    it.slot_id = info.slotId
+
+    it.save()
+
+    # get all the attributes the item has
+    attributes = db.query(MerchantItemAttribute).filter_by(item_id=item.id).all()
+    for attribute in attributes:
+        attr = ItemAttribute()
+        attr.item_id = it.id
+        attr.primary = attribute.primary
+        attr.property = attribute.property
+        attr.value = attribute.value
+
+        attr.save()
+
+    # remove 1 item from the item we bought
+    item.remaining -= 1
+
+    return True
 
 
 def get_merchant_list(ctx, msg):
     """Occurs when the user opens the merchant menu"""
     # get all the times for every merchant
     merchants = db.query(Merchant).filter_by(character_id=sessions[ctx.transport].character.id).all()
-    updated = False
-
-    # TODO: update the amount left
-    items_remaining = 3
-
-    # check if we need to update the merchants
-    if len(merchants) <= 0:
-        for merchant in MerchantClass:
-            # create the merchant. Set the refresh to 15 minutes
-            merchant_id = db_create_merchant(
-                sessions[ctx.transport].character.id, merchant, arrow.utcnow().shift(minutes=15)
-            )
-
-            # generate the items for the merchant
-            generate_items_merchant(sessions[ctx.transport].character.id, merchant_id, items_remaining)
-
-            updated = True
-    else:
-        # check if any of the timeout have reached
-        for merchant in merchants:
-            if arrow.utcnow() >= merchant.refresh_time:
-                # update the refresh time
-                merchant.refresh_time = arrow.utcnow().shift(minutes=15)
-
-                # get all the item this merchant is selling
-                items = db.query(MerchantItem).filter_by(merchant_id=merchant.id).all()
-
-                # delete all the old items
-                for item in items:
-                    # get the attributes for the item
-                    attributes = db.query(MerchantItemAttribute).filter_by(item_id=item.id).all()
-
-                    for attribute in attributes:
-                        attribute.delete()
-
-                    item.delete()
-
-                # generate new items for the merchant
-                generate_items_merchant(sessions[ctx.transport].character.id, merchant_id, items_remaining)
-
-                updated = True
-
-    # refetch the data if we have updated anything
-    if updated:
-        merchants = db.query(Merchant).filter_by(character_id=sessions[ctx.transport].character.id).all()
 
     # return all the merchants we have
     res = SS2C_MERCHANT_LIST_RES()
 
     # add every merchant we have available for this character
     for merchant in merchants:
-        res.merchantList.append(create_merchant(merchant.merchant, (merchant.refresh_time - arrow.utcnow()).seconds))
+        # check if the timer has passed
+        if arrow.utcnow() >= merchant.refresh_time:
+            # timer has passed. Delete all the items for the merchant to signal the get list
+            # to spawn new items when requested
+            items = db.query(MerchantItem).filter_by(merchant_id=merchant.id).all()
+
+            for item in items:
+                # get the attributes for the item
+                attributes = db.query(MerchantItemAttribute).filter_by(item_id=item.id).all()
+
+                for attribute in attributes:
+                    attribute.delete()
+
+                item.delete()
+
+            # update the time
+            merchant.refresh_time = arrow.utcnow().shift(minutes=15)
+
+        # append the merchant to the list with the time
+        res.merchantList.append(
+            SMERCHANT_INFO(
+                merchantId=MerchantClass(merchant.merchant).value,
+                faction=0,
+                remainTime=(merchant.refresh_time - arrow.utcnow()).seconds,
+                isUnidentified=1,
+            ),
+        )
 
     return res
 
@@ -215,11 +263,26 @@ def get_buy_list(ctx, msg):
     # get all the item this merchant is selling
     items = db.query(MerchantItem).filter_by(merchant_id=merchant.id).all()
 
+    # check if we have any items to show. If we dont we regenerate them
+    if len(items) == 0:
+        # TODO: unhardcode this
+        items_remaining = 3
+
+        # we have no items regenerate them
+        generate_items_merchant(sessions[ctx.transport].character.id, merchant.id, items_remaining)
+
+        # requery the items to fetch all the new items
+        items = db.query(MerchantItem).filter_by(merchant_id=merchant.id).all()
+
     res = SS2C_MERCHANT_STOCK_BUY_ITEM_LIST_RES()
     res.result = pc.SUCCESS
     res.loopMessageFlag = Define_Message.LoopFlag.PROGRESS
 
     for item in items:
+        # skip items we dont have anything left of
+        if item.remaining == 0:
+            continue
+
         # get the attributes for the item
         attributes = db.query(MerchantItemAttribute).filter_by(item_id=item.id).all()
 
@@ -238,6 +301,43 @@ def get_buy_list(ctx, msg):
     return SS2C_MERCHANT_STOCK_BUY_ITEM_LIST_RES(
         result=pc.SUCCESS, loopMessageFlag=Define_Message.LoopFlag.END, stockList=[]
     )
+
+
+def buy_item(ctx, msg):
+    """Occurs when the user buys a item from the merchant"""
+    req = SC2S_MERCHANT_STOCK_BUY_REQ()
+    req.ParseFromString(msg)
+
+    # remove the items from the inventory
+    for item in req.dealItemList:
+        # get the item
+        query = (
+            db.query(Item)
+            .filter_by(character_id=sessions[ctx.transport].character.id)
+            .filter_by(id=item.itemUniqueId)
+            .first()
+        )
+
+        # check if we have the item we want to use to buy the item
+        if query is None:
+            return SS2C_MERCHANT_STOCK_BUY_RES(result=pc.FAIL_GENERAL)
+
+        # remove the provided quantity from the user
+        if (query.quantity - item.itemCount) <= 0:
+            # delete the item from the database
+            inventory.delete_item(sessions[ctx.transport].character.id, item)
+        else:
+            query.quantity -= item.itemCount
+
+    # add the new items to the inventory
+    for info in req.merchantSlotInfo:
+        add_to_inventory_merchant(req.tradeId, info, sessions[ctx.transport].character.id)
+
+    # send the final stage
+    ctx.reply(SS2C_MERCHANT_STOCK_BUY_RES(result=pc.SUCCESS))
+
+    # send the character info after a trade
+    return character.character_info(ctx=ctx, msg=bytearray())
 
 
 def get_sellback_list(ctx, msg):

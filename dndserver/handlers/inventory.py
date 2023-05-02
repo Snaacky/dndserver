@@ -38,7 +38,7 @@ def delete_item(character_id, item):
         return False
 
     # delete all the attributes the item has
-    attributes = db.query(ItemAttribute).filter_by(item_id=item.itemId).all()
+    attributes = db.query(ItemAttribute).filter_by(item_id=query.id).all()
     for attribute in attributes:
         attribute.delete()
 

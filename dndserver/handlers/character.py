@@ -4,7 +4,7 @@ from dndserver.data import perks as pk
 from dndserver.data import skills as sk
 from dndserver.database import db
 from dndserver.enums.classes import CharacterClass, Gender
-from dndserver.handlers import inventory
+from dndserver.handlers import inventory, merchant
 from dndserver.models import Character, Item, ItemAttribute
 from dndserver.persistent import sessions
 from dndserver.objects import items
@@ -158,6 +158,9 @@ def create_character(ctx, msg):
             attr.value = attribute.propertyValue
 
             attr.save()
+
+    # create the merchants for the user
+    merchant.create_merchants(char.id)
 
     return res
 
