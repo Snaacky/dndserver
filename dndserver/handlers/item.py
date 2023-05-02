@@ -59,20 +59,25 @@ def get_content_based_on(material, item_type):
             content.append(obj)
     return content
 
-#this function should choose 5 elements randomly from the array
-def random_items(res):  
-    if len(res) < 5:
-        return None 
-    casual = random.sample(res, 5)
 
-    new_array = []
-    for elem in casual:
-        new_array.append(elem)
-    return new_array
+#now i have to parse the content to get "how_many" random items 
+# to add those at content
+def new_parser(content, how_many):
+    final_result = {}
+
+    for dictionary in random.sample(content, how_many):
+        for key1, value in dictionary.items():
+            for key2, value in value.items():
+                if key2 != "stats":
+                    print(key2, ':', value)
+            print("\n")
+    
+    return final_result
 
 #testing shit
 test = get_content_based_on(Material.PLATE, ItemType.ARMORS)
-print(random_items(test))
+new_parser(test, 2)
+
 
 # Function to be called in order to create an item
 def generate_new_item(name, type, rarity, item_count):
@@ -85,6 +90,7 @@ def generate_new_item(name, type, rarity, item_count):
                 final_data = format_other_data(data, name, rarity_str, item_count)
             else:
                 final_data = format_data(data, name, rarity_str)
+    print(final_data)
     return final_data
 
 
