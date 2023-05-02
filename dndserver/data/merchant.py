@@ -1,3 +1,5 @@
+from dndserver.enums.classes import MerchantClass
+
 # TODO: figure out what item is what number
 weaponsmith = [
     215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237,
@@ -64,10 +66,10 @@ tavernmaster = [
 ]
 
 sellback = {
-    "DesignDataStockSellBack:Id_StockSellBack_Weaponsmith": weaponsmith,
-    "DesignDataStockSellBack:Id_StockSellBack_Armourer": armourer,
-    "DesignDataStockSellBack:Id_StockSellBack_Surgeon": surgeon,
-    "DesignDataStockSellBack:Id_StockSellBack_Alchemist": alchemist,
-    "DesignDataStockSellBack:Id_StockSellBack_Woodsman": woodsman,
-    "DesignDataStockSellBack:Id_StockSellBack_TavernMaster": tavernmaster,
+    MerchantClass.WEAPONSMITH: sellback_weaponsmith,
+    MerchantClass.ARMOURER: sellback_armourer,
+    MerchantClass.SURGEON: sellback_surgeon,
+    MerchantClass.ALCHEMIST: sellback_alchemist,
+    MerchantClass.WOODSMAN: sellback_woodsman,
+    MerchantClass.TAVERNMASTER: sellback_tavernmaster,
 }
