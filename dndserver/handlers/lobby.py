@@ -1,15 +1,20 @@
 from dndserver.database import db
-from dndserver.objects.party import Party
+from dndserver.handlers import character
 from dndserver.models import Character
+from dndserver.objects.party import Party
+from dndserver.persistent import parties, sessions
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Account import SC2S_LOBBY_ENTER_REQ, SS2C_LOBBY_ENTER_RES
-from dndserver.protos.Lobby import (SC2S_CHARACTER_SELECT_ENTER_REQ, SC2S_LOBBY_REGION_SELECT_REQ,
-                                    SS2C_LOBBY_REGION_SELECT_RES, SS2C_CHARACTER_SELECT_ENTER_RES,
-                                    SC2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ, SS2C_LOBBY_GAME_DIFFICULTY_SELECT_RES,
-                                    SS2C_OPEN_LOBBY_MAP_RES, SC2S_OPEN_LOBBY_MAP_REQ)
-from dndserver.parties import parties
-from dndserver.sessions import sessions
-from dndserver.handlers import character
+from dndserver.protos.Lobby import (
+    SC2S_CHARACTER_SELECT_ENTER_REQ,
+    SC2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ,
+    SC2S_LOBBY_REGION_SELECT_REQ,
+    SC2S_OPEN_LOBBY_MAP_REQ,
+    SS2C_CHARACTER_SELECT_ENTER_RES,
+    SS2C_LOBBY_GAME_DIFFICULTY_SELECT_RES,
+    SS2C_LOBBY_REGION_SELECT_RES,
+    SS2C_OPEN_LOBBY_MAP_RES,
+)
 
 
 def enter_lobby(ctx, msg):
@@ -21,7 +26,10 @@ def enter_lobby(ctx, msg):
     res = SS2C_LOBBY_ENTER_RES(result=pc.SUCCESS, accountId=str(query.id))
 
     sessions[ctx.transport].character = query
-    sessions[ctx.transport].party = Party(_id=len(parties) + 1, player_1=sessions[ctx.transport])
+
+    party = Party(player_1=sessions[ctx.transport])
+    sessions[ctx.transport].party = party
+    parties.append(party)
 
     ctx.reply(character.character_info(ctx, msg))
 

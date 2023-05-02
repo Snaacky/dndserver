@@ -1,0 +1,61 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_GoldBangle1J_3001",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.GoldBangle1J"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_GoldBangle1J_1001"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_GoldBangle1J_3001",
+          "SourceString": "Text_DesignData_Item_Item_GoldBangle1J_3001",
+          "LocalizedString": "Leaf Gold Bangle (Normal)"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_GoldBangle1J_1001",
+          "SourceString": "Text_DesignData_Item_Flavor_GoldBangle1J_1001",
+          "LocalizedString": "An elaborate and ornamented golden band."
+        },
+        "MiscType": {
+          "TagName": "Type.Item.Misc.Gem"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Uncommon"
+        },
+        "MaxCount": 1,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "GoldBangle1J"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "GoldCoin_Sound"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 1,
+        "InventoryHeight": 1,
+        "AdvPoint": 3,
+        "ExpPoint": 3
+      }
+    }
+  }
+]

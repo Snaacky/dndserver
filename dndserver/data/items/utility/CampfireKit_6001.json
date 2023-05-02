@@ -1,0 +1,111 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_CampfireKit_6001",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.CampfireKit"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_CampfireKit_0001"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_CampfireKit_6001",
+          "SourceString": "Text_DesignData_Item_Item_CampfireKit_6001",
+          "LocalizedString": "Campfire Kit"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_CampfireKit_0001",
+          "SourceString": "Text_DesignData_Item_Flavor_CampfireKit_0001",
+          "LocalizedString": "A crackling campfire that you can rest near and recover."
+        },
+        "SlotType": {
+          "TagName": "Type.Item.Slot.Utility"
+        },
+        "HandType": {
+          "TagName": "Type.Item.Hand.TwoHanded"
+        },
+        "UtilityType": {
+          "TagName": "Type.Item.Utility.Installable"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Legend"
+        },
+        "MaxCount": 1,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "CampfireKit"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "CampfireKit_Sound"
+        },
+        "ConsumeData": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemConsume"
+          },
+          "PrimaryAssetName": "Id_ItemConsume_CampfireKit_6001"
+        },
+        "ActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_CampfireKit_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Item/Utility/CampfireKit/BP_CampfireKit.1"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 2,
+        "InventoryHeight": 2,
+        "Abilities": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayAbility"
+            },
+            "PrimaryAssetName": "Id_ItemAbility_CampfireInstallPassive"
+          },
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayAbility"
+            },
+            "PrimaryAssetName": "Id_ItemAbility_CampfireInstall_6001"
+          }
+        ],
+        "Effects": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayEffect"
+            },
+            "PrimaryAssetName": "Id_ItemEffect_Utility_Installable"
+          }
+        ],
+        "PrimaryProperty": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemProperty"
+          },
+          "PrimaryAssetName": "Id_ItemProperty_Primary_CampfireKit"
+        },
+        "Requirement": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemRequirement"
+          },
+          "PrimaryAssetName": "Id_ItemRequirement_CampfireKit_6001"
+        },
+        "AdvPoint": 3,
+        "ExpPoint": 3
+      }
+    }
+  }
+]

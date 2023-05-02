@@ -1,0 +1,2 @@
+parties = []
+sessions = {}

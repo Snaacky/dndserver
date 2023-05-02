@@ -1,0 +1,107 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_Pickaxe_7001",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.Pickaxe"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_Pickaxe_0001"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_Pickaxe_7001",
+          "SourceString": "Text_DesignData_Item_Item_Pickaxe_7001",
+          "LocalizedString": "Pickaxe"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_Pickaxe_0001",
+          "SourceString": "Text_DesignData_Item_Flavor_Pickaxe_0001",
+          "LocalizedString": "A trusty iron pickaxe that can chip away at most ore."
+        },
+        "SlotType": {
+          "TagName": "Type.Item.Slot.Utility"
+        },
+        "HandType": {
+          "TagName": "Type.Item.Hand.TwoHanded"
+        },
+        "UtilityType": {
+          "TagName": "Type.Item.Utility.Mining"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Unique"
+        },
+        "MaxCount": 1,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "Pickaxe"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "OneHandedSword_Sound"
+        },
+        "ActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_Pickaxe_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Item/Utility/Pickaxe/BP_Pickaxe.1"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 2,
+        "InventoryHeight": 4,
+        "SelfAbilities": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayAbility"
+            },
+            "PrimaryAssetName": "Id_ItemAbility_PickaxeActivateOnEquip"
+          }
+        ],
+        "Abilities": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayAbility"
+            },
+            "PrimaryAssetName": "Id_ItemAbility_PickaxeAttack01"
+          }
+        ],
+        "Effects": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayEffect"
+            },
+            "PrimaryAssetName": "Id_ItemEffect_Utility_Mining"
+          }
+        ],
+        "PrimaryProperty": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemProperty"
+          },
+          "PrimaryAssetName": "Id_ItemProperty_Primary_Pickaxe_7001"
+        },
+        "Requirement": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemRequirement"
+          },
+          "PrimaryAssetName": "Id_ItemRequirement_Pickaxe_7001"
+        },
+        "AdvPoint": 4,
+        "ExpPoint": 4
+      }
+    }
+  }
+]

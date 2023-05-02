@@ -1,0 +1,59 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_Arrow_2001",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.Arrow"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_Arrow_2001"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_Arrow_2001",
+          "SourceString": "Text_DesignData_Item_Item_Arrow_2001",
+          "LocalizedString": "Arrow"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_Arrow_2001",
+          "SourceString": "Text_DesignData_Item_Flavor_Arrow_2001",
+          "LocalizedString": "An arrow that looks good at penetrating its target."
+        },
+        "MiscType": {
+          "TagName": "Type.Item.Misc.Ammo.Arrow"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Common"
+        },
+        "MaxCount": 15,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "Arrow"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "Arrow_Sound"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 1,
+        "InventoryHeight": 3
+      }
+    }
+  }
+]

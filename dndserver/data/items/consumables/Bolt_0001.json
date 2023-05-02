@@ -1,0 +1,59 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_Bolt_0001",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.Bolt"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_Bolt_0001"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_Bolt_2001",
+          "SourceString": "Text_DesignData_Item_Item_Bolt_2001",
+          "LocalizedString": "Bolt"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_Bolt_2001",
+          "SourceString": "Text_DesignData_Item_Flavor_Bolt_2001",
+          "LocalizedString": "A bolt dedicated to crossbows that is sharp enough to pierce opponents."
+        },
+        "MiscType": {
+          "TagName": "Type.Item.Misc.Ammo.Bolt"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Junk"
+        },
+        "MaxCount": 10,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "Bolt"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "Bolt_Sound"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 1,
+        "InventoryHeight": 2
+      }
+    }
+  }
+]

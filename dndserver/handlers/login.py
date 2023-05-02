@@ -5,8 +5,8 @@ import argon2
 
 from dndserver.database import db
 from dndserver.models import Account
-from dndserver.protos.Account import SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES, SC2S_ACCOUNT_LOGIN_REQ
-from dndserver.sessions import sessions
+from dndserver.persistent import sessions
+from dndserver.protos.Account import SC2S_ACCOUNT_LOGIN_REQ, SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES
 
 
 def process_login(ctx, msg):
@@ -17,18 +17,6 @@ def process_login(ctx, msg):
     # TODO: Not all SS2C_ACCOUNT_LOGIN_RES fields are implemented.
     res = SS2C_ACCOUNT_LOGIN_RES(serverLocation=1)
 
-    account = db.query(Account).filter(Account.username.ilike(req.loginId)).first()
-    if not account:
-        account = Account(
-            username=req.loginId,
-            password=argon2.PasswordHasher().hash(req.password),
-            secret_token=''.join(random.choices(string.ascii_uppercase + string.digits, k=21))
-        )
-        account.save()
-
-        # TODO: Create new hwid objects and save them to the db here
-        res.secretToken = account.secret_token
-
     # Return FAIL_SHORT_ID_OR_PASSWORD on too short username/password.
     if len(req.loginId) <= 2 or len(req.password) <= 2:
         res.Result = res.FAIL_SHORT_ID_OR_PASSWORD
@@ -38,6 +26,18 @@ def process_login(ctx, msg):
     if len(req.loginId) > 20:
         res.Result = res.FAIL_OVERFLOW_ID_OR_PASSWORD
         return res
+
+    account = db.query(Account).filter(Account.username.ilike(req.loginId)).first()
+    if not account:
+        account = Account(
+            username=req.loginId,
+            password=argon2.PasswordHasher().hash(req.password),
+            secret_token="".join(random.choices(string.ascii_uppercase + string.digits, k=21)),
+        )
+        account.save()
+
+        # TODO: Create new hwid objects and save them to the db here
+        res.secretToken = account.secret_token
 
     # Return FAIL_PASSWORD on invalid password.
     try:
@@ -55,6 +55,17 @@ def process_login(ctx, msg):
     info = SLOGIN_ACCOUNT_INFO(AccountID=str(account.id))
     res.AccountInfo.CopyFrom(info)
 
+    kick_concurrent_user(account)
+
     sessions[ctx.transport].account = account
 
     return res
+
+
+def kick_concurrent_user(newly_connected_account):
+    """Searches for already connected account and kicks if a match is found."""
+    for transport, user in sessions.items():
+        # case where a duplicate account is found
+        if user.account == newly_connected_account:
+            transport.loseConnection()
+            break

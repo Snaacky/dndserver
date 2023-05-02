@@ -1,0 +1,61 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_GoldBowl_3001",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.GoldBowl"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_GoldBowl_1001"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_GoldBowl_3001",
+          "SourceString": "Text_DesignData_Item_Item_GoldBowl_3001",
+          "LocalizedString": "Gold Bowl (Normal)"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_GoldBowl_1001",
+          "SourceString": "Text_DesignData_Item_Flavor_GoldBowl_1001",
+          "LocalizedString": "A dazzling work of goldsmithing."
+        },
+        "MiscType": {
+          "TagName": "Type.Item.Misc.Gem"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Uncommon"
+        },
+        "MaxCount": 1,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "GoldBowl"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "TreasureLarge_Sound"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 2,
+        "InventoryHeight": 2,
+        "AdvPoint": 3,
+        "ExpPoint": 3
+      }
+    }
+  }
+]

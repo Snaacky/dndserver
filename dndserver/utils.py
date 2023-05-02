@@ -1,10 +1,7 @@
 import struct
 
-from loguru import logger
-
-from dndserver.parties import parties
+from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
-from dndserver.sessions import sessions
 
 
 def make_header(msg: bytes):
@@ -14,22 +11,45 @@ def make_header(msg: bytes):
     return struct.pack("<HxxHxx", len(msg.SerializeToString()) + 8, pc.PacketCommand.Value(packet_type))
 
 
-def get_user_by_nickname(nickname: str):
-    """Find a user's connection by nickname."""
+def get_user(username: str = None, nickname: str = None, account_id: int = None):
+    """Return a user object based on the account username, character nickname or account ID provided."""
+    if not username and not nickname and not account_id:
+        raise Exception("Did not pass username, nickname, or account_id, need at least one")
+
     for transport, session in sessions.items():
-        if session.character and session.character.nickname == nickname:
+        if (
+            username
+            and session.account
+            and session.account.username == username
+            or nickname
+            and session.character
+            and session.character.nickname == nickname
+            or account_id
+            and session.account
+            and session.account.id == account_id
+        ):
             return transport, session
+
     return None, None
 
 
-def get_user_by_account_id(account_id: int):
-    """Find a user's connection by account ID."""
-    for transport, session in sessions.items():
-        if session.account and session.account.id == account_id:
-            return transport, session
-    return None, None
+def get_party(username: str = None, nickname: str = None, account_id: int = None):
+    """Return a party object based on the account username, character nickname or account ID provided."""
+    if not username and not nickname and not account_id:
+        raise Exception("Did not pass username, nickname, or account_id, need at least one")
 
+    for _, session in sessions.items():
+        if (
+            username
+            and session.account
+            and session.account.username == username
+            or nickname
+            and session.character
+            and session.character.nickname == nickname
+            or account_id
+            and session.account
+            and session.account.id == account_id
+        ):
+            return session.party
 
-def get_party_by_account_id(account_id: int):
-    transport, session = get_user_by_account_id(account_id)
-    return session.party
+    return None

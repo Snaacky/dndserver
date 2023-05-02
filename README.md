@@ -2,6 +2,21 @@
 
 Dark and Darker private server implementation written in Python.
 
+## Features
+* Login
+* Registration
+* Character creation
+* Character deletion
+* Loading into lobby
+* High-roller leaderboard
+* Perk and skill selection
+* Inventory and stash
+* Gathering hall
+* Basic party support
+* Basic merchant support
+* Persistent characters and items
+* ... and many more features in development!
+
 ## Requirements
 
 - [Playtest 5 beta files + hotfix 2 (0.5.0.1173)](https://discord.gg/darkanddarker)
@@ -10,6 +25,7 @@ Dark and Darker private server implementation written in Python.
 
 ## Install
 
+### Bare metal
 - `git clone git@github.com:Snaacky/dndserver.git`
 - `cd dndserver`
 - `poetry install`
@@ -18,9 +34,18 @@ Dark and Darker private server implementation written in Python.
 - `python -m dndserver.server`
 - Add `-server=dcweb.pages.dev:80` to your game's launch options.
 
-## Roadmap
+### Docker
+* `wget https://raw.githubusercontent.com/Snaacky/dndserver/master/docker-compose.yml`
+* `mkdir config && cd config`
+* `wget https://raw.githubusercontent.com/Snaacky/dndserver/master/config.example.yml -O config.yml`
+* `touch dndserver.db`
+* `cd ..`
+* `docker-compose up -d`
+* `docker exec -it dndserver alembic upgrade head`
+* `docker restart dndserver`
 
-Refer to [our project board](https://github.com/users/Snaacky/projects/4?query=is%3Aopen+sort%3Aupdated-desc).
+## Web server
+Before the game client connects to the TCP lobby server, it first connects to an HTTP discovery server specified in the game's launch options using the `-server=address:port` schema to get the lobby server address to connect to. We are hosting an HTTP discovery server at `dcweb.pages.dev:80` to redirect your client traffic to `127.0.0.1` without having to host your own web server.
 
-## Contributing
-Refer to [CONTRIBUTING.md](https://github.com/Snaacky/dndserver/blob/master/CONTRIBUTING.md)
+## Demo instance
+A demo instance is being hosted at `-server=dndserver.lol:80`. The demo instance will automatically pull new commits from the master branch so you can check out the latest developments without having to setup your own instance.

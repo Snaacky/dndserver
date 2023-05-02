@@ -1,0 +1,75 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_SoulHeart",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.SoulHeart"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_SoulHeart"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_SoulHeart",
+          "SourceString": "Text_DesignData_Item_Item_SoulHeart",
+          "LocalizedString": "Soul Heart"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_SoulHeart_7001",
+          "SourceString": "Text_DesignData_Item_Flavor_SoulHeart_7001",
+          "LocalizedString": "Glowing blue soul heart of a fallen adventurer."
+        },
+        "SlotType": {
+          "TagName": "Type.Item.Slot.Utility"
+        },
+        "HandType": {
+          "TagName": "Type.Item.Hand.TwoHanded"
+        },
+        "UtilityType": {
+          "TagName": "Type.Item.Utility.SoulHeart"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Unique"
+        },
+        "MaxCount": 1,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "SoulHeart"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "SoulHeart_Sound"
+        },
+        "ActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_SoulHeart_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Item/Utility/SoulHeart/BP_SoulHeart.1"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_SoulHeartHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Item/Utility/SoulHeart/BP_SoulHeartHolder.1"
+        },
+        "InventoryWidth": 2,
+        "InventoryHeight": 2,
+        "Abilities": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayAbility"
+            },
+            "PrimaryAssetName": "Id_ItemAbility_SoulHeartConsume"
+          }
+        ]
+      }
+    }
+  }
+]

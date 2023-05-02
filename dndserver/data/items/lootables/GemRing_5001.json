@@ -1,0 +1,61 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_GemRing_5001",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.GemRing"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_GemRing_1001"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_GemRing_5001",
+          "SourceString": "Text_DesignData_Item_Item_GemRing_5001",
+          "LocalizedString": "Gem Ring (Perfect)"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_GemRing_1001",
+          "SourceString": "Text_DesignData_Item_Flavor_GemRing_1001",
+          "LocalizedString": "This gold ring, adorned with a gleaming jade gem, is the epitome of wealth and luxury."
+        },
+        "MiscType": {
+          "TagName": "Type.Item.Misc.Gem"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Epic"
+        },
+        "MaxCount": 1,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "GemRing"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "RingOfCourage_Sound"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 1,
+        "InventoryHeight": 1,
+        "AdvPoint": 5,
+        "ExpPoint": 5
+      }
+    }
+  }
+]

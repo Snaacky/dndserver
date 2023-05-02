@@ -1,0 +1,102 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_BadgerPendant_6001",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.BadgerPendant"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_BadgerPendant_3001"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_BadgerPendant_6001",
+          "SourceString": "Text_DesignData_Item_Item_BadgerPendant_6001",
+          "LocalizedString": "Badger Pendant"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_BadgerPendant_3001",
+          "SourceString": "Text_DesignData_Item_Flavor_BadgerPendant_3001",
+          "LocalizedString": "Badger Pendant"
+        },
+        "SlotType": {
+          "TagName": "Type.Item.Slot.Necklace"
+        },
+        "AccessoryType": {
+          "TagName": "Type.Item.Accessory.Necklace"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Legend"
+        },
+        "MaxCount": 1,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "NecklaceOfPeace"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "NecklaceOfPeace_Sound"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 1,
+        "InventoryHeight": 1,
+        "PrimaryProperty": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemProperty"
+          },
+          "PrimaryAssetName": "Id_ItemProperty_Primary_BadgerPendant_6001"
+        },
+        "SecondaryProperties": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataItemProperty"
+            },
+            "PrimaryAssetName": "Id_ItemProperty_Secondary_Heavy"
+          },
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataItemProperty"
+            },
+            "PrimaryAssetName": "Id_ItemProperty_Secondary_Heavy"
+          },
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataItemProperty"
+            },
+            "PrimaryAssetName": "Id_ItemProperty_Secondary_Heavy"
+          },
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataItemProperty"
+            },
+            "PrimaryAssetName": "Id_ItemProperty_Secondary_Heavy"
+          }
+        ],
+        "Requirement": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemRequirement"
+          },
+          "PrimaryAssetName": "Id_ItemRequirement_BadgerPendant_6001"
+        },
+        "AdvPoint": 6,
+        "ExpPoint": 6
+      }
+    }
+  }
+]

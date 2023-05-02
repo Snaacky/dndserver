@@ -4,6 +4,7 @@ from dndserver.config import config
 from dndserver.database import db
 from dndserver.enums import CharacterClass, Gender
 from dndserver.models import BlockedUser, Character
+from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SBLOCK_CHARACTER, SCHARACTER_FRIEND_INFO
 from dndserver.protos.Common import (
@@ -15,8 +16,7 @@ from dndserver.protos.Common import (
     SS2C_UNBLOCK_CHARACTER_RES,
 )
 from dndserver.protos.Friend import SC2S_FRIEND_FIND_REQ, SS2C_FRIEND_FIND_RES, SS2C_FRIEND_LIST_ALL_RES
-from dndserver.sessions import sessions
-from dndserver.utils import get_user_by_nickname
+from dndserver.utils import get_user
 
 
 def list_friends(ctx, msg):
@@ -58,7 +58,7 @@ def find_user(ctx, msg):
     if req.nickName.originalNickName == sessions[ctx.transport].character.nickname:
         return res
 
-    _, session = get_user_by_nickname(nickname=req.nickName.originalNickName)
+    _, session = get_user(nickname=req.nickName.originalNickName)
     if session:
         friend = SCHARACTER_FRIEND_INFO(
             accountId=str(session.account.id),

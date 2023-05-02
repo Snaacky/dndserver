@@ -1,0 +1,61 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_CeremonialDagger_2001",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.CeremonialDagger"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_CeremonialDagger_1001"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_CeremonialDagger_2001",
+          "SourceString": "Text_DesignData_Item_Item_CeremonialDagger_2001",
+          "LocalizedString": "Ceremonial Dagger (Flawed)"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_CeremonialDagger_1001",
+          "SourceString": "Text_DesignData_Item_Flavor_CeremonialDagger_1001",
+          "LocalizedString": "An ornate dagger with more style than substance."
+        },
+        "MiscType": {
+          "TagName": "Type.Item.Misc.Gem"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Common"
+        },
+        "MaxCount": 1,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "CeremonialDagger"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "TreasureSmall_Sound"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 2,
+        "InventoryHeight": 1,
+        "AdvPoint": 2,
+        "ExpPoint": 2
+      }
+    }
+  }
+]

@@ -1,0 +1,61 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_ValentineCandies",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.ValentineCandies"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_ValentineCandies"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_ValentineCandies",
+          "SourceString": "Text_DesignData_Item_Item_ValentineCandies",
+          "LocalizedString": "Heart Candy"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_ValentineCandies_7001",
+          "SourceString": "Text_DesignData_Item_Flavor_ValentineCandies_7001",
+          "LocalizedString": "Say “I love you!” with every bite of these delicious sweet treats. Hard candy hearts with messages of endearment."
+        },
+        "MiscType": {
+          "TagName": "Type.Item.Misc.Currency"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Unique"
+        },
+        "MaxCount": 10,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "ValentineCandies"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "ValentineCandies_Sound"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 1,
+        "InventoryHeight": 1,
+        "AdvPoint": 1,
+        "ExpPoint": 1
+      }
+    }
+  }
+]

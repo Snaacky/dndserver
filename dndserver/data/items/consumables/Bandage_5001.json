@@ -1,0 +1,105 @@
+[
+  {
+    "Type": "DesignDataAssetItem",
+    "Name": "Id_Item_Bandage_5001",
+    "Class": "UScriptClass'DesignDataAssetItem'",
+    "Properties": {
+      "Item": {
+        "IdTag": {
+          "TagName": "Id.Item.Bandage"
+        },
+        "OriginId": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItem"
+          },
+          "PrimaryAssetName": "Id_Item_Bandage_0001"
+        },
+        "Name": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Item_Bandage_5001",
+          "SourceString": "Text_DesignData_Item_Item_Bandage_5001",
+          "LocalizedString": "Bandage"
+        },
+        "FlavorText": {
+          "Namespace": "DC",
+          "Key": "Text_DesignData_Item_Flavor_Bandage_0001",
+          "SourceString": "Text_DesignData_Item_Flavor_Bandage_0001",
+          "LocalizedString": "Bandage used to fix a wound."
+        },
+        "SlotType": {
+          "TagName": "Type.Item.Slot.Utility"
+        },
+        "HandType": {
+          "TagName": "Type.Item.Hand.TwoHanded"
+        },
+        "UtilityType": {
+          "TagName": "Type.Item.Utility.Consumable"
+        },
+        "RarityType": {
+          "TagName": "Type.Item.Rarity.Epic"
+        },
+        "MaxCount": 3,
+        "CanDrop": true,
+        "CanSaveIntoDatabase": true,
+        "ArtData": {
+          "PrimaryAssetType": {
+            "Name": "ArtDataItem"
+          },
+          "PrimaryAssetName": "Bandage"
+        },
+        "SoundData": {
+          "PrimaryAssetType": {
+            "Name": "SoundData"
+          },
+          "PrimaryAssetName": "Bandage_Sound"
+        },
+        "ConsumeData": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemConsume"
+          },
+          "PrimaryAssetName": "Id_ItemConsume_Bandage"
+        },
+        "ActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_Bandage_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Item/Utility/Bandage/BP_Bandage.1"
+        },
+        "ItemHolderActorClass": {
+          "ObjectName": "BlueprintGeneratedClass'BP_StaticMeshItemHolder_C'",
+          "ObjectPath": "DungeonCrawler/Content/DungeonCrawler/Core/Item/BP_StaticMeshItemHolder.1"
+        },
+        "InventoryWidth": 1,
+        "InventoryHeight": 1,
+        "Abilities": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayAbility"
+            },
+            "PrimaryAssetName": "Id_ItemAbility_BandageConsume_5001"
+          }
+        ],
+        "Effects": [
+          {
+            "PrimaryAssetType": {
+              "Name": "DesignDataGameplayEffect"
+            },
+            "PrimaryAssetName": "Id_ItemEffect_Utility_Consumable"
+          }
+        ],
+        "PrimaryProperty": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemProperty"
+          },
+          "PrimaryAssetName": "Id_ItemProperty_Primary_Bandage"
+        },
+        "Requirement": {
+          "PrimaryAssetType": {
+            "Name": "DesignDataItemRequirement"
+          },
+          "PrimaryAssetName": "Id_ItemRequirement_Bandage_5001"
+        },
+        "AdvPoint": 1,
+        "ExpPoint": 1
+      }
+    }
+  }
+]

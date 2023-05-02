@@ -6,7 +6,7 @@ from sqlalchemy_utils import ArrowType
 
 from dndserver.config import config
 from dndserver.database import db
-from dndserver.enums import CharacterClass, Gender
+from dndserver.enums.classes import CharacterClass, Gender
 
 
 base = declarative_base()
@@ -66,6 +66,7 @@ class Character(base):
     ranking_adventure = Column(Integer, default=0)
     ranking_lich = Column(Integer, default=0)
     ranking_ghostking = Column(Integer, default=0)
+    # TODO: store all logins in a database and grab the latest from that
 
     def save(self):
         db.add(self)
@@ -87,6 +88,7 @@ class Item(base):
     slot_id = Column(Integer)
 
     ammo_count = Column(Integer, default=0)
+    inv_count = Column(Integer, default=0)
 
     def save(self):
         db.add(self)
@@ -154,7 +156,24 @@ class BlockedUser(base):
         db.commit()
 
 
-# characters: store all logins in a database and grab the latest from that
+class ChatLog(base):
+    __tablename__ = "chatlog"
+    id = Column(Integer, primary_key=True, autoincrement="auto")
+    message = Column(String(64))
+    user_id = Column(String(64))
+    chat_type = Column(Integer)
+    chat_index = Column(Integer)
+    ts = Column(ArrowType, default=arrow.utcnow())
+
+    def save(self):
+        db.add(self)
+        db.commit()
+
+    def delete(self):
+        db.delete(self)
+        db.commit()
+
+
 # class Login(base):
 #     __tablename__ = "logins"
 #     id = Column(Integer, primary_key=True, autoincrement="auto")
