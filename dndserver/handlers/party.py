@@ -1,8 +1,10 @@
 from dndserver.enums.classes import CharacterClass, Gender
-from dndserver.handlers.character import create_items_per_class
+from dndserver.handlers import inventory
+from dndserver.handlers import character as Char
 from dndserver.objects.party import Party
 from dndserver.persistent import parties, sessions
 from dndserver.protos import PacketCommand as pc
+from dndserver.protos.Defines import Define_Item
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_PARTY_INFO
 from dndserver.protos.Party import (
     SC2S_PARTY_EXIT_REQ,
@@ -102,7 +104,10 @@ def send_party_info_notification(party):
         info.isPartyLeader = True if party.leader == user else False
         info.isReady = 0  # TODO: Need to unhardcode these 2
         info.isInGame = 0
-        info.equipItemList.extend(create_items_per_class(CharacterClass(user.character.character_class)))
+
+        for item, attribute in inventory.get_all_items(user.character.id, Define_Item.InventoryId.EQUIPMENT):
+            info.equipItemList.extend([Char.item_to_proto_item(item, attribute)])
+
         info.partyIdx = party.id
         notify.playPartyUserInfoData.append(info)
 
