@@ -45,7 +45,7 @@ Dark and Darker private server implementation written in Python.
 * `docker restart dndserver`
 
 ## Web server
-Before the game client connects to the TCP lobby server (and later on the UDP game server) it first connects to an HTTP discovery server specified in the game's launch options using the `-server=address:port` schema to get the  TCP server address to connect to. The endpoint the client connects to is `/dc/helloWorld` and the server returns a JSON blob such as `{"ipAddress": "xx.xx.xx.xx", "port": 65535}`. To simplify the development process we are hosting an HTTP discovery server at `dcweb.pages.dev:80` to redirect your client traffic to `127.0.0.1` without having to host your own HTTP server.
+Before the game client connects to the TCP lobby server, it first connects to an HTTP discovery server specified in the game's launch options using the `-server=address:port` schema to get the lobby server address to connect to. We are hosting an HTTP discovery server at `dcweb.pages.dev:80` to redirect your client traffic to `127.0.0.1` without having to host your own web server.
 
 ## Demo instance
 A demo instance is being hosted at `-server=dndserver.lol:80`. The demo instance will automatically pull new commits from the master branch so you can check out the latest developments without having to setup your own instance.
