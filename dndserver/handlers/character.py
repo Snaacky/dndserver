@@ -1,6 +1,5 @@
 import random
 
-from dndserver import objects
 from dndserver.data import perks as pk
 from dndserver.data import skills as sk
 from dndserver.database import db
@@ -12,7 +11,6 @@ from dndserver.objects import items
 from dndserver.enums.items import ItemType, Rarity, Item as ItemEnum
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos import Item as pItem
-from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Account import (
     SC2S_ACCOUNT_CHARACTER_CREATE_REQ,
     SC2S_ACCOUNT_CHARACTER_DELETE_REQ,
@@ -38,17 +36,19 @@ from dndserver.protos.Item import SCUSTOMIZE_CHARACTER
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 
 
-def item_to_proto_item(item, attributes):
+def item_to_proto_item(item, attributes, for_character=True):
     """Helper function to create a proto item from a database item and attributes"""
     ret = pItem.SItem()
 
     ret.itemUniqueId = item.id
     ret.itemId = item.item_id
     ret.itemCount = item.quantity
-    ret.inventoryId = item.inventory_id
-    ret.slotId = item.slot_id
     ret.itemAmmoCount = item.ammo_count
     ret.itemContentsCount = item.inv_count
+
+    if for_character:
+        ret.inventoryId = item.inventory_id
+        ret.slotId = item.slot_id
 
     for attribute in attributes:
         property = pItem.SItemProperty(propertyTypeId=attribute.property, propertyValue=attribute.value)
