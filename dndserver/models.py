@@ -31,7 +31,7 @@ class Character(base):
     __tablename__ = "characters"
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
-    user_id = Column(Integer)
+    account_id = Column(Integer)
     nickname = Column(String(20), unique=True)
     gender = Column(Enum(Gender))
     character_class = Column(Enum(CharacterClass))
@@ -119,7 +119,7 @@ class Hwid(base):
     __tablename__ = "hwids"
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
-    user_id = Column(Integer)
+    account_id = Column(Integer)
     hwid = Column(String(64), unique=True)
     is_banned = Column(Boolean)
     seen_at = Column(ArrowType, default=arrow.utcnow())

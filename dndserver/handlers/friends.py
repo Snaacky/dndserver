@@ -4,15 +4,17 @@ from dndserver.config import config
 from dndserver.database import db
 from dndserver.enums import CharacterClass, Gender
 from dndserver.models import BlockedUser, Character
-from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_FRIEND_INFO, SBLOCK_CHARACTER
+from dndserver.protos import PacketCommand as pc
+from dndserver.protos.Character import SACCOUNT_NICKNAME, SBLOCK_CHARACTER, SCHARACTER_FRIEND_INFO
 from dndserver.protos.Common import (
+    SC2S_BLOCK_CHARACTER_LIST_REQ,
     SC2S_BLOCK_CHARACTER_REQ,
-    SS2C_BLOCK_CHARACTER_RES,
     SC2S_UNBLOCK_CHARACTER_REQ,
+    SS2C_BLOCK_CHARACTER_LIST_RES,
+    SS2C_BLOCK_CHARACTER_RES,
     SS2C_UNBLOCK_CHARACTER_RES,
 )
 from dndserver.protos.Friend import SC2S_FRIEND_FIND_REQ, SS2C_FRIEND_FIND_RES, SS2C_FRIEND_LIST_ALL_RES
-from dndserver.protos import PacketCommand as pc
 from dndserver.sessions import sessions
 from dndserver.utils import get_user_by_nickname
 
@@ -83,11 +85,11 @@ def block_user(ctx, msg):
     req.ParseFromString(msg)
 
     blocker = sessions[ctx.transport]
-    blocked_char = db.query(Character).filter_by(id=req.targetCharacterId, user_id=req.targetAccountId).first()
+    blocked_char = db.query(Character).filter_by(id=req.targetCharacterId, account_id=req.targetAccountId).first()
     if not blocked_char:
         return SS2C_BLOCK_CHARACTER_RES(result=pc.FAIL_BLOCK_CHARACTER_NOT_FOUND)
 
-    dupe = db.query(BlockedUser).filter_by(blocked_by=blocker.character.id, account_id=blocked_char.user_id).first()
+    dupe = db.query(BlockedUser).filter_by(blocked_by=blocker.character.id, account_id=blocked_char.account_id).first()
     if dupe:
         return SS2C_BLOCK_CHARACTER_RES(result=pc.FAIL_BLOCK_CHARACTER_ALREADY)
 
@@ -97,7 +99,7 @@ def block_user(ctx, msg):
 
     user = BlockedUser(
         blocked_by=blocker.character.id,
-        account_id=int(blocked_char.user_id),
+        account_id=int(blocked_char.account_id),
         character_id=int(blocked_char.id),
         nickname=blocked_char.nickname,
         character_class=CharacterClass(blocked_char.character_class),
@@ -108,7 +110,7 @@ def block_user(ctx, msg):
     res = SS2C_BLOCK_CHARACTER_RES(
         result=pc.SUCCESS,
         targetCharacterInfo=SBLOCK_CHARACTER(
-            accountId=str(blocked_char.user_id),
+            accountId=str(blocked_char.account_id),
             characterId=str(blocked_char.id),
             nickName=SACCOUNT_NICKNAME(
                 originalNickName=blocked_char.nickname,
@@ -123,12 +125,22 @@ def block_user(ctx, msg):
 
 
 def unblock_user(ctx, msg):
+    """Occurs when a character unblocks another character."""
+    # message SC2S_UNBLOCK_CHARACTER_REQ {
+    #   string targetAccountId = 1;
+    #   string targetCharacterId = 2;
+    # }
     req = SC2S_UNBLOCK_CHARACTER_REQ()
     req.ParseFromString(msg)
 
+    blocker = sessions[ctx.transport]
+    blocked_char = db.query(Character).filter_by(id=req.targetCharacterId, account_id=req.targetAccountId).first()
+    if not blocked_char:
+        return SS2C_BLOCK_CHARACTER_RES(result=pc.FAIL_BLOCK_CHARACTER_NOT_FOUND)
+
     query = (
         db.query(BlockedUser)
-        .filter_by(blocked_by=sessions[ctx.transport].character.id, character_id=int(req.targetCharacterId))
+        .filter_by(blocked_by=blocker.character.id, character_id=int(req.targetCharacterId))
         .first()
     )
     query.delete()
@@ -136,16 +148,16 @@ def unblock_user(ctx, msg):
     return SS2C_UNBLOCK_CHARACTER_RES(result=pc.SUCCESS, targetCharacterId=req.targetCharacterId)
 
 
-# def get_blocked_users(ctx, msg):
-#     # message SC2S_BLOCK_CHARACTER_LIST_REQ {
-#     # }
-#     req = C2S_BLOCK_CHARACTER_LIST_REQ()
-#     req.ParseFromString(msg)
-#     # message SS2C_BLOCK_CHARACTER_LIST_RES {
-#     #   repeated .DC.Packet.SBLOCK_CHARACTER blockCharacters = 1;
-#     # }
-#     res = S2C_BLOCK_CHARACTER_LIST_RES()
-#     query = db.query(BlockedUser).filter_by(user_id=sessions[ctx.transport].account.id).all()
+def get_blocked_users(ctx, msg):
+    # message SC2S_BLOCK_CHARACTER_LIST_REQ {}
+    req = SC2S_BLOCK_CHARACTER_LIST_REQ()
+    req.ParseFromString(msg)
+    # message SS2C_BLOCK_CHARACTER_LIST_RES {
+    #   repeated .DC.Packet.SBLOCK_CHARACTER blockCharacters = 1;
+    # }
+    res = SS2C_BLOCK_CHARACTER_LIST_RES()
+    query = db.query(BlockedUser).filter_by(account_id=sessions[ctx.transport].account.id).all()
+
 
 # message SBLOCK_CHARACTER {
 #   string accountId = 1;
