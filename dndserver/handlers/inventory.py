@@ -15,7 +15,7 @@ def get_all_items(character_id, inventory_id=None):
     query = db.query(Item).filter_by(character_id=character_id)
 
     if inventory_id is not None:
-        query.filter_by(inventory_id=inventory_id)
+        query = query.filter_by(inventory_id=inventory_id)
 
     ret = list()
 
