@@ -3,7 +3,7 @@ import random
 from dndserver.config import config
 from dndserver.database import db
 from dndserver.enums import CharacterClass, Gender
-from dndserver.models import Account, BlockedUser, Character
+from dndserver.models import BlockedUser, Character
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_FRIEND_INFO, SBLOCK_CHARACTER
 from dndserver.protos.Common import (
     SC2S_BLOCK_CHARACTER_REQ,
@@ -14,7 +14,7 @@ from dndserver.protos.Common import (
 from dndserver.protos.Friend import SC2S_FRIEND_FIND_REQ, SS2C_FRIEND_FIND_RES, SS2C_FRIEND_LIST_ALL_RES
 from dndserver.protos import PacketCommand as pc
 from dndserver.sessions import sessions
-from dndserver.utils import get_user_by_account_id, get_user_by_nickname
+from dndserver.utils import get_user_by_nickname
 
 
 def list_friends(ctx, msg):
