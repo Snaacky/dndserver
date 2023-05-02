@@ -122,7 +122,7 @@ def create_character(ctx, msg):
     )
 
     # select the default perks and skills
-    char.perk0 = pk.perks[char_class][0:4]
+    char.perk0 = pk.perks[char_class][0]
     char.skill0, char.skill1 = sk.skills[char_class][0:2]
     char.save()
 
