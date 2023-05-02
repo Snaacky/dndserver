@@ -2,7 +2,7 @@ import random
 
 from dndserver.config import config
 from dndserver.database import db
-from dndserver.enums import CharacterClass, Gender
+from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.models import BlockedUser, Character
 from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc

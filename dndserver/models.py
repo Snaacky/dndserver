@@ -86,7 +86,6 @@ class Item(base):
     quantity = Column(Integer)
     inventory_id = Column(Integer)
     slot_id = Column(Integer)
-
     ammo_count = Column(Integer, default=0)
     inv_count = Column(Integer, default=0)
 
@@ -157,13 +156,13 @@ class BlockedUser(base):
 
 
 class ChatLog(base):
-    __tablename__ = "chatlog"
+    __tablename__ = "chat_logs"
     id = Column(Integer, primary_key=True, autoincrement="auto")
-    message = Column(String(64))
-    user_id = Column(String(64))
+    message = Column(String)
+    account_id = Column(Integer)
     chat_type = Column(Integer)
     chat_index = Column(Integer)
-    ts = Column(ArrowType, default=arrow.utcnow())
+    sent_at = Column(ArrowType, default=arrow.utcnow())
 
     def save(self):
         db.add(self)

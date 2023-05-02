@@ -102,7 +102,7 @@ def chat(ctx, msg):
     req = SC2S_GATHERING_HALL_CHANNEL_CHAT_REQ()
     req.ParseFromString(msg)
 
-    query = db.query(Character).filter_by(user_id=f"{sessions[ctx.transport].account.id}").first()
+    query = db.query(Character).filter_by(account_id=sessions[ctx.transport].account.id).first()
 
     chat_type = req.chat.chatType
     chat_str = req.chat.chatData.chatDataPieceArray[0].chatStr
@@ -136,7 +136,7 @@ def chat(ctx, msg):
 
     log_msg = ChatLog(
         message=req.chat.chatData.chatDataPieceArray[0].chatStr,
-        user_id=f"{sessions[ctx.transport].account.id}",
+        account_id=sessions[ctx.transport].account.id,
         chat_type=chat_type,
         chat_index=1,
     )
