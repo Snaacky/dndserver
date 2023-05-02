@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import Boolean, Enum, Integer, String, Text
 from sqlalchemy_utils import ArrowType
 
+from dndserver.config import config
 from dndserver.database import db
 from dndserver.enums import CharacterClass, Gender
 
@@ -35,7 +36,7 @@ class Character(base):
     gender = Column(Enum(Gender))
     character_class = Column(Enum(CharacterClass))
     created_at = Column(ArrowType, default=arrow.utcnow())
-    level = Column(Integer, default=1)
+    level = Column(Integer, default=config.game.settings.starting_level)
     experience = Column(Integer, default=0)
     karma_rating = Column(Integer, default=0)
     streaming_nickname = Column(String(15))
@@ -136,12 +137,12 @@ class BlockedUser(base):
     __tablename__ = "blocked_users"
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
-    blockee_character_id = Column(Integer)
-    blocked_account_id = Column(Integer)
-    blocked_character_id = Column(Integer)
-    blocked_nickname = Column(String(20))
-    blocked_gender = Column(Enum(Gender))
-    blocked_character_class = Column(Enum(CharacterClass))
+    blocked_by = Column(Integer)  # Character ID
+    account_id = Column(Integer)
+    character_id = Column(Integer)
+    nickname = Column(String(20))
+    gender = Column(Enum(Gender))
+    character_class = Column(Enum(CharacterClass))
     blocked_at = Column(ArrowType, default=arrow.utcnow())
 
     def save(self):
