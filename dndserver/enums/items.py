@@ -13,6 +13,13 @@ class Rarity(Enum):
     UNIQUE = 7
 
 
+class Material(Enum):
+    NONE = "NONE"
+    CLOTH = "Cloth"
+    LEATHER = "Leather"
+    PLATE = "Plate"
+
+
 class ItemType(Enum):
     WEAPONS = "weapons"
     ARMORS = "armors"

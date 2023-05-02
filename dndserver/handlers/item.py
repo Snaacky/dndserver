@@ -2,7 +2,7 @@ import json
 import os
 import random
 
-from dndserver.enums.items import ItemType, Rarity
+from dndserver.enums.items import ItemType, Rarity, Material
 
 # TODO We might want to store this somewhere else, and only call it once, when server starts
 json_data = {}
@@ -44,6 +44,35 @@ def get_content(name, type, rarity):
             content = json_data[typeValue][file_name_no_rarity]
     return content
 
+
+# Gets the relevant data depending on the material and type
+def get_content_based_on(material, item_type):
+    content = []
+    obj = {}
+    
+    type_value = str(item_type.value)
+    material_value = str(material.value)
+    
+    for file_name, value in json_data[type_value].items():
+        if value["material"] == material_value:
+            obj[file_name] = value
+            content.append(obj)
+    return content
+
+#this function should choose 5 elements randomly from the array
+def random_items(res):  
+    if len(res) < 5:
+        return None 
+    casual = random.sample(res, 5)
+
+    new_array = []
+    for elem in casual:
+        new_array.append(elem)
+    return new_array
+
+#testing shit
+test = get_content_based_on(Material.PLATE, ItemType.ARMORS)
+print(random_items(test))
 
 # Function to be called in order to create an item
 def generate_new_item(name, type, rarity, item_count):
