@@ -67,7 +67,7 @@ def get_stockbuy_id(merchant, index):
     elif merchant == MerchantClass.PUMPKINMAN:
         ret += "PumpkinMan"
 
-    return ret
+    return ret + "_{0:0>2}".format(index)
 
 
 def get_stock_unique_id(merchant, index):
