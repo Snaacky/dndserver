@@ -54,7 +54,6 @@ def get_content_based_on(material, item_type):
     material_value = str(material.value)
     
     for file_name, value in json_data[type_value].items():
-        #print(file_name)
         if (item_type != ItemType.WEAPONS and 
             "material" in value and value["material"] == material_value):
             obj[file_name] = value
@@ -62,7 +61,6 @@ def get_content_based_on(material, item_type):
         elif(item_type == ItemType.WEAPONS):
             obj[file_name] = value
             content.append(obj)
-    #print(content)
     return content
 
 # Gets how_many random gear from a content (list of dictionaries)
@@ -76,7 +74,7 @@ def random_gear(content, how_many):
                 result.append((random_key, random_value))
     return result
 
-
+# This function generate armors and weapons randomly with random quality
 def generate_list_of_items_for_merch(type, material, how_many):
     output_list = []
     
@@ -94,11 +92,7 @@ def generate_list_of_items_for_merch(type, material, how_many):
             output_dict['primaryPropertyArray'] = []
             output_list.append(output_dict)
     
-    print(output_list)
     return output_list
-
-#testing shit
-generate_list_of_items_for_merch(ItemType.WEAPONS, Material.LEATHER, 3)
 
 
 # Function to be called in order to create an item
