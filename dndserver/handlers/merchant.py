@@ -26,6 +26,32 @@ from dndserver.protos.Merchant import (
 from dndserver.handlers import character, inventory
 
 
+def delete_items_merchant(merchant_id):
+    """Helper function to delete all items a merchant has"""
+    items = db.query(MerchantItem).filter_by(merchant_id=merchant_id).all()
+
+    for item in items:
+        # get the attributes for the item
+        attributes = db.query(MerchantItemAttribute).filter_by(item_id=item.id).all()
+
+        for attribute in attributes:
+            attribute.delete()
+
+        item.delete()
+
+
+def delete_merchants(character_id):
+    """Helper function to delete all merchants and items they have"""
+    merchants = db.query(Merchant).filter_by(character_id=character_id).all()
+
+    for merchant in merchants:
+        # delete all the items with attributes
+        delete_items_merchant(merchant.id)
+
+        # delete the merchant
+        merchant.delete()
+
+
 def create_merchants(character_id):
     """Helper function to create merchants for a character"""
     # create all the merchants for the user
@@ -230,6 +256,14 @@ def get_merchant_list(ctx, msg):
     # get all the times for every merchant
     merchants = db.query(Merchant).filter_by(character_id=sessions[ctx.transport].character.id).all()
 
+    # check if the user has the merchants
+    if len(merchants) == 0:
+        # add the merchants
+        create_merchants(sessions[ctx.transport].character.id)
+
+        # update the query
+        merchants = db.query(Merchant).filter_by(character_id=sessions[ctx.transport].character.id).all()
+
     # return all the merchants we have
     res = SS2C_MERCHANT_LIST_RES()
 
@@ -239,16 +273,7 @@ def get_merchant_list(ctx, msg):
         if arrow.utcnow() >= merchant.refresh_time:
             # timer has passed. Delete all the items for the merchant to signal the get list
             # to spawn new items when requested
-            items = db.query(MerchantItem).filter_by(merchant_id=merchant.id).all()
-
-            for item in items:
-                # get the attributes for the item
-                attributes = db.query(MerchantItemAttribute).filter_by(item_id=item.id).all()
-
-                for attribute in attributes:
-                    attribute.delete()
-
-                item.delete()
+            delete_items_merchant(merchant.id)
 
             # update the time
             merchant.refresh_time = arrow.utcnow().shift(minutes=15)

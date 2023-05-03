@@ -159,9 +159,6 @@ def create_character(ctx, msg):
 
             attr.save()
 
-    # create the merchants for the user
-    merchant.create_merchants(char.id)
-
     return res
 
 
@@ -177,6 +174,9 @@ def delete_character(ctx, msg):
     if query.user_id != sessions[ctx.transport].account.id:
         res.result = pc.FAIL_GENERAL
         return res
+
+    # delete all the merchants and items they have
+    merchant.delete_merchants(query.id)
 
     # also delete all the items this character has
     items = db.query(Item).filter_by(character_id=req.characterId)
