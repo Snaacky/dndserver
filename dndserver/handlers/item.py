@@ -67,12 +67,31 @@ def random_gear(content, how_many):
         random_key, random_value = random.choice(list(random_dict.items()))
         if (random_key, random_value) not in result:
             result.append((random_key, random_value))
-    print(result)
     return result
 
+
+def generate_list_of_items_for_merch(type, material, how_many):
+    output_list = []
+    
+    all_gear_with = get_content_based_on(material, type)
+    input_list = random_gear(all_gear_with, how_many)
+
+    for item in input_list:
+        output_dict = {}
+        rarity = random.randint(0, 7)
+        name = item[0][:-5]
+        item_id = f"DesignDataItem:Id_Item_{name}_{rarity}001"
+        if rarity == Rarity.NONE.value:
+            item_id = f"DesignDataItem:Id_Item_{name}"
+        output_dict['itemId'] = item_id
+        output_dict['primaryPropertyArray'] = []
+        output_list.append(output_dict)
+    
+    print(output_list)
+    return output_list
+
 #testing shit
-test_rand = get_content_based_on(Material.PLATE, ItemType.ARMORS)
-random_gear(test_rand, 6)
+generate_list_of_items_for_merch(ItemType.ARMORS, Material.PLATE, 3)
 
 
 # Function to be called in order to create an item
