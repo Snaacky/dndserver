@@ -121,7 +121,7 @@ def db_create_merchant_item(merchant_id, item, index, remaining):
         attr.save()
 
 
-def generate_items_merchant(character_id, merchant_id, remaining):
+def generate_items_merchant(merchant, merchant_id, remaining):
     """Helper to generate items for a merchant"""
     # TODO: this should generate items specific for the merchant
     items = [
@@ -133,20 +133,27 @@ def generate_items_merchant(character_id, merchant_id, remaining):
         ObjItems.generate_item(eItem.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4, 1, 1111116),
     ]
 
-    for index, item in enumerate(items):
+    # get the stock index map for the current merchant (never add 2 items within the
+    # same index in the map. The game will only return 1 index)
+    merchant_map = MerchantData.buy_mapping[merchant]
+
+    # TODO: every merchant has its own index. Convert the item to a merchant index. Prices
+    # are determined by the offet from the start of the merchant stock id. For now we map
+    # the index to the first stock id. Prices are determined from the stock id.
+    for (index, variations), item in zip(merchant_map, items):
         # create the default items for every merchant
-        db_create_merchant_item(merchant_id, item, index + 1, remaining)
+        db_create_merchant_item(merchant_id, item, index, remaining)
 
 
 def add_to_inventory_merchant(trade_id, info, character_id):
     """Helper function to add a bought item to the inventory of the character"""
     # get the item from the database. Get the unique id is always 0. Check what item we
     # got by getting the merchant id and the index from the trade id
-    index = int(re.sub("\\D", "", trade_id))
+    index = int(re.sub("\\D", "", trade_id)) - 1
     re_merchant = re.search(".*Id_StockBuy_(.*?)_.*", trade_id)
 
     # make sure we have a valid regex
-    if re_merchant is None:
+    if re_merchant is None or index < 0:
         return False
 
     # get the merchant from the name
@@ -161,8 +168,17 @@ def add_to_inventory_merchant(trade_id, info, character_id):
     if merchant is None:
         return False
 
-    # get the selected item
-    item = db.query(MerchantItem).filter_by(merchant_id=merchant.id).filter_by(index=index).first()
+    # remap the the index to a stock index
+    stock_index = MerchantData.buy_mapping[merchant.merchant][index]
+
+    # get the selected item. Search the whole stock index range. We can only have 1 item at
+    # the time with the same index so no need to search for a specific index
+    item = (
+        db.query(MerchantItem)
+        .filter_by(merchant_id=merchant.id)
+        .filter(MerchantItem.index.between(stock_index[0], stock_index[0] + (stock_index[1] - 1)))
+        .first()
+    )
 
     # check if we have the item
     if item is None or item.remaining == 0:
@@ -280,7 +296,7 @@ def get_buy_list(ctx, msg):
         items_remaining = 3
 
         # we have no items regenerate them
-        generate_items_merchant(sessions[ctx.transport].character.id, merchant.id, items_remaining)
+        generate_items_merchant(merchant.merchant, merchant.id, items_remaining)
 
         # requery the items to fetch all the new items
         items = db.query(MerchantItem).filter_by(merchant_id=merchant.id).all()
