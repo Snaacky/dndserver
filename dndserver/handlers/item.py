@@ -2,7 +2,7 @@ import json
 import os
 import random
 
-from dndserver.enums.items import ItemType, Rarity, Material
+from dndserver.enums.items import ItemType, Rarity, Material, Merchant, Item
 
 # TODO We might want to store this somewhere else, and only call it once, when server starts
 json_data = {}
@@ -59,25 +59,20 @@ def get_content_based_on(material, item_type):
             content.append(obj)
     return content
 
-
-#now i have to parse the content to get "how_many" random items 
-# to add those at content
-def new_parser(content, how_many):
-    final_result = {}
-
-    # random index
-    random_indexes = random.sample(range(len(content)), how_many)
-    for i in random_indexes:
-        dictionary = content[i]
-        for key1, value in dictionary.items():
-            for key2, value2 in value.items():
-                if key2 != "stats":
-                    final_result[key1] = key2 + str(value2)
-    return final_result
+# Gets how_many random gear from a content (list of dictionaries)
+def random_gear(content, how_many):
+    result = []
+    while len(result) < how_many:
+        random_dict = random.choice(content)
+        random_key, random_value = random.choice(list(random_dict.items()))
+        if (random_key, random_value) not in result:
+            result.append((random_key, random_value))
+    print(result)
+    return result
 
 #testing shit
-test = get_content_based_on(Material.PLATE, ItemType.ARMORS)
-new_parser(test, 2)
+test_rand = get_content_based_on(Material.PLATE, ItemType.ARMORS)
+random_gear(test_rand, 6)
 
 
 # Function to be called in order to create an item
@@ -91,7 +86,6 @@ def generate_new_item(name, type, rarity, item_count):
                 final_data = format_other_data(data, name, rarity_str, item_count)
             else:
                 final_data = format_data(data, name, rarity_str)
-    print(final_data)
     return final_data
 
 
