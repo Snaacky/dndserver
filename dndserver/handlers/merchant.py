@@ -374,8 +374,11 @@ def buy_item(ctx, msg):
         if query is None:
             return SS2C_MERCHANT_STOCK_BUY_RES(result=pc.FAIL_GENERAL)
 
-        # remove the provided quantity from the user
-        if (query.quantity - item.itemCount) <= 0:
+        # remove the provided quantity from the user. Check where we should remove it
+        if item.itemContentsCount:
+            # remove from the inventory count
+            query.inv_count -= item.itemContentsCount
+        elif (query.quantity - item.itemCount) <= 0:
             # delete the item from the database
             inventory.delete_item(sessions[ctx.transport].character.id, item)
         else:
