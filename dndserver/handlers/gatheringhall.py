@@ -122,10 +122,10 @@ def chat(ctx, msg):
 
     nickName = SACCOUNT_NICKNAME(originalNickName=query.nickname, streamingModeNickName=query.streaming_nickname)
     chat_data = SCHATDATA()
-    chat_data.accountId = f"{sessions[ctx.transport].account.id}"
-    chat_data.characterId = f"{sessions[ctx.transport].character.id}"
+    chat_data.accountId = str(sessions[ctx.transport].account.id)
+    chat_data.characterId = str(sessions[ctx.transport].character.id)
     chat_data.nickname.CopyFrom(nickName)
-    chat_data.partyId = f"{sessions[ctx.transport].party.id}"
+    chat_data.partyId = str(sessions[ctx.transport].party.id)
     chat_data.chatDataPieceArray.append(chat_piece)
 
     chat_hall = SGATHERING_HALL_CHAT_S2C()
