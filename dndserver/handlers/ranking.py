@@ -32,7 +32,7 @@ def get_character_ranking(ctx, msg):
     record = SRankRecord()
     record.score = 0
     record.percentage = 0
-    record.accountId = str(character.user_id)
+    record.accountId = str(character.account_id)
     record.pageIndex = 0
     record.rank = 0
     record.characterClass = req.characterClass
@@ -104,7 +104,7 @@ def get_ranking(ctx, msg):
         record.score = score
 
         record.percentage = 1.0
-        record.accountId = str(character.user_id)
+        record.accountId = str(character.account_id)
         record.pageIndex = index
         record.rank = index + 1
         record.characterClass = CharacterClass(character.character_class).value
