@@ -71,7 +71,7 @@ rogue = [
     "DesignDataPerk:Id_Perk_Creep",
     "DesignDataPerk:Id_Perk_DaggerExpert",
     "DesignDataPerk:Id_Perk_HiddenPocket",
-    "DesignDataPerk:Id_Perk_LockpickSet",
+    "DesignDataPerk:Id_Perk_LockpickingMastery",
     "DesignDataPerk:Id_Perk_Pickpocket",
     "DesignDataPerk:Id_Perk_PoisonedWeapon",
     "DesignDataPerk:Id_Perk_Stealth",
@@ -107,7 +107,7 @@ perks = {
 # Other items. Not used at the moment.
 # DesignDataPerk:Id_Perk_Chase
 # DesignDataPerk:Id_Perk_DaggerMastery
-# DesignDataPerk:Id_Perk_LockpickingMastery
+# DesignDataPerk:Id_Perk_LockpickSet
 # DesignDataPerk:Id_Perk_Backstab
 # DesignDataPerk:Id_Perk_TwoHandedWeaponExpert
 # DesignDataPerk:Id_Perk_Malice
