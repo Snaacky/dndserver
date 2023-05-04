@@ -22,6 +22,8 @@ COPY config.example.yml config.yml
 WORKDIR /app
 COPY . .
 
+COPY config.example.yml config.yml
+
 # Run database migrations
 RUN alembic upgrade head
 
