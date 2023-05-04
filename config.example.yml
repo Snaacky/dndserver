@@ -4,6 +4,10 @@ server:
 
 game:
     version: 0.5.0.1173 # playtest 5 hotfix 2
+    settings:
+        starting_level: 1
+        max_created_characters: 999
+        max_blocked_characters: 999
 
 database:
     type: sqlite # sqlite only right now, MySQL later

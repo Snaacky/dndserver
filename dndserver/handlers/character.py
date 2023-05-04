@@ -66,7 +66,7 @@ def list_characters(ctx, msg):
     req = SC2S_ACCOUNT_CHARACTER_LIST_REQ()
     req.ParseFromString(msg)
 
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport].account.id).all()
+    query = db.query(Character).filter_by(account_id=sessions[ctx.transport].account.id).all()
     res = SS2C_ACCOUNT_CHARACTER_LIST_RES(totalCharacterCount=len(query), pageIndex=req.pageIndex)
 
     start = (res.pageIndex - 1) * 7
@@ -114,7 +114,7 @@ def create_character(ctx, msg):
 
     char_class = CharacterClass(req.characterClass)
     char = Character(
-        user_id=sessions[ctx.transport].account.id,
+        account_id=sessions[ctx.transport].account.id,
         nickname=req.nickName,
         streaming_nickname=f"Fighter#{random.randrange(1000000, 1700000)}",
         gender=Gender(req.gender),
@@ -171,7 +171,7 @@ def delete_character(ctx, msg):
     res = SS2C_ACCOUNT_CHARACTER_DELETE_RES(result=pc.SUCCESS)
 
     # Prevents characters from maliciously deleting others characters.
-    if query.user_id != sessions[ctx.transport].account.id:
+    if query.account_id != sessions[ctx.transport].account.id:
         res.result = pc.FAIL_GENERAL
         return res
 
