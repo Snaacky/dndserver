@@ -15,13 +15,11 @@ COPY pyproject.toml .
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-interaction --no-ansi --only main --all-extras
 
-# Copy the config for the migrations
-COPY config.example.yml config.yml
-
 # Place where the app lives in the container
 WORKDIR /app
 COPY . .
 
+# Copy the config for the migrations
 COPY config.example.yml config.yml
 
 # Run database migrations
