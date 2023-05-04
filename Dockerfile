@@ -19,8 +19,14 @@ RUN poetry install --no-interaction --no-ansi --only main --all-extras
 WORKDIR /app
 COPY . .
 
+# Copy the config for the migrations
+COPY config.example.yml config.yml
+
 # Run database migrations
 RUN alembic upgrade head
+
+# Remove the config now that the migrations are done
+RUN rm config.yml
 
 # Expose the port your application will run on
 EXPOSE 13337
