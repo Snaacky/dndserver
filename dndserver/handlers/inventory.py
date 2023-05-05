@@ -1,6 +1,7 @@
 from dndserver.database import db
 from dndserver.models import Character, Item, ItemAttribute
 from dndserver.persistent import sessions
+from dndserver.handlers import character as HCharacter
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Inventory import (
     SC2S_INVENTORY_MOVE_REQ,
@@ -203,7 +204,9 @@ def merge_request(ctx, msg):
     # merge the items
     merge_items(old, new, amount, character.id)
 
-    return SS2C_INVENTORY_MERGE_RES()
+    ctx.reply(SS2C_INVENTORY_MERGE_RES())
+
+    return HCharacter.character_info(ctx, bytearray())
 
 
 def split_move_request(ctx, msg):
@@ -226,7 +229,9 @@ def split_move_request(ctx, msg):
     res.newInventoryId = req.dstInventoryId
     res.newSlotId = req.dstSlotId
 
-    return res
+    ctx.reply(res)
+
+    return HCharacter.character_info(ctx, bytearray())
 
 
 def swap_request(ctx, msg):
@@ -248,7 +253,9 @@ def swap_request(ctx, msg):
         it.inventory_id = item.newInventoryId
         it.slot_id = item.newSlotId
 
-    return SS2C_INVENTORY_SWAP_RES()
+    ctx.reply(SS2C_INVENTORY_SWAP_RES())
+
+    return HCharacter.character_info(ctx, bytearray())
 
 
 def split_merge_request(ctx, msg):
@@ -279,7 +286,9 @@ def split_merge_request(ctx, msg):
     # merge the two items.
     merge_items(it, new, req.count, character.id, False)
 
-    return SS2C_INVENTORY_SPLIT_MERGE_RES()
+    ctx.reply(SS2C_INVENTORY_SPLIT_MERGE_RES())
+
+    return HCharacter.character_info(ctx, bytearray())
 
 
 def move_request(ctx, msg):
@@ -297,7 +306,9 @@ def move_request(ctx, msg):
         item_query.inventory_id = req.dstInventoryId
         item_query.slot_id = req.dstSlotId
 
-    return SS2C_INVENTORY_MOVE_RES()
+    ctx.reply(SS2C_INVENTORY_MOVE_RES())
+
+    return HCharacter.character_info(ctx, bytearray())
 
 
 def move_single_request(ctx, msg):
@@ -357,4 +368,6 @@ def move_single_request(ctx, msg):
                     result=pc.FAIL_NO_VALUE, oldItem=req.oldItem, newItem=req.newItem
                 )
 
-    return SS2C_INVENTORY_SINGLE_UPDATE_RES(result=pc.SUCCESS, oldItem=req.oldItem, newItem=req.newItem)
+    ctx.reply(SS2C_INVENTORY_SINGLE_UPDATE_RES(result=pc.SUCCESS, oldItem=req.oldItem, newItem=req.newItem))
+
+    return HCharacter.character_info(ctx, bytearray())
