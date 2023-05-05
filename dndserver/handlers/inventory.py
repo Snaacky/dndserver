@@ -74,7 +74,7 @@ def add_item(item):
 def get_stack_limit(item):
     """Helper function to the get the amount we can stack a item"""
     # TODO: this should be read from the item directly
-    if "Id_Item_Bandage" in item or "Potion" in item:
+    if "Id_Item_Bandage" in item or "Potion" in item or "Id_Item_ThrowingKnife" in item:
         return 3
     elif "Id_Item_GoldCoinPurse" in item or "Id_Item_GoldCoinChest" in item or "Id_Item_GoldCoinBag" in item:
         return 1
