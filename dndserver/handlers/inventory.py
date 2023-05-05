@@ -223,9 +223,22 @@ def split_move_request(ctx, msg):
     )
 
     res = SS2C_INVENTORY_SPLIT_MOVE_RES()
-    res.newUniqueId = split_item(
-        item, item.item_id, req.dstInventoryId, req.dstSlotId, req.count, sessions[ctx.transport].character.id
-    )
+
+    # special case for the items with a inventory
+    if get_inv_limit(item.item_id):
+        # for items with a inventory split into gold coins
+        res.newUniqueId = split_item(
+            item,
+            "DesignDataItem:Id_Item_GoldCoins",
+            req.dstInventoryId,
+            req.dstSlotId,
+            req.count,
+            sessions[ctx.transport].character.id,
+        )
+    else:
+        res.newUniqueId = split_item(
+            item, item.item_id, req.dstInventoryId, req.dstSlotId, req.count, sessions[ctx.transport].character.id
+        )
     res.newInventoryId = req.dstInventoryId
     res.newSlotId = req.dstSlotId
 
@@ -330,7 +343,15 @@ def move_single_request(ctx, msg):
 
     for old, new in zip(list(req.oldItem), list(req.newItem)):
         # get the current item in the database
-        old_query = db.query(Item).filter_by(character_id=character.id).filter_by(id=old.itemUniqueId).first()
+        old_query = (
+            db.query(Item)
+            .filter_by(character_id=character.id)
+            .filter_by(id=old.itemUniqueId)
+            .filter_by(slot_id=old.slotId)
+            .filter_by(inventory_id=old.inventoryId)
+            .filter_by(item_id=old.itemId)
+            .first()
+        )
 
         # check if we have the item in the database
         if old_query is None:
