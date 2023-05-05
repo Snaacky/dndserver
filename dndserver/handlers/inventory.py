@@ -291,10 +291,8 @@ def split_merge_request(ctx, msg):
     # check if the item is a inventory item
     if get_inv_limit(it.item_id):
         it.inv_count = req.count
-        old.inv_count -= req.count
     else:
         it.quantity = req.count
-        old.quantity -= req.count
 
     # merge the two items.
     if merge_items(it, new, req.count, character.id, False):
