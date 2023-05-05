@@ -56,11 +56,11 @@ ranger = [
     "DesignDataPerk:Id_Perk_EnhancedHearing",
     "DesignDataPerk:Id_Perk_Kinesthesia",
     "DesignDataPerk:Id_Perk_NimbleHands",
-    "DesignDataPerk:Id_Perk_RangedWeaponsExpert",
+    "DesignDataPerk:Id_Perk_RangedWeaponsMastery",
     "DesignDataPerk:Id_Perk_Sharpshooter",
     "DesignDataPerk:Id_Perk_SpearProficiency",
-    "DesignDataPerk:Id_Perk_Tracking",
-    "DesignDataPerk:Id_Perk_TrapExpert",
+    "DesignDataPerk:Id_Perk_Chase",
+    "DesignDataPerk:Id_Perk_TrapMastery",
     "DesignDataPerk:Id_Perk_CripplingShot",
     "DesignDataPerk:Id_Perk_QuickReload",
 ]
@@ -71,7 +71,7 @@ rogue = [
     "DesignDataPerk:Id_Perk_Creep",
     "DesignDataPerk:Id_Perk_DaggerExpert",
     "DesignDataPerk:Id_Perk_HiddenPocket",
-    "DesignDataPerk:Id_Perk_LockpickSet",
+    "DesignDataPerk:Id_Perk_LockpickingMastery",
     "DesignDataPerk:Id_Perk_Pickpocket",
     "DesignDataPerk:Id_Perk_PoisonedWeapon",
     "DesignDataPerk:Id_Perk_Stealth",
@@ -105,16 +105,16 @@ perks = {
 }
 
 # Other items. Not used at the moment.
-# DesignDataPerk:Id_Perk_Chase
+# DesignDataPerk:Id_Perk_Tracking
 # DesignDataPerk:Id_Perk_DaggerMastery
-# DesignDataPerk:Id_Perk_LockpickingMastery
+# DesignDataPerk:Id_Perk_LockpickSet
 # DesignDataPerk:Id_Perk_Backstab
 # DesignDataPerk:Id_Perk_TwoHandedWeaponExpert
 # DesignDataPerk:Id_Perk_Malice
 # DesignDataPerk:Id_Perk_Toughness
 # DesignDataPerk:Id_Perk_Smash
-# DesignDataPerk:Id_Perk_RangedWeaponsMastery
+# DesignDataPerk:Id_Perk_RangedWeaponsExpert
 # DesignDataPerk:Id_Perk_ShieldMastery
 # DesignDataPerk:Id_Perk_DefenseMastery
 # DesignDataPerk:Id_Perk_SurvivalistTongue
-# DesignDataPerk:Id_Perk_TrapMastery
+# DesignDataPerk:Id_Perk_TrapExpert
