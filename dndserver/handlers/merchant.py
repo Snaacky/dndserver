@@ -90,12 +90,12 @@ def get_buy_list(ctx, msg):
                 SMERCHANT_STOCK_BUY_ITEM_INFO(
                     stockBuyId="DesignDataStockBuy:Id_StockBuy_Alchemist_05",
                     stockUniqueId=5,
-                    itemInfo=items.generate_item(Item.ARMINGSWORD, ItemType.WEAPONS, Rarity.JUNK, 3, 10, 1, 1111115),
+                    itemInfo=items.generate_item(Item.ARMINGSWORD, ItemType.WEAPONS, Rarity.EPIC, 3, 10, 1, 1111115),
                 ),
                 SMERCHANT_STOCK_BUY_ITEM_INFO(
                     stockBuyId="DesignDataStockBuy:Id_StockBuy_Alchemist_06",
                     stockUniqueId=6,
-                    itemInfo=items.generate_item(Item.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4, 1, 1111116),
+                    itemInfo=items.generate_item(Item.CLOTHPANTS, ItemType.ARMORS, Rarity.LEGENDARY, 3, 4, 1, 1111116),
                 ),
             ],
         )

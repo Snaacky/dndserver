@@ -2,7 +2,7 @@ import json
 import os
 import random
 
-from dndserver.enums.items import ItemType, Rarity, Material, Merchant, Item
+from dndserver.enums.items import ItemType, Rarity, Material, Item
 
 # TODO We might want to store this somewhere else, and only call it once, when server starts
 json_data = {}
@@ -47,7 +47,6 @@ def get_content(name, type, rarity):
 
 # Gets the relevant data depending on the material and type
 def get_content_based_on(material, item_type):
-    content = []
     obj = {}
     
     type_value = str(item_type.value)
@@ -57,43 +56,51 @@ def get_content_based_on(material, item_type):
         if (item_type != ItemType.WEAPONS and 
             "material" in value and value["material"] == material_value):
             obj[file_name] = value
-            content.append(obj)
         elif(item_type == ItemType.WEAPONS):
             obj[file_name] = value
-            content.append(obj)
-    return content
+    return obj
 
 # Gets how_many random gear from a content (list of dictionaries)
 def random_gear(content, how_many):
-    result = []
+    new_result = {}
     if content:
-        while len(result) < how_many:
-            random_dict = random.choice(content)
-            random_key, random_value = random.choice(list(random_dict.items()))
-            if (random_key, random_value) not in result:
-                result.append((random_key, random_value))
-    return result
+        while len(new_result) < how_many:
+            random_dict = random.choice(list(content.items()))
+            random_key, random_value = random_dict
+            if random_key not in new_result:
+                new_result[random_key] = random_value
+    return new_result
 
-# This function generate armors and weapons randomly with random quality
+# This function generate how_many armors or weapons randomly with random quality
 def generate_list_of_items_for_merch(type, material, how_many):
-    output_list = []
-    
+    final_data = []
+
     if type and material and how_many:
         all_gear_with = get_content_based_on(material, type)
         input_list = random_gear(all_gear_with, how_many)
-        for item in input_list:
-            output_dict = {}
-            rarity = random.randint(0, 7)
-            name = item[0][:-5]
-            item_id = f"DesignDataItem:Id_Item_{name}_{rarity}001"
-            if rarity == Rarity.NONE.value:
-                item_id = f"DesignDataItem:Id_Item_{name}"
-            output_dict['itemId'] = item_id
-            output_dict['primaryPropertyArray'] = []
-            output_list.append(output_dict)
-    
-    return output_list
 
+        for item in input_list.keys():
+            name = input_list[item]["name"]
+            all_stats = input_list[item]["stats"]
+            all_rarity = all_stats.keys()
+            if len(all_rarity) == 0:
+                continue
+            random_number = random_rarity(all_rarity)   
+            final_data.append(format_data(input_list[item], name, random_number))
+    
+    return final_data
+
+# This function produce in a proper way the rarity for gear
+#gray = 50%; white = 35%; green = 24.50%; blue = 17.15%; purple = 12%;
+def random_rarity(list_of_rarity):
+    slider = 0.7 #this value must be between 0.5 to 0.9 max
+    list_of_rarity = list(list_of_rarity)
+    if len(list_of_rarity) > 1:
+        list_of_rarity = list_of_rarity[1:-2]
+    n_rarity = len(list_of_rarity)
+    list_of_chance = [50 * pow(slider, i) for i in range(n_rarity)]
+    choose_value = random.choices(list_of_rarity, list_of_chance, k=1)
+    return choose_value[0]
 
 # Function to be called in order to create an item
 def generate_new_item(name, type, rarity, item_count):
@@ -136,6 +143,8 @@ def adjust_stats_based_on_ranges(property_array):
     new_property_array = []
     for _, obj in enumerate(property_array):
         values_array = obj["propertyValue"]
+        #default value for fallback
+        random_value = 1
         if values_array and len(values_array) > 1:
             # Get range from int value
             if isinstance(values_array[0], int):
@@ -146,6 +155,8 @@ def adjust_stats_based_on_ranges(property_array):
                 upper_bound = float(values_array[1].strip("%"))
                 random_value = random.uniform(lower_bound, upper_bound)
                 random_value = f"{random_value}%"
+            obj["propertyValue"] = random_value
+            new_property_array.append(obj)
         else:
             obj["propertyValue"] = random_value
             new_property_array.append(obj)
@@ -159,3 +170,8 @@ def format_data(data, name, rarity):
         item_id = f"DesignDataItem:Id_Item_{name}"
     primary_property_array = adjust_stats_based_on_ranges(parse_properties_to_array(data, rarity))
     return {"itemId": item_id, "primaryPropertyArray": primary_property_array}
+
+
+
+#testing shit
+generate_list_of_items_for_merch(ItemType.ARMORS, Material.PLATE, 5)
