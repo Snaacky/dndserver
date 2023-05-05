@@ -99,7 +99,7 @@ def get_inv_limit(item):
         return 0
 
 
-def split_item(from_item, item_id, to_inventory, to_slot, quantity, character_id):
+def split_item(from_item, item_id, to_inventory, to_slot, quantity, character_id, from_is_persistent=True):
     """Helper function to split a item and generate a new item at the provided location"""
     it = Item()
     it.character_id = character_id
@@ -136,6 +136,11 @@ def split_item(from_item, item_id, to_inventory, to_slot, quantity, character_id
 
     # add the item ot the database
     add_item((it, attributes))
+
+    # check if we should delete the old item. This only happens when the game is confused and
+    # tries a split on a item that is not stacked
+    if from_item.quantity <= 0 and from_is_persistent:
+        delete_item(character_id, from_item, True)
 
     # update the unique id to notify the client what id to use
     return it.id
@@ -355,7 +360,7 @@ def move_single_request(ctx, msg):
         if old_query is None:
             continue
 
-        # check for a simple move
+        # check for a simple move where we do not need to merge/split
         if old.itemUniqueId == new.itemUniqueId:
             # we have a simple move move request, handle it
             old_query.inventory_id = new.inventoryId
@@ -363,21 +368,21 @@ def move_single_request(ctx, msg):
 
             continue
 
-        # Not a simple move, search for the item we are updating to (specific search as the unique id the
-        # game gives can be random and already in use for another item)
+        # search for the new item in the database. For some reason the game buggs out sometimes and
+        # reports the wrong itemId for the item. Do not include it in the search parameters
         new_query = (
             db.query(Item)
             .filter_by(character_id=character.id)
             .filter_by(id=new.itemUniqueId)
             .filter_by(slot_id=new.slotId)
             .filter_by(inventory_id=new.inventoryId)
-            .filter_by(item_id=new.itemId)
             .first()
         )
 
         # check if we have both items in the database
         if new_query is None:
-            # no new item. Split the old item into the new item. Set unique id of the new item
+            # We do not have the new item. Split the old item into the new item.
+            # Set unique id of the new item
             new.itemUniqueId = split_item(
                 old_query, new.itemId, new.inventoryId, new.slotId, new.itemCount, character.id
             )
