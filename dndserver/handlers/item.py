@@ -56,9 +56,10 @@ def get_content_based_on(material, item_type):
         if (item_type != ItemType.WEAPONS and 
             "material" in value and value["material"] == material_value):
             obj[file_name] = value
-        elif(item_type == ItemType.WEAPONS):
+        elif item_type == ItemType.WEAPONS:
             obj[file_name] = value
     return obj
+
 
 # Gets how_many random gear from a content (list of dictionaries)
 def random_gear(content, how_many):
@@ -70,6 +71,7 @@ def random_gear(content, how_many):
             if random_key not in new_result:
                 new_result[random_key] = random_value
     return new_result
+
 
 # This function generate how_many armors or weapons randomly with random quality
 def generate_list_of_items_for_merch(type, material, how_many):
@@ -90,17 +92,18 @@ def generate_list_of_items_for_merch(type, material, how_many):
     
     return final_data
 
+
 # This function produce in a proper way the rarity for gear
 #gray = 50%; white = 35%; green = 24.50%; blue = 17.15%; purple = 12%;
 def random_rarity(list_of_rarity):
-    slider = 0.7 #this value must be between 0.5 to 0.9 max
     list_of_rarity = list(list_of_rarity)
     if len(list_of_rarity) > 1:
-        list_of_rarity = list_of_rarity[1:-2]
-    n_rarity = len(list_of_rarity)
-    list_of_chance = [50 * pow(slider, i) for i in range(n_rarity)]
-    choose_value = random.choices(list_of_rarity, list_of_chance, k=1)
-    return choose_value[0]
+        list_of_rarity = list_of_rarity[1:-2]#cut starter and high quality gear
+        list_of_chance = [50, 35, 24.5, 17.5, 12]
+        choose_value = random.choices(list_of_rarity, list_of_chance, k=1)
+        return choose_value[0]
+    return list_of_rarity[0]
+
 
 # Function to be called in order to create an item
 def generate_new_item(name, type, rarity, item_count):
@@ -170,8 +173,3 @@ def format_data(data, name, rarity):
         item_id = f"DesignDataItem:Id_Item_{name}"
     primary_property_array = adjust_stats_based_on_ranges(parse_properties_to_array(data, rarity))
     return {"itemId": item_id, "primaryPropertyArray": primary_property_array}
-
-
-
-#testing shit
-generate_list_of_items_for_merch(ItemType.ARMORS, Material.PLATE, 5)
