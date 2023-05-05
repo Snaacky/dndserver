@@ -284,7 +284,12 @@ def split_merge_request(ctx, msg):
         old.quantity -= req.count
 
     # merge the two items.
-    merge_items(it, new, req.count, character.id, False)
+    if merge_items(it, new, req.count, character.id, False):
+        # remove the item if successfull
+        if get_inv_limit(it.item_id):
+            old.inv_count -= req.count
+        else:
+            old.quantity -= req.count
 
     ctx.reply(SS2C_INVENTORY_SPLIT_MERGE_RES())
 
