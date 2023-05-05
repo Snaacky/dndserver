@@ -1,6 +1,5 @@
 import random
 
-from dndserver import objects
 from dndserver.data import perks as pk
 from dndserver.data import skills as sk
 from dndserver.database import db
@@ -12,7 +11,6 @@ from dndserver.objects import items
 from dndserver.enums.items import ItemType, Rarity, Item as ItemEnum
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos import Item as pItem
-from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Account import (
     SC2S_ACCOUNT_CHARACTER_CREATE_REQ,
     SC2S_ACCOUNT_CHARACTER_DELETE_REQ,
