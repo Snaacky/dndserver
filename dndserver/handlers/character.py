@@ -283,6 +283,7 @@ def list_skills(ctx, msg):
 
 
 def list_spells(ctx, msg):
+    """Occurs when the user loads opens the class menu."""
     req = SC2S_CLASS_SPELL_LIST_REQ()
     req.ParseFromString(msg)
 
@@ -344,6 +345,7 @@ def update_spell_sequence(update_from, character_id):
 
 
 def move_spell(ctx, msg):
+    """Occurs when the user moves a spell."""
     req = SC2S_CLASS_SPELL_SLOT_MOVE_REQ()
     req.ParseFromString(msg)
 
