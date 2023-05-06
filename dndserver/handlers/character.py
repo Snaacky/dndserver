@@ -359,11 +359,11 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 2, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 3, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 4, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
             ]
 
         case CharacterClass.BARD:
@@ -379,11 +379,11 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 2, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 3, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 4, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
             ]
 
         case CharacterClass.CLERIC:
@@ -400,11 +400,11 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 2, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 3, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 4, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
             ]
 
         case CharacterClass.FIGHTER:
@@ -420,11 +420,11 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 2, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 3, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 4, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
             ]
 
         case CharacterClass.RANGER:
@@ -442,11 +442,11 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 2, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 3, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 4, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
             ]
 
         case CharacterClass.ROGUE:
@@ -463,11 +463,11 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 2, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 3, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 4, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
             ]
 
         case CharacterClass.WIZARD:
@@ -484,10 +484,10 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 2, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 3, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 4, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
             ]
     return []
