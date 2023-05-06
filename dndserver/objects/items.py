@@ -10,6 +10,7 @@ class Item:
         inventory_id: int,
         slot_id: int,
         primary_properties: list[tuple[str, int]],
+        secondary_properties: list[tuple[str, int]],
     ) -> None:
         self.unique_id = unique_id
         self.item_id = item_id
@@ -17,6 +18,7 @@ class Item:
         self.inventory_id = inventory_id
         self.slot_id = slot_id
         self.primary_properties = primary_properties
+        self.secondary_properties = secondary_properties
 
     def create(self):
         new_item = item.SItem()
@@ -30,6 +32,13 @@ class Item:
             new_prop.propertyTypeId = prop[0]
             new_prop.propertyValue = prop[1]
             new_item.primaryPropertyArray.append(new_prop)
+
+        for prop in self.secondary_properties:
+            new_prop = new_item.SItemProperty()
+            new_prop.propertyTypeId = prop[0]
+            new_prop.propertyValue = prop[1]
+            new_item.secondaryPropertyArray.append(new_prop)
+
 
 
 def generate_item(name, type, rarity, inventoryId, slotId, item_count=1, uniqueId=None):
@@ -52,6 +61,11 @@ def generate_item(name, type, rarity, inventoryId, slotId, item_count=1, uniqueI
                 itemProperty.propertyTypeId = property["propertyTypeId"]
                 itemProperty.propertyValue = property["propertyValue"]
                 newItem.primaryPropertyArray.append(itemProperty)
+            for property in item_values["secondaryPropertyArray"]:
+                itemProperty = item.SItemProperty()
+                itemProperty.propertyTypeId = property["propertyTypeId"]
+                itemProperty.propertyValue = property["propertyValue"]
+                newItem.secondaryPropertyArray.append(itemProperty)
     return newItem
 
 

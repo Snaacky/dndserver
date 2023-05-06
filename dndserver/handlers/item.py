@@ -2,7 +2,7 @@ import json
 import os
 import random
 
-from dndserver.enums.items import ItemType, Rarity, Material, Item
+from dndserver.enums.items import ItemType, Rarity, Material, Enhancement
 
 # TODO We might want to store this somewhere else, and only call it once, when server starts
 json_data = {}
@@ -97,12 +97,16 @@ def generate_list_of_items_for_merch(type, material, how_many):
 #gray = 50%; white = 35%; green = 24.50%; blue = 17.15%; purple = 12%;
 def random_rarity(list_of_rarity):
     list_of_rarity = list(list_of_rarity)
-    if len(list_of_rarity) > 1:
-        list_of_rarity = list_of_rarity[1:-2]#cut starter and high quality gear
-        list_of_chance = [50, 35, 24.5, 17.5, 12]
-        choose_value = random.choices(list_of_rarity, list_of_chance, k=1)
-        return choose_value[0]
-    return list_of_rarity[0]
+    length = len(list_of_rarity)
+
+    # special case when the list is empty or has length 1
+    if length == 0:
+        return ""
+    elif length == 1:
+        return list_of_rarity[0]
+
+    list_of_chance = [50, 35, 24.5, 17.5, 12]
+    return random.choices(list_of_rarity[1:-2], list_of_chance, k=1)[0]
 
 
 # Function to be called in order to create an item
@@ -141,6 +145,19 @@ def parse_properties_to_array(data, rarity):
     return properties_array
 
 
+#TODO Finish to implement correctly this function
+def parse_secondary_properties_to_array(rarity):
+    
+    random_enhancement = random.choice(list(Enhancement))
+    properties_array = []
+    key = str(random_enhancement.value)
+    value = 5
+    updatedKey = f"DesignDataItemPropertyType:Id_ItemPropertyType_{key}"
+    properties_array.append({"propertyTypeId": updatedKey, "propertyValue": value})
+
+    return properties_array
+
+
 # Generates the stats values depending on the value ranges in the data
 def adjust_stats_based_on_ranges(property_array):
     new_property_array = []
@@ -172,4 +189,6 @@ def format_data(data, name, rarity):
     if rarity == Rarity.NONE.value:
         item_id = f"DesignDataItem:Id_Item_{name}"
     primary_property_array = adjust_stats_based_on_ranges(parse_properties_to_array(data, rarity))
-    return {"itemId": item_id, "primaryPropertyArray": primary_property_array}
+    secondary_property_array = parse_secondary_properties_to_array(rarity)
+    return {"itemId": item_id, "primaryPropertyArray": primary_property_array, "secondaryPropertyArray": secondary_property_array}
+
