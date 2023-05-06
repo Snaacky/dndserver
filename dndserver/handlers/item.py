@@ -2,7 +2,7 @@ import json
 import os
 import random
 
-from dndserver.enums.items import ItemType, Rarity, Material, Enhancement
+from dndserver.enums.items import ItemType, Rarity, Material, EnhancementWeapon, EnhancementArmor
 
 # TODO We might want to store this somewhere else, and only call it once, when server starts
 json_data = {}
@@ -119,7 +119,7 @@ def generate_new_item(name, type, rarity, item_count):
             if type != ItemType.WEAPONS and type != ItemType.ARMORS:
                 final_data = format_other_data(data, name, rarity_str, item_count)
             else:
-                final_data = format_data(data, name, rarity_str)
+                final_data = format_data(data, name, rarity_str, type)
     return final_data
 
 
@@ -145,35 +145,39 @@ def parse_properties_to_array(data, rarity):
     return properties_array
 
 
-#TODO Finish to implement correctly this function
 # Prepare the data for secondary property to be consumed
-def parse_secondary_properties_to_array(rarity):
+def parse_secondary_properties_to_array(rarity, item_type):
     rarity = int(rarity)
 
     if rarity == Rarity.UNCOMMON.value:
-        return effects_based_on(rarity)
+        return effects_based_on(rarity, item_type)
     elif rarity == Rarity.RARE.value:
-        return effects_based_on(rarity)
+        return effects_based_on(rarity, item_type)
     elif rarity == Rarity.EPIC.value:
-        return effects_based_on(rarity)
+        return effects_based_on(rarity, item_type)
     elif rarity == Rarity.LEGENDARY.value:
-        return effects_based_on(rarity)
+        return effects_based_on(rarity, item_type)
     elif rarity == Rarity.UNIQUE.value:
-        return effects_based_on(rarity)
+        return effects_based_on(rarity, item_type)
     return []
 
 
 # Helper function for parse_secondary_properties_to_array()
-def effects_based_on(rarity):
+def effects_based_on(rarity, item_type):
     properties_array = []
     random_enhancements = [""]
     how_many_effects = [rarity-3, rarity-2]
-    random_enhancements = random.choices(list(Enhancement), k = random.choice(how_many_effects))
-
+    if item_type == ItemType.WEAPONS:
+        random_enhancements = random.sample(list(EnhancementWeapon), k = random.choice(how_many_effects))
+    elif item_type == ItemType.ARMORS:
+        random_enhancements = random.sample(list(EnhancementArmor), k = random.choice(how_many_effects))
     if not random_enhancements :
         return properties_array
     for enha in random_enhancements:
-            random_value = random.randrange(1,4)
+            if str(enha).find("._") != -1:
+                random_value = random.randrange(9, 50)
+            else:
+                random_value = random.randrange(1,4)
             updatedKey = f"DesignDataItemPropertyType:Id_ItemPropertyType_{enha.value}"
             properties_array.append({"propertyTypeId": updatedKey, "propertyValue": random_value})
     return properties_array
@@ -205,10 +209,10 @@ def adjust_stats_based_on_ranges(property_array):
 
 
 # Formats the itemId and properties by calling other formatters, formats the response to be consumed
-def format_data(data, name, rarity):
+def format_data(data, name, rarity, item_type):
     item_id = f"DesignDataItem:Id_Item_{name}_{rarity}001"
     if rarity == Rarity.NONE.value:
         item_id = f"DesignDataItem:Id_Item_{name}"
     primary_property_array = adjust_stats_based_on_ranges(parse_properties_to_array(data, rarity))
-    secondary_property_array = parse_secondary_properties_to_array(rarity)
+    secondary_property_array = parse_secondary_properties_to_array(rarity, item_type)
     return {"itemId": item_id, "primaryPropertyArray": primary_property_array, "secondaryPropertyArray": secondary_property_array}
