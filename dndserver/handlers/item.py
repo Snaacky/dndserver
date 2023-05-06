@@ -146,15 +146,36 @@ def parse_properties_to_array(data, rarity):
 
 
 #TODO Finish to implement correctly this function
+# Prepare the data for secondary property to be consumed
 def parse_secondary_properties_to_array(rarity):
-    
-    random_enhancement = random.choice(list(Enhancement))
-    properties_array = []
-    key = str(random_enhancement.value)
-    value = 5
-    updatedKey = f"DesignDataItemPropertyType:Id_ItemPropertyType_{key}"
-    properties_array.append({"propertyTypeId": updatedKey, "propertyValue": value})
+    rarity = int(rarity)
 
+    if rarity == Rarity.UNCOMMON.value:
+        return effects_based_on(rarity)
+    elif rarity == Rarity.RARE.value:
+        return effects_based_on(rarity)
+    elif rarity == Rarity.EPIC.value:
+        return effects_based_on(rarity)
+    elif rarity == Rarity.LEGENDARY.value:
+        return effects_based_on(rarity)
+    elif rarity == Rarity.UNIQUE.value:
+        return effects_based_on(rarity)
+    return []
+
+
+# Helper function for parse_secondary_properties_to_array()
+def effects_based_on(rarity):
+    properties_array = []
+    random_enhancements = [""]
+    how_many_effects = [rarity-3, rarity-2]
+    random_enhancements = random.choices(list(Enhancement), k = random.choice(how_many_effects))
+
+    if not random_enhancements :
+        return properties_array
+    for enha in random_enhancements:
+            random_value = random.randrange(1,4)
+            updatedKey = f"DesignDataItemPropertyType:Id_ItemPropertyType_{enha.value}"
+            properties_array.append({"propertyTypeId": updatedKey, "propertyValue": random_value})
     return properties_array
 
 
@@ -191,4 +212,3 @@ def format_data(data, name, rarity):
     primary_property_array = adjust_stats_based_on_ranges(parse_properties_to_array(data, rarity))
     secondary_property_array = parse_secondary_properties_to_array(rarity)
     return {"itemId": item_id, "primaryPropertyArray": primary_property_array, "secondaryPropertyArray": secondary_property_array}
-
