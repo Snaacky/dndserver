@@ -2,10 +2,11 @@ import random
 
 from dndserver.data import perks as pk
 from dndserver.data import skills as sk
+from dndserver.data import spells as sp
 from dndserver.database import db
 from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.handlers import inventory
-from dndserver.models import Character, Item, ItemAttribute
+from dndserver.models import Character, Item, ItemAttribute, Spell
 from dndserver.persistent import sessions
 from dndserver.objects import items
 from dndserver.enums.items import ItemType, Rarity, Item as ItemEnum
@@ -29,6 +30,10 @@ from dndserver.protos.CharacterClass import (
     SS2C_CLASS_LEVEL_INFO_RES,
     SS2C_CLASS_PERK_LIST_RES,
     SS2C_CLASS_SKILL_LIST_RES,
+    SC2S_CLASS_SPELL_LIST_REQ,
+    SS2C_CLASS_SPELL_LIST_RES,
+    SC2S_CLASS_SPELL_SLOT_MOVE_REQ,
+    SS2C_CLASS_SPELL_SLOT_MOVE_RES,
 )
 from dndserver.protos.Customize import SS2C_CUSTOMIZE_CHARACTER_INFO_RES
 from dndserver.protos.Defines import Define_Character, Define_Class, Define_Item
@@ -184,6 +189,11 @@ def delete_character(ctx, msg):
 
         item.delete()
 
+    # delete all the spells the character has
+    spells = db.query(Spell).filter_by(character_id=req.characterId)
+    for spell in spells:
+        spell.delete()
+
     # delete the character after we have removed all the other items
     query.delete()
     return res
@@ -270,6 +280,140 @@ def list_skills(ctx, msg):
             index += 1
 
     return res
+
+
+def list_spells(ctx, msg):
+    req = SC2S_CLASS_SPELL_LIST_REQ()
+    req.ParseFromString(msg)
+
+    char = sessions[ctx.transport].character
+
+    # make sure we only return the spells for the wizard and cleric
+    if char.character_class != CharacterClass.WIZARD and char.character_class != CharacterClass.CLERIC:
+        return SS2C_CLASS_SPELL_LIST_RES()
+
+    res = SS2C_CLASS_SPELL_LIST_RES()
+
+    # get the spells we have equiped and add them first
+    spells = list(db.query(Spell).filter_by(character_id=char.id).all())
+    for spell in spells:
+        res.spells.append(
+            pItem.SSpell(slotIndex=spell.slot_id, sequenceIndex=spell.sequence_id, spellId=spell.spell_id)
+        )
+
+    # add the other spells
+    for spell in sp.spells[char.character_class]:
+        # check if we have the spell equiped
+        if any(spell == s.spell_id for s in spells):
+            continue
+
+        # TODO: change the proto to allow signed numbers for the slot index. For now we trick the proto
+        # into setting the index and sequence to -1
+        res.spells.append(pItem.SSpell(slotIndex=0xFFFFFFFF, sequenceIndex=0xFFFFFFFF, spellId=spell))
+
+    return res
+
+
+def get_spells(character_id):
+    """Helper function to create the spell slot response"""
+    res = SS2C_CLASS_SPELL_SLOT_MOVE_RES()
+    res.result = pc.SUCCESS
+
+    # get all the spells we have equiped
+    spells = db.query(Spell).filter_by(character_id=character_id)
+
+    for spell in spells:
+        res.equipSpellList.append(
+            pItem.SSpell(slotIndex=spell.slot_id, sequenceIndex=spell.sequence_id, spellId=spell.spell_id)
+        )
+
+    return res
+
+
+def update_spell_sequence(update_from, character_id):
+    """Helper function to update the sequences above the update_from"""
+    spells = (
+        db.query(Spell)
+        .filter_by(character_id=character_id)
+        .filter(Spell.sequence_id > update_from)
+        .order_by(Spell.sequence_id.asc())
+    )
+
+    for index, spell in enumerate(spells):
+        spell.sequence_id = update_from + index
+
+
+def move_spell(ctx, msg):
+    req = SC2S_CLASS_SPELL_SLOT_MOVE_REQ()
+    req.ParseFromString(msg)
+
+    char = sessions[ctx.transport].character
+
+    # get the spell we are trying to move
+    target_spell = db.query(Spell).filter_by(character_id=char.id).filter_by(spell_id=req.spellId).first()
+
+    # check if we should remove the spell from the spell list
+    if req.dstSlotIndex <= 0:
+        if target_spell is not None:
+            # update the sequence numbers above ourself
+            update_spell_sequence(target_spell.sequence_id, char.id)
+
+            # delete the spell
+            target_spell.delete()
+
+        # send the updated spell list
+        return get_spells(char.id)
+
+    target_location = db.query(Spell).filter_by(character_id=char.id).filter_by(slot_id=req.dstSlotIndex).first()
+
+    # check how we should process the spell request
+    if target_location is not None and target_spell is not None:
+        # we have a target spell and a spell at the target location. Swap the two spells around using the slot id
+        slot_id = target_spell.slot_id
+        target_spell.slot_id = target_location.slot_id
+        target_location.slot_id = slot_id
+
+    elif target_location is not None:
+        # we are swapping a spell from the spell list with a spell. Change the spell id and update the sequence
+        target_location.spell_id = req.spellId
+
+        # update the sequence
+        update_spell_sequence(target_location.sequence_id, char.id)
+
+        # get the highest sequence id
+        sequence = db.query(Spell).filter_by(character_id=char.id).order_by(Spell.sequence_id.desc()).first()
+
+        # set the sequence index
+        if sequence is None:
+            target_location.sequence_id = 0
+        else:
+            target_location.sequence_id = sequence.sequence_id + 1
+
+    elif target_spell is not None:
+        # we are moving a existing spell to a other empty spot. Change the slot id to the new location
+        # move the target spell to the slot
+        target_spell.slot_id = req.dstSlotIndex
+
+    else:
+        # We are moving a spell from the spell list to a empty slot create a new spell with a sequence id higher that
+        # the last spell
+        sequence = db.query(Spell).filter_by(character_id=char.id).order_by(Spell.sequence_id.desc()).first()
+
+        # create a new spell with the correct location
+        spell = Spell()
+        spell.character_id = char.id
+        spell.spell_id = req.spellId
+        spell.slot_id = req.dstSlotIndex
+
+        # set the sequence index
+        if sequence is None:
+            spell.sequence_id = 0
+        else:
+            spell.sequence_id = sequence.sequence_id + 1
+
+        spell.save()
+
+    return get_spells(char.id)
 
 
 def get_perks_and_skills(ctx, msg):
