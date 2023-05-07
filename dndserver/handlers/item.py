@@ -74,7 +74,7 @@ def random_gear(content, how_many):
 
 
 # This function generate how_many armors or weapons randomly with random quality
-def generate_list_of_items_for_merch(type, material, how_many):
+def random_list_of_items_for_merch(type, material, how_many):
     final_data = []
 
     if type and material and how_many:

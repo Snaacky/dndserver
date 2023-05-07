@@ -1,3 +1,5 @@
+import json
+
 from dndserver.handlers.item import generate_new_item
 from dndserver.protos import Item as item
 
@@ -61,6 +63,8 @@ def generate_item(name, type, rarity, inventoryId, slotId, item_count=1, uniqueI
                 itemProperty.propertyTypeId = property["propertyTypeId"]
                 itemProperty.propertyValue = property["propertyValue"]
                 newItem.primaryPropertyArray.append(itemProperty)
+        propertiesArray = item_values.get("secondaryPropertyArray", [])
+        if propertiesArray and len(propertiesArray) > 1:
             for property in item_values["secondaryPropertyArray"]:
                 itemProperty = item.SItemProperty()
                 itemProperty.propertyTypeId = property["propertyTypeId"]
@@ -68,6 +72,21 @@ def generate_item(name, type, rarity, inventoryId, slotId, item_count=1, uniqueI
                 newItem.secondaryPropertyArray.append(itemProperty)
     return newItem
 
+
+def generate_merch_item(fixed_item, merch_id):
+    newItem = item.SItem()
+
+    with open(fixed_item) as f:
+        data = json.load(f)
+
+    items_of_merch = data.get(f"DesignDataMerchant:{merch_id}", None)
+
+    if items_of_merch:
+        for item_merch in items_of_merch:
+            if item_merch["itemId"] == fixed_item:
+                newItem.itemId = item_merch["itemId"]
+                newItem.itemCount = int(item_merch.get("itemCount"))
+    return newItem
 
 def generate_reckless():
     skills = item.SSkill()
