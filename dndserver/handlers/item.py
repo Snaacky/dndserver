@@ -1,8 +1,7 @@
 import json
 import os
 import random
-
-from dndserver.enums.items import ItemType, Rarity, Material, EnhancementWeapon, EnhancementArmor
+from dndserver.enums.items import ItemType, Rarity, EnhancementWeapon, EnhancementArmor
 
 # TODO We might want to store this somewhere else, and only call it once, when server starts
 json_data = {}
@@ -46,15 +45,13 @@ def get_content(name, type, rarity):
 
 
 # Gets the relevant data depending on the material and type
+# TODO change function in order to take a list of materials
 def get_content_based_on(material, item_type):
     obj = {}
-    
     type_value = str(item_type.value)
-    material_value = str(material.value)
-    
+    material_value = str(material)
     for file_name, value in json_data[type_value].items():
-        if (item_type != ItemType.WEAPONS and 
-            "material" in value and value["material"] == material_value):
+        if item_type != ItemType.WEAPONS and "material" in value and value["material"] == material_value:
             obj[file_name] = value
         elif item_type == ItemType.WEAPONS:
             obj[file_name] = value
@@ -74,7 +71,7 @@ def random_gear(content, how_many):
 
 
 # This function generate how_many armors or weapons randomly with random quality
-def random_list_of_items_for_merch(type, material, how_many):
+def random_item_list(type, material, how_many):
     final_data = []
 
     if type and material and how_many:
@@ -87,14 +84,13 @@ def random_list_of_items_for_merch(type, material, how_many):
             all_rarity = all_stats.keys()
             if len(all_rarity) == 0:
                 continue
-            random_number = random_rarity(all_rarity)   
-            final_data.append(format_data(input_list[item], name, random_number))
-    
+            random_number = random_rarity(all_rarity)
+            final_data.append(format_data(input_list[item], name, random_number, type))
     return final_data
 
 
 # This function produce in a proper way the rarity for gear
-#gray = 50%; white = 35%; green = 24.50%; blue = 17.15%; purple = 12%;
+# gray = 50%; white = 35%; green = 24.50%; blue = 17.15%; purple = 12%;
 def random_rarity(list_of_rarity):
     list_of_rarity = list(list_of_rarity)
     length = len(list_of_rarity)
@@ -110,7 +106,7 @@ def random_rarity(list_of_rarity):
 
 
 # Function to be called in order to create an item
-def generate_new_item(name, type, rarity, item_count):
+def generate_new_item(name, type, rarity, item_count=1):
     final_data = {}
     rarity_str = str(rarity.value)
     if name and type:
@@ -168,18 +164,18 @@ def effects_based_on(rarity, item_type):
     random_enhancements = [""]
     how_many_effects = [rarity-3, rarity-2]
     if item_type == ItemType.WEAPONS:
-        random_enhancements = random.sample(list(EnhancementWeapon), k = random.choice(how_many_effects))
+        random_enhancements = random.sample(list(EnhancementWeapon), k=random.choice(how_many_effects))
     elif item_type == ItemType.ARMORS:
-        random_enhancements = random.sample(list(EnhancementArmor), k = random.choice(how_many_effects))
-    if not random_enhancements :
+        random_enhancements = random.sample(list(EnhancementArmor), k=random.choice(how_many_effects))
+    if not random_enhancements:
         return properties_array
     for enha in random_enhancements:
-            if str(enha).find("._") != -1:
-                random_value = random.randrange(9, 50)
-            else:
-                random_value = random.randrange(1,4)
-            updatedKey = f"DesignDataItemPropertyType:Id_ItemPropertyType_{enha.value}"
-            properties_array.append({"propertyTypeId": updatedKey, "propertyValue": random_value})
+        if str(enha).find("._") != -1:
+            random_value = random.randrange(9, 50)
+        else:
+            random_value = random.randrange(1, 4)
+        updatedKey = f"DesignDataItemPropertyType:Id_ItemPropertyType_{enha.value}"
+        properties_array.append({"propertyTypeId": updatedKey, "propertyValue": random_value})
     return properties_array
 
 
@@ -188,7 +184,7 @@ def adjust_stats_based_on_ranges(property_array):
     new_property_array = []
     for _, obj in enumerate(property_array):
         values_array = obj["propertyValue"]
-        #default value for fallback
+        # default value for fallback
         random_value = 1
         if values_array and len(values_array) > 1:
             # Get range from int value
@@ -215,4 +211,5 @@ def format_data(data, name, rarity, item_type):
         item_id = f"DesignDataItem:Id_Item_{name}"
     primary_property_array = adjust_stats_based_on_ranges(parse_properties_to_array(data, rarity))
     secondary_property_array = parse_secondary_properties_to_array(rarity, item_type)
-    return {"itemId": item_id, "primaryPropertyArray": primary_property_array, "secondaryPropertyArray": secondary_property_array}
+    return {"itemId": item_id, "primaryPropertyArray": primary_property_array,
+            "secondaryPropertyArray": secondary_property_array}

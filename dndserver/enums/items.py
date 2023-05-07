@@ -12,6 +12,7 @@ class Rarity(Enum):
     LEGENDARY = 6
     UNIQUE = 7
 
+
 class EnhancementArmor(Enum):
     ARMOR_RATING_ADD = "Effect_ArmorRatingAdd"
     SPELL_CAPACITY_ADD = "Effect_SpellCapacityAdd"
@@ -34,12 +35,12 @@ class EnhancementArmor(Enum):
     _MAX_HEAL_BONUS = "Effect_MaxHealthBonus"
     _BUFF_DURATION_BONUS = "Effect_BuffDurationBonus"
     _PHYSICAL_DAMAGE_REDUCTION = "Effect_PhysicalDamageReduction"
-    _MAGICAL_DAMAGE_REDUCTION ="Effect_MagicalDamageReduction"
+    _MAGICAL_DAMAGE_REDUCTION = "Effect_MagicalDamageReduction"
     _SPELL_CAPACITY_BONUS = "Effect_SpellCapacityBonus"
     _ITEM_EQUIP_SPEED = "Effect_ItemEquipSpeed"
     _ARMOR_PENETRATION = "Effect_ArmorPenetration"
     _MAGICAL_INTERACTION_SPEED = "Effect_MagicalInteractionSpeed"
-    _MAGICAL_DAMAGE_BONUS ="Effect_MagicalDamageBonus"
+    _MAGICAL_DAMAGE_BONUS = "Effect_MagicalDamageBonus"
     _MAGIC_PENETRATION = "Effect_MagicPenetration"
     _REGULAR_INTERACTION_SPEED = "Effect_RegularInteractionSpeed"
     _MOVE_SPEED_BONUS = "Effect_MoveSpeedBonus"
@@ -48,7 +49,7 @@ class EnhancementArmor(Enum):
     _PHYSICAL_DAMAGE_BONUS = "Effect_PhysicalDamageBonus"
     _SPELL_CASTING_SPEED = "Effect_SpellCastingSpeed"
 
-    #unsure
+    # unsure
     PHYSICAL_POWER = "Effect_PhysicalPower"
 
 
@@ -66,7 +67,7 @@ class EnhancementWeapon(Enum):
     RESOURCEFULNESS = "Effect_Resourcefulness"
     STRENGTH = "Effect_Strength"
     WILL = "Effect_Will"
-    PRIMITIVE = "Effect_Primitive"#all attributes
+    PRIMITIVE = "Effect_Primitive"  # all attributes
     PHYSICAL_POWER = "Effect_PhysicalPower"
 
     _MAX_HEAL_BONUS = "Effect_MaxHealthBonus"
@@ -77,12 +78,12 @@ class EnhancementWeapon(Enum):
     _PHYSICAL_DAMAGE_BONUS = "Effect_PhysicalDamageBonus"
     _REGULAR_INTERACTION_SPEED = "Effect_RegularInteractionSpeed"
     _SPELL_CASTING_SPEED = "Effect_SpellCastingSpeed"
-    _MAGICAL_DAMAGE_BONUS ="Effect_MagicalDamageBonus"
+    _MAGICAL_DAMAGE_BONUS = "Effect_MagicalDamageBonus"
     _ARMOR_PENETRATION = "Effect_ArmorPenetration"
     _BUFF_DURATION_BONUS = "Effect_BuffDurationBonus"
     _DEBUFF_DURATION_BONUS = "Effect_DebuffDurationBonus"
 
-    #unsure
+    # unsure
     _ITEM_EQUIP_SPEED = "Effect_ItemEquipSpeed"
 
 
@@ -101,7 +102,7 @@ class ItemType(Enum):
     LOOTABLES = "lootables"
     JEWELRY = "jewelry"
     OTHERS = "others"
-    
+       
 
 class Item(Enum):
     ADVENTURERBOOTS = "AdventurerBoots"

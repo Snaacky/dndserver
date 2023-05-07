@@ -116,3 +116,30 @@ buy_mapping = {
         (148, 4), (152, 3), (155, 4), (159, 4), (163, 2)
     ],
 }
+
+####
+fixed_items = {
+    MerchantClass.SURGEON: [
+        ("DesignDataItem:Id_Item_Bandage_0001", 1, 3), ("DesignDataItem:Id_Item_Bandage_2001", 1, 3),
+        ("DesignDataItem:Id_Item_Bandage_1001", 3, 3), ("DesignDataItem:Id_Item_Bandage_2001", 3, 3)
+    ],
+    MerchantClass.SANTA: [],
+    MerchantClass.WOODSMAN: [
+        ("DesignDataItem:Id_Item_Pickaxe_2001", 1, 3), ("DesignDataItem:Id_Item_ThrowingKnife_1001", 3, 3),
+        ("DesignDataItem:Id_Item_FranciscaAxe_1001", 3, 3), ("DesignDataItem:Id_Item_CampfireKit_1001", 1, 3),
+        ("DesignDataItem:Id_Item_CampfireKit_2001", 1, 3), ("DesignDataItem:Id_Item_HuntingTrap_1001", 1, 3),
+        ("DesignDataItem:Id_Item_Torch", 1, 3), ("DesignDataItem:Id_Item_Bolt_0001", 15, 3),
+        ("DesignDataItem:Id_Item_Arrow_0001", 15, 3)
+    ],
+    MerchantClass.TAILOR: [],
+    MerchantClass.TREASURER: [],
+    MerchantClass.LEATHERSMITH: [],
+    MerchantClass.ARMOURER: [],
+    MerchantClass.THECOLLECTOR: [],
+    MerchantClass.ALCHEMIST: [],
+    MerchantClass.TAVERNMASTER: [],
+    MerchantClass.WEAPONSMITH: [],
+    MerchantClass.GOBLINMERCHANT: [],
+    MerchantClass.VALENTINE: [],
+    MerchantClass.PUMPKINMAN: [],
+}

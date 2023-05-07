@@ -1,7 +1,9 @@
-import json
-
-from dndserver.handlers.item import generate_new_item
+from dndserver.handlers import item as hItem
 from dndserver.protos import Item as item
+from dndserver.data import merchant
+from dndserver.enums.items import ItemType, Material
+from dndserver.enums.classes import MerchantClass
+
 
 class Item:
     def __init__(
@@ -42,66 +44,81 @@ class Item:
             new_item.secondaryPropertyArray.append(new_prop)
 
 
+def generate_item(name, type, rarity, inventoryId, slotId, item_count=1):
+    return item_parser(hItem.generate_new_item(name.value, type, rarity, item_count), inventoryId, slotId, item_count)
 
-def generate_item(name, type, rarity, inventoryId, slotId, item_count=1, uniqueId=None):
+
+def item_parser(item_values, inventoryId, slotId, item_count):
     newItem = item.SItem()
     newItem.inventoryId = inventoryId
     newItem.slotId = slotId
+    newItem.itemId = item_values["itemId"]
+    newItem.itemCount = int(item_values.get("itemCount", item_count))
 
-    # TODO Remove uniqueId from arguments, only here temporary for the merchant items
-    if uniqueId is not None:
-        newItem.itemUniqueId = uniqueId
+    propertiesArray = item_values.get("primaryPropertyArray", [])
+    if propertiesArray and len(propertiesArray) > 1:
+        for property in item_values["primaryPropertyArray"]:
+            itemProperty = item.SItemProperty()
+            itemProperty.propertyTypeId = property["propertyTypeId"]
+            if type(property["propertyValue"]) == str:
+                itemProperty.propertyValue = int(property["propertyValue"][:-3])*10
+            else:
+                itemProperty.propertyValue = property["propertyValue"]
+            newItem.primaryPropertyArray.append(itemProperty)
+    propertiesArray = item_values.get("secondaryPropertyArray", [])
+    if propertiesArray and len(propertiesArray) > 1:
+        for property in item_values["secondaryPropertyArray"]:
+            itemProperty = item.SItemProperty()
+            itemProperty.propertyTypeId = property["propertyTypeId"]
+            itemProperty.propertyValue = property["propertyValue"]
+            newItem.secondaryPropertyArray.append(itemProperty)
 
-    item_values = generate_new_item(name.value, type, rarity, item_count)
-    if item_values:
-        newItem.itemId = item_values["itemId"]
-        newItem.itemCount = int(item_values.get("itemCount", item_count))
-        propertiesArray = item_values.get("primaryPropertyArray", [])
-        if propertiesArray and len(propertiesArray) > 1:
-            for property in item_values["primaryPropertyArray"]:
-                itemProperty = item.SItemProperty()
-                itemProperty.propertyTypeId = property["propertyTypeId"]
-                itemProperty.propertyValue = property["propertyValue"]
-                newItem.primaryPropertyArray.append(itemProperty)
-        propertiesArray = item_values.get("secondaryPropertyArray", [])
-        if propertiesArray and len(propertiesArray) > 1:
-            for property in item_values["secondaryPropertyArray"]:
-                itemProperty = item.SItemProperty()
-                itemProperty.propertyTypeId = property["propertyTypeId"]
-                itemProperty.propertyValue = property["propertyValue"]
-                newItem.secondaryPropertyArray.append(itemProperty)
     return newItem
 
 
-def generate_merch_fixed_items(merch_json_file, merch_id):
-    list_new_item = []
-    with open(merch_json_file) as f:
-        data = json.load(f)
+####
+def generate_random_item(merch_id, amount):
+    ret = []
+    
+    if merch_id == MerchantClass.ARMOURER:
+        item_type = ItemType.ARMORS
+        material = Material.PLATE
+    elif merch_id == MerchantClass.WEAPONSMITH:
+        item_type = ItemType.WEAPONS
+        material = Material.NONE
+    elif merch_id == MerchantClass.SURGEON:
+        item_type = ItemType.UTILITY
+        material = Material.NONE
+    elif merch_id == MerchantClass.WOODSMAN:
+        item_type = ItemType.UTILITY
+        material = Material.NONE
+    elif merch_id == MerchantClass.ALCHEMIST:
+        item_type = ItemType.UTILITY
+        material = Material.NONE
+    elif merch_id == MerchantClass.LEATHERSMITH:
+        item_type = ItemType.ARMORS
+        material = Material.LEATHER
+    else:
+        return ret
+    
+    items = hItem.random_item_list(item_type, material.value, amount)
+    for i in items:
+        ret.append((item_parser(i, 1, 1, 1), 1))
+    
+    return ret
 
-    items_of_merch = data.get(f"DesignDataMerchant:{merch_id}", None)
 
-    if items_of_merch:
-        for item_merch in items_of_merch:
-            newItem = item.SItem()
-            newItem.itemId = item_merch["itemId"]
-            newItem.itemCount = int(item_merch.get("itemCount"))
-            propertiesArray = item_merch.get("primaryPropertyArray", [])
-            if propertiesArray and len(propertiesArray) > 1:
-                for property in item_merch["primaryPropertyArray"]:
-                    itemProperty = item.SItemProperty()
-                    itemProperty.propertyTypeId = property["propertyTypeId"]
-                    itemProperty.propertyValue = property["propertyValue"]
-                    newItem.primaryPropertyArray.append(itemProperty)
-            propertiesArray = item_merch.get("secondaryPropertyArray", [])
-            if propertiesArray and len(propertiesArray) > 1:
-                for property in item_merch["secondaryPropertyArray"]:
-                    itemProperty = item.SItemProperty()
-                    itemProperty.propertyTypeId = property["propertyTypeId"]
-                    itemProperty.propertyValue = property["propertyValue"]
-                    newItem.secondaryPropertyArray.append(itemProperty)
+def generate_merch_items(merch_id):
+    items = merchant.fixed_items[merch_id]
+    ret = []
 
-            list_new_item.append(newItem)
-    return list_new_item
+    for item_merch in items:
+        newItem = item.SItem()
+        newItem.itemId = item_merch[0]
+        newItem.itemCount = item_merch[1]
+        ret.append((newItem, item_merch[2]))
+
+    return ret + generate_random_item(merch_id, len(merchant.buy_mapping[merch_id]) - len(items))
 
 
 def generate_reckless():
