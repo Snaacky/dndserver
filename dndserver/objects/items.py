@@ -73,20 +73,36 @@ def generate_item(name, type, rarity, inventoryId, slotId, item_count=1, uniqueI
     return newItem
 
 
-def generate_merch_item(fixed_item, merch_id):
-    newItem = item.SItem()
-
-    with open(fixed_item) as f:
+def generate_merch_fixed_items(merch_json_file, merch_id):
+    list_new_item = []
+    with open(merch_json_file) as f:
         data = json.load(f)
 
     items_of_merch = data.get(f"DesignDataMerchant:{merch_id}", None)
 
     if items_of_merch:
         for item_merch in items_of_merch:
-            if item_merch["itemId"] == fixed_item:
-                newItem.itemId = item_merch["itemId"]
-                newItem.itemCount = int(item_merch.get("itemCount"))
-    return newItem
+            newItem = item.SItem()
+            newItem.itemId = item_merch["itemId"]
+            newItem.itemCount = int(item_merch.get("itemCount"))
+            propertiesArray = item_merch.get("primaryPropertyArray", [])
+            if propertiesArray and len(propertiesArray) > 1:
+                for property in item_merch["primaryPropertyArray"]:
+                    itemProperty = item.SItemProperty()
+                    itemProperty.propertyTypeId = property["propertyTypeId"]
+                    itemProperty.propertyValue = property["propertyValue"]
+                    newItem.primaryPropertyArray.append(itemProperty)
+            propertiesArray = item_merch.get("secondaryPropertyArray", [])
+            if propertiesArray and len(propertiesArray) > 1:
+                for property in item_merch["secondaryPropertyArray"]:
+                    itemProperty = item.SItemProperty()
+                    itemProperty.propertyTypeId = property["propertyTypeId"]
+                    itemProperty.propertyValue = property["propertyValue"]
+                    newItem.secondaryPropertyArray.append(itemProperty)
+
+            list_new_item.append(newItem)
+    return list_new_item
+
 
 def generate_reckless():
     skills = item.SSkill()
