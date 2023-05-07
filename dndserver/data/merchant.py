@@ -125,19 +125,28 @@ fixed_items = {
     ],
     MerchantClass.SANTA: [],
     MerchantClass.WOODSMAN: [
-        ("DesignDataItem:Id_Item_Pickaxe_2001", 1, 3), ("DesignDataItem:Id_Item_ThrowingKnife_1001", 3, 3),
+        ("DesignDataItem:Id_Item_Arrow_0001", 15, 3), ("DesignDataItem:Id_Item_Bolt_0001", 15, 3),
         ("DesignDataItem:Id_Item_FranciscaAxe_1001", 3, 3), ("DesignDataItem:Id_Item_CampfireKit_1001", 1, 3),
-        ("DesignDataItem:Id_Item_CampfireKit_2001", 1, 3), ("DesignDataItem:Id_Item_HuntingTrap_1001", 1, 3),
-        ("DesignDataItem:Id_Item_Torch", 1, 3), ("DesignDataItem:Id_Item_Bolt_0001", 15, 3),
-        ("DesignDataItem:Id_Item_Arrow_0001", 15, 3)
+        ("DesignDataItem:Id_Item_HuntingTrap_1001", 1, 3), ("DesignDataItem:Id_Item_Torch", 1, 3),
+        ("DesignDataItem:Id_Item_ThrowingKnife_1001", 3, 3), ("DesignDataItem:Id_Item_CampfireKit_2001", 1, 3),
+        ("DesignDataItem:Id_Item_Pickaxe_2001", 1, 3)
     ],
     MerchantClass.TAILOR: [],
-    MerchantClass.TREASURER: [],
+    MerchantClass.TREASURER: [
+        ("DesignDataItem:Id_Item_GoldCoinPurse", 1, 3), ("DesignDataItem:Id_Item_GoldCoinChest", 1, 3)
+    ],
     MerchantClass.LEATHERSMITH: [],
     MerchantClass.ARMOURER: [],
     MerchantClass.THECOLLECTOR: [],
-    MerchantClass.ALCHEMIST: [],
-    MerchantClass.TAVERNMASTER: [],
+    MerchantClass.ALCHEMIST: [
+        ("DesignDataItem:Id_Item_HealingPotion_1001", 1, 3), ("DesignDataItem:Id_Item_HealingPotion_2001", 1, 3),
+        ("DesignDataItem:Id_Item_HealingPotion_1001", 3, 3), ("DesignDataItem:Id_Item_HealingPotion_2001", 3, 3),
+        ("DesignDataItem:Id_Item_ProtectionPotion_2001", 3, 3), ("DesignDataItem:Id_Item_ClarityPotion_2001", 3, 3)
+    ],
+    MerchantClass.TAVERNMASTER: [
+        ("DesignDataItem:Id_Item_Ale_1001", 1, 3), ("DesignDataItem:Id_Item_Ale_2001", 1, 3),
+        ("DesignDataItem:Id_Item_Ale_3001", 1, 3)
+    ],
     MerchantClass.WEAPONSMITH: [],
     MerchantClass.GOBLINMERCHANT: [],
     MerchantClass.VALENTINE: [],
