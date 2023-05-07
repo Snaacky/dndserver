@@ -1,18 +1,16 @@
 import random
 
-from dndserver import objects
 from dndserver.data import perks as pk
 from dndserver.data import skills as sk
 from dndserver.database import db
 from dndserver.enums.classes import CharacterClass, Gender
-from dndserver.handlers import inventory
+from dndserver.handlers import inventory, merchant
 from dndserver.models import Character, Item, ItemAttribute
 from dndserver.persistent import sessions
 from dndserver.objects import items
 from dndserver.enums.items import ItemType, Rarity, Item as ItemEnum
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos import Item as pItem
-from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Account import (
     SC2S_ACCOUNT_CHARACTER_CREATE_REQ,
     SC2S_ACCOUNT_CHARACTER_DELETE_REQ,
@@ -38,17 +36,19 @@ from dndserver.protos.Item import SCUSTOMIZE_CHARACTER
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 
 
-def item_to_proto_item(item, attributes):
+def item_to_proto_item(item, attributes, for_character=True):
     """Helper function to create a proto item from a database item and attributes"""
     ret = pItem.SItem()
 
     ret.itemUniqueId = item.id
     ret.itemId = item.item_id
     ret.itemCount = item.quantity
-    ret.inventoryId = item.inventory_id
-    ret.slotId = item.slot_id
     ret.itemAmmoCount = item.ammo_count
     ret.itemContentsCount = item.inv_count
+
+    if for_character:
+        ret.inventoryId = item.inventory_id
+        ret.slotId = item.slot_id
 
     for attribute in attributes:
         property = pItem.SItemProperty(propertyTypeId=attribute.property, propertyValue=attribute.value)
@@ -174,6 +174,9 @@ def delete_character(ctx, msg):
     if query.account_id != sessions[ctx.transport].account.id:
         res.result = pc.FAIL_GENERAL
         return res
+
+    # delete all the merchants and items they have
+    merchant.delete_merchants(query.id)
 
     # also delete all the items this character has
     items = db.query(Item).filter_by(character_id=req.characterId)

@@ -10,12 +10,15 @@ from dndserver.protos.Inventory import (
 )
 
 
-def get_all_items(character_id, inventory_id=None):
+def get_all_items(character_id, inventory_id=None, slot_id=None):
     """Helper function to get all items for a character id"""
     query = db.query(Item).filter_by(character_id=character_id)
 
     if inventory_id is not None:
-        query.filter_by(inventory_id=inventory_id)
+        query = query.filter_by(inventory_id=inventory_id)
+
+    if slot_id is not None:
+        query = query.filter_by(slot_id=slot_id)
 
     ret = list()
 
@@ -38,7 +41,7 @@ def delete_item(character_id, item):
         return False
 
     # delete all the attributes the item has
-    attributes = db.query(ItemAttribute).filter_by(item_id=item.itemId).all()
+    attributes = db.query(ItemAttribute).filter_by(item_id=query.id).all()
     for attribute in attributes:
         attribute.delete()
 
