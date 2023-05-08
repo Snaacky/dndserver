@@ -355,7 +355,7 @@ def move_spell(ctx, msg):
     target_spell = db.query(Spell).filter_by(character_id=char.id).filter_by(spell_id=req.spellId).first()
 
     # check if we should remove the spell from the spell list
-    if req.dstSlotIndex <= 0:
+    if req.dstSlotIndex < 0:
         if target_spell is not None:
             # update the sequence numbers above ourself
             update_spell_sequence(target_spell.sequence_id, char.id)
