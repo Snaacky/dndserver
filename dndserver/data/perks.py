@@ -41,10 +41,10 @@ fighter = [
     "DesignDataPerk:Id_Perk_Barricade",
     "DesignDataPerk:Id_Perk_ComboAttack",
     "DesignDataPerk:Id_Perk_Counterattack",
-    "DesignDataPerk:Id_Perk_DefenseExpert",
+    "DesignDataPerk:Id_Perk_DefenseMastery",
     "DesignDataPerk:Id_Perk_DualWield",
     "DesignDataPerk:Id_Perk_ProjectileResistance",
-    "DesignDataPerk:Id_Perk_ShieldExpert",
+    "DesignDataPerk:Id_Perk_ShieldMastery",
     "DesignDataPerk:Id_Perk_Swift",
     "DesignDataPerk:Id_Perk_WeaponMastery",
     "DesignDataPerk:Id_Perk_AdrenalineSpike",
@@ -69,7 +69,7 @@ rogue = [
     "DesignDataPerk:Id_Perk_Ambush",
     "DesignDataPerk:Id_Perk_BackAttack",
     "DesignDataPerk:Id_Perk_Creep",
-    "DesignDataPerk:Id_Perk_DaggerExpert",
+    "DesignDataPerk:Id_Perk_DaggerMastery",
     "DesignDataPerk:Id_Perk_HiddenPocket",
     "DesignDataPerk:Id_Perk_LockpickingMastery",
     "DesignDataPerk:Id_Perk_Pickpocket",
@@ -106,7 +106,7 @@ perks = {
 
 # Other items. Not used at the moment.
 # DesignDataPerk:Id_Perk_Tracking
-# DesignDataPerk:Id_Perk_DaggerMastery
+# DesignDataPerk:Id_Perk_DaggerExpert
 # DesignDataPerk:Id_Perk_LockpickSet
 # DesignDataPerk:Id_Perk_Backstab
 # DesignDataPerk:Id_Perk_TwoHandedWeaponExpert
@@ -114,7 +114,7 @@ perks = {
 # DesignDataPerk:Id_Perk_Toughness
 # DesignDataPerk:Id_Perk_Smash
 # DesignDataPerk:Id_Perk_RangedWeaponsExpert
-# DesignDataPerk:Id_Perk_ShieldMastery
-# DesignDataPerk:Id_Perk_DefenseMastery
+# DesignDataPerk:Id_Perk_ShieldExpert
+# DesignDataPerk:Id_Perk_DefenseExpert
 # DesignDataPerk:Id_Perk_SurvivalistTongue
 # DesignDataPerk:Id_Perk_TrapExpert
