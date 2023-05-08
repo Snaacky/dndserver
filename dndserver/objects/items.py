@@ -98,6 +98,12 @@ def generate_random_item(merch_id, amount):
     elif merch_id == MerchantClass.LEATHERSMITH:
         item_type = ItemType.ARMORS
         material = Material.LEATHER
+    elif merch_id == MerchantClass.TAILOR:
+        item_type = ItemType.ARMORS
+        material = Material.CLOTH
+    elif merch_id == MerchantClass.GOBLINMERCHANT:
+        item_type = ItemType.ARMORS
+        material = Material.LEATHER
     else:
         return ret
     

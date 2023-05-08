@@ -117,7 +117,7 @@ buy_mapping = {
     ],
 }
 
-####
+
 fixed_items = {
     MerchantClass.SURGEON: [
         ("DesignDataItem:Id_Item_Bandage_0001", 1, 3), ("DesignDataItem:Id_Item_Bandage_2001", 1, 3),
@@ -133,7 +133,8 @@ fixed_items = {
     ],
     MerchantClass.TAILOR: [],
     MerchantClass.TREASURER: [
-        ("DesignDataItem:Id_Item_GoldCoinPurse", 1, 3), ("DesignDataItem:Id_Item_GoldCoinChest", 1, 3)
+        ("DesignDataItem:Id_Item_GoldCoins", 1, 50), ("DesignDataItem:Id_Item_GoldCoins", 5, 50),
+        ("DesignDataItem:Id_Item_GoldCoins", 10, 50), ("DesignDataItem:Id_Item_GoldCoinPurse", 1, 50)
     ],
     MerchantClass.LEATHERSMITH: [],
     MerchantClass.ARMOURER: [],
@@ -141,7 +142,7 @@ fixed_items = {
     MerchantClass.ALCHEMIST: [
         ("DesignDataItem:Id_Item_HealingPotion_1001", 1, 3), ("DesignDataItem:Id_Item_HealingPotion_2001", 1, 3),
         ("DesignDataItem:Id_Item_HealingPotion_1001", 3, 3), ("DesignDataItem:Id_Item_HealingPotion_2001", 3, 3),
-        ("DesignDataItem:Id_Item_ProtectionPotion_2001", 3, 3), ("DesignDataItem:Id_Item_ClarityPotion_2001", 3, 3)
+        ("DesignDataItem:Id_Item_ProtectionPotion_1001", 1, 3), ("DesignDataItem:Id_Item_ClarityPotion_1001", 1, 3)
     ],
     MerchantClass.TAVERNMASTER: [
         ("DesignDataItem:Id_Item_Ale_1001", 1, 3), ("DesignDataItem:Id_Item_Ale_2001", 1, 3),
