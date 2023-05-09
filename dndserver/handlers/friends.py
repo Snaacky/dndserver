@@ -6,7 +6,8 @@ from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.models import BlockedUser, Character
 from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
-from dndserver.protos.Character import SACCOUNT_NICKNAME, SBLOCK_CHARACTER, SCHARACTER_FRIEND_INFO
+from dndserver.protos.Defines import Define_Common
+from dndserver.protos.Character import SACCOUNT_NICKNAME, SBLOCK_CHARACTER, SCHARACTER_FRIEND_INFO, Friend_Location
 from dndserver.protos.Common import (
     SC2S_BLOCK_CHARACTER_LIST_REQ,
     SC2S_BLOCK_CHARACTER_REQ,
@@ -17,6 +18,7 @@ from dndserver.protos.Common import (
 )
 from dndserver.protos.Friend import SC2S_FRIEND_FIND_REQ, SS2C_FRIEND_FIND_RES, SS2C_FRIEND_LIST_ALL_RES
 from dndserver.utils import get_user
+from dndserver.handlers.party import get_party
 
 
 def list_friends(ctx, msg):
@@ -63,6 +65,16 @@ def find_user(ctx, msg):
 
     _, session = get_user(nickname=req.nickName.originalNickName)
     if session:
+        # get information about the account we are requesting
+        party = get_party(account_id=sessions[ctx.transport].account.id)
+        is_solo = len(party.players) <= 1
+        location = (
+            Friend_Location.Friend_Location_DUNGEON
+            if session.state.location == Define_Common.MetaLocation.INGAME
+            else Friend_Location.Friend_Location_LOBBY
+        )
+
+        # add the friend info
         friend = SCHARACTER_FRIEND_INFO(
             accountId=str(session.account.id),
             nickName=SACCOUNT_NICKNAME(
@@ -73,9 +85,9 @@ def find_user(ctx, msg):
             characterId=str(session.character.id),
             gender=Gender(session.character.gender).value,
             level=session.character.level,
-            locationStatus=1,  # TODO: Remove the hardcoding from these bottom 3.
-            PartyMemeberCount=1,
-            PartyMaxMemeberCount=3,
+            locationStatus=location,
+            PartyMemeberCount=len(party.players) if not is_solo else 0,
+            PartyMaxMemeberCount=3 if not is_solo else 0,
         )
         res.friendInfo.CopyFrom(friend)
 
