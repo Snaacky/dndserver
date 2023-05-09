@@ -16,6 +16,8 @@ from dndserver.protos.Party import (
     SS2C_PARTY_INVITE_NOT,
     SS2C_PARTY_INVITE_RES,
     SS2C_PARTY_MEMBER_INFO_NOT,
+    SC2S_PARTY_READY_REQ,
+    SS2C_PARTY_READY_RES,
 )
 from dndserver.utils import get_party, get_user, make_header
 
@@ -102,7 +104,7 @@ def send_party_info_notification(party):
         info.gender = Gender(user.character.gender).value
         info.level = user.character.level
         info.isPartyLeader = True if party.leader == user else False
-        info.isReady = 0  # TODO: Need to unhardcode these 2
+        info.isReady = user.state.is_ready
         info.isInGame = 0
 
         for item, attribute in inventory.get_all_items(user.character.id, Define_Item.InventoryId.EQUIPMENT):
@@ -144,3 +146,18 @@ def leave_party(ctx, msg):
     send_party_info_notification(party)
     send_party_info_notification(new_party)
     return SS2C_PARTY_EXIT_RES(result=pc.SUCCESS)
+
+
+def set_ready_state(ctx, msg):
+    """Occurs when a user presses the ready button in a party."""
+    req = SC2S_PARTY_READY_REQ()
+    req.ParseFromString(msg)
+
+    # change the state of the user
+    sessions[ctx.transport].state.is_ready = req.isReady
+
+    # notify the party with the change to the ready state
+    party = get_party(account_id=sessions[ctx.transport].account.id)
+    send_party_info_notification(party)
+
+    return SS2C_PARTY_READY_RES(result=pc.SUCCESS)
