@@ -76,7 +76,6 @@ def item_parser(item_values, inventoryId, slotId, item_count):
     return newItem
 
 
-####
 def generate_random_item(merch_id, amount):
     ret = []
 
@@ -110,8 +109,8 @@ def generate_random_item(merch_id, amount):
     items = hItem.random_item_list(item_type, material.value, amount)
     for i in items:
         ret.append((item_parser(i, 1, 1, 1), 1))
-
-    return ret
+    sorted_ret = sorted(ret, key=lambda x: sum([int(c) for c in x[0].itemId if c.isdigit()]))
+    return sorted_ret
 
 
 def generate_merch_items(merch_id):
