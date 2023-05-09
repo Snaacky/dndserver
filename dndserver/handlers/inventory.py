@@ -12,7 +12,7 @@ from dndserver.protos.Inventory import (
 
 def get_all_items(character_id, inventory_id=None, slot_id=None):
     """Helper function to get all items for a character id"""
-    query = db.query(Item).filter_by(character_id=character_id)
+    query = db.query(Item).filter_by(character_id=character_id).filter_by(index=0)
 
     if inventory_id is not None:
         query = query.filter_by(inventory_id=inventory_id)
@@ -96,7 +96,13 @@ def move_item(ctx, msg):
     char_query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
 
     # get the current item in the database
-    item_query = db.query(Item).filter_by(character_id=char_query.id).filter_by(id=req.srcInfo.uniqueId).first()
+    item_query = (
+        db.query(Item)
+        .filter_by(character_id=char_query.id)
+        .filter_by(id=req.srcInfo.uniqueId)
+        .filter_by(index=0)
+        .first()
+    )
 
     if item_query is not None:
         item_query.inventory_id = req.dstInventoryId
@@ -119,7 +125,13 @@ def move_single_item(ctx, msg):
 
     for old, new in zip(list(req.oldItem), list(req.newItem)):
         # get the current item in the database
-        old_query = db.query(Item).filter_by(character_id=character.id).filter_by(id=old.itemUniqueId).first()
+        old_query = (
+            db.query(Item)
+            .filter_by(character_id=character.id)
+            .filter_by(id=old.itemUniqueId)
+            .filter_by(index=0)
+            .first()
+        )
 
         # check if we have the item in the database
         if old_query is None:
@@ -134,7 +146,13 @@ def move_single_item(ctx, msg):
             continue
 
         # Not a simple move, search for the item we are updating to
-        new_query = db.query(Item).filter_by(character_id=character.id).filter_by(id=new.itemUniqueId).first()
+        new_query = (
+            db.query(Item)
+            .filter_by(character_id=character.id)
+            .filter_by(id=new.itemUniqueId)
+            .filter_by(index=0)
+            .first()
+        )
 
         # check if we have both items in the database
         if new_query is None:
