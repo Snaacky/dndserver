@@ -1,10 +1,9 @@
 import arrow
-import re
 
 from dndserver.database import db
 from dndserver.data import merchant as MerchantData
 from dndserver.enums.classes import MerchantClass
-from dndserver.models import Merchant, MerchantItem, MerchantItemAttribute, ItemAttribute, Item
+from dndserver.models import Merchant, ItemAttribute, Item
 from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Defines import Define_Message
@@ -26,11 +25,11 @@ from dndserver.handlers import character, inventory
 
 def delete_items_merchant(merchant_id):
     """Helper function to delete all items a merchant has"""
-    items = db.query(MerchantItem).filter_by(merchant_id=merchant_id).all()
+    items = db.query(Item).filter_by(merchant_id=merchant_id).all()
 
     for item in items:
         # get the attributes for the item
-        attributes = db.query(MerchantItemAttribute).filter_by(item_id=item.id).all()
+        attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
 
         for attribute in attributes:
             attribute.delete()
@@ -110,9 +109,10 @@ def db_create_merchant(character_id, merchant_class, refresh_time):
     merchant.save()
 
 
-def db_create_merchant_item(merchant_id, item, index, remaining):
+def db_create_merchant_item(merchant_id, item, index, remaining, character_id):
     """Creates a database entry for the merchant with item attributes and the amount remaining"""
-    it = MerchantItem()
+    it = Item()
+    it.character_id = character_id
     it.merchant_id = merchant_id
     it.remaining = remaining
     it.index = index
@@ -127,7 +127,7 @@ def db_create_merchant_item(merchant_id, item, index, remaining):
 
     # add the attributes to the items
     for attribute in item.primaryPropertyArray:
-        attr = MerchantItemAttribute()
+        attr = ItemAttribute()
         attr.item_id = it.id
         attr.primary = True
         attr.property = attribute.propertyTypeId
@@ -136,7 +136,7 @@ def db_create_merchant_item(merchant_id, item, index, remaining):
         attr.save()
 
     for attribute in item.secondaryPropertyArray:
-        attr = MerchantItemAttribute()
+        attr = ItemAttribute()
         attr.item_id = it.id
         attr.primary = False
         attr.property = attribute.propertyTypeId
@@ -145,7 +145,7 @@ def db_create_merchant_item(merchant_id, item, index, remaining):
         attr.save()
 
 
-def generate_items_merchant(merchant, merchant_id):
+def generate_items_merchant(merchant, merchant_id, character_id):
     """Helper to generate items for a merchant"""
     items = ObjItems.generate_merch_items(merchant)
     # get the stock index map for the current merchant (never add 2 items within the
@@ -157,53 +157,20 @@ def generate_items_merchant(merchant, merchant_id):
     # the index to the first stock id. Prices are determined from the stock id.
     for (index, variations), (item, remaining) in zip(merchant_map, items):
         # create the default items for every merchant
-        db_create_merchant_item(merchant_id, item, index, remaining)
+        db_create_merchant_item(merchant_id, item, index, remaining, character_id)
 
 
-def add_to_inventory_merchant(trade_id, info, character_id):
+def add_to_inventory_merchant(unique_id, info, character_id):
     """Helper function to add a bought item to the inventory of the character"""
-    # get the item from the database. Get the unique id is always 0. Check what item we
-    # got by getting the merchant id and the index from the trade id
-    index = int(re.sub("\\D", "", trade_id)) - 1
-    re_merchant = re.search(".*Id_StockBuy_(.*?)_.*", trade_id)
-
-    # make sure we have a valid regex
-    if re_merchant is None or index < 0:
-        return False
-
-    # get the merchant from the name
-    merchant = (
-        db.query(Merchant)
-        .filter_by(
-            character_id=character_id, merchant=MerchantClass("DesignDataMerchant:Id_Merchant_" + re_merchant.group(1))
-        )
-        .first()
-    )
-
-    if merchant is None:
-        return False
-
-    # remap the the index to a stock index
-    stock_index = MerchantData.buy_mapping[merchant.merchant][index]
-
-    # get the selected item. Search the whole stock index range. We can only have 1 item at
-    # the time with the same index so no need to search for a specific index
-    item = (
-        db.query(MerchantItem)
-        .filter_by(merchant_id=merchant.id)
-        .filter(MerchantItem.index.between(stock_index[0], stock_index[0] + (stock_index[1] - 1)))
-        .first()
-    )
+    # get the selected item from the database
+    item = db.query(Item).filter_by(character_id=character_id).filter_by(index=unique_id).first()
 
     # check if we have the item
     if item is None or item.remaining == 0:
         return False
 
-    # check if we have a item at that position already.
-    item_at_location = inventory.get_all_items(character_id, info.inventoryId, info.slotId)
-
-    # check if we have a item at the location
-    if len(item_at_location) == 0:
+    # check if we need to merge or create a new item
+    if info.itemUniqueId == 0:
         # create a new item for the user. Copy the item from the db to the
         it = Item()
         it.item_id = item.item_id
@@ -218,7 +185,7 @@ def add_to_inventory_merchant(trade_id, info, character_id):
         it.save()
 
         # get all the attributes the item has
-        attributes = db.query(MerchantItemAttribute).filter_by(item_id=item.id).all()
+        attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
         for attribute in attributes:
             attr = ItemAttribute()
             attr.item_id = it.id
@@ -228,8 +195,8 @@ def add_to_inventory_merchant(trade_id, info, character_id):
 
             attr.save()
     else:
-        # get the item at the location
-        it = db.query(Item).filter_by(id=item_at_location[0][0].id).first()
+        # we need to merge. Add to the count of the item
+        it = db.query(Item).filter_by(id=info.itemUniqueId).first()
 
         # increment the item with the item count
         it.quantity += item.quantity
@@ -294,23 +261,21 @@ def get_buy_list(ctx, msg):
         )
     )
 
+    char = sessions[ctx.transport].character
+
     # search for the trader we have selected
-    merchant = (
-        db.query(Merchant)
-        .filter_by(character_id=sessions[ctx.transport].character.id, merchant=MerchantClass(req.merchantId))
-        .first()
-    )
+    merchant = db.query(Merchant).filter_by(character_id=char.id, merchant=MerchantClass(req.merchantId)).first()
 
     # get all the item this merchant is selling
-    items = db.query(MerchantItem).filter_by(merchant_id=merchant.id).all()
+    items = db.query(Item).filter_by(merchant_id=merchant.id).all()
 
     # check if we have any items to show. If we dont we regenerate them
     if len(items) == 0:
         # we have no items regenerate them
-        generate_items_merchant(merchant.merchant, merchant.id)
+        generate_items_merchant(merchant.merchant, merchant.id, char.id)
 
         # requery the items to fetch all the new items
-        items = db.query(MerchantItem).filter_by(merchant_id=merchant.id).all()
+        items = db.query(Item).filter_by(merchant_id=merchant.id).all()
 
     res = SS2C_MERCHANT_STOCK_BUY_ITEM_LIST_RES()
     res.result = pc.SUCCESS
@@ -322,7 +287,7 @@ def get_buy_list(ctx, msg):
             continue
 
         # get the attributes for the item
-        attributes = db.query(MerchantItemAttribute).filter_by(item_id=item.id).all()
+        attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
 
         res.stockList.append(
             SMERCHANT_STOCK_BUY_ITEM_INFO(
@@ -372,7 +337,7 @@ def buy_item(ctx, msg):
 
     # add the new items to the inventory
     for info in req.merchantSlotInfo:
-        add_to_inventory_merchant(req.tradeId, info, sessions[ctx.transport].character.id)
+        add_to_inventory_merchant(req.stockUniqueId, info, sessions[ctx.transport].character.id)
 
     # send the final stage
     ctx.reply(SS2C_MERCHANT_STOCK_BUY_RES(result=pc.SUCCESS))
