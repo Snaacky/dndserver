@@ -125,7 +125,7 @@ fixed_items = {
     ],
     MerchantClass.SANTA: [],
     MerchantClass.WOODSMAN: [
-        ("DesignDataItem:Id_Item_Arrow_0001", 15, 5), ("DesignDataItem:Id_Item_Bolt_0001", 15, 5),
+        ("DesignDataItem:Id_Item_Arrow_0001", 15, 50), ("DesignDataItem:Id_Item_Bolt_0001", 15, 50),
         ("DesignDataItem:Id_Item_FranciscaAxe_1001", 3, 3), ("DesignDataItem:Id_Item_CampfireKit_1001", 1, 3),
         ("DesignDataItem:Id_Item_ThrowingKnife_1001", 3, 3), ("DesignDataItem:Id_Item_HuntingTrap_1001", 1, 3),
         ("DesignDataItem:Id_Item_Pickaxe_2001", 1, 3)
