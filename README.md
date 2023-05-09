@@ -26,23 +26,26 @@ Dark and Darker private server implementation written in Python.
 ## Install
 
 ### Bare metal
-- `git clone git@github.com:Snaacky/dndserver.git`
-- `cd dndserver`
-- `poetry install`
-- `poetry shell`
-- `alembic upgrade head` 
-- `python -m dndserver.server`
-- Add `-server=dcweb.pages.dev:80` to your game's launch options.
+```
+$ git clone git@github.com:Snaacky/dndserver.git
+$ cd dndserver
+$ poetry install
+$ poetry shell
+$ alembic upgrade head
+$ python -m dndserver.server
+```
 
 ### Docker
-* `wget https://raw.githubusercontent.com/Snaacky/dndserver/master/docker-compose.yml`
-* `mkdir config && cd config`
-* `wget https://raw.githubusercontent.com/Snaacky/dndserver/master/config.example.yml -O config.yml`
-* `touch dndserver.db`
-* `cd ..`
-* `docker-compose up -d`
-* `docker exec -it dndserver alembic upgrade head`
-* `docker restart dndserver`
+```
+$ wget https://raw.githubusercontent.com/Snaacky/dndserver/master/docker-compose.yml
+$ mkdir config && cd config
+$ wget https://raw.githubusercontent.com/Snaacky/dndserver/master/config.example.yml -O config.yml
+$ touch dndserver.db
+$ cd ..
+$ docker-compose up -d
+$ docker exec -it dndserver alembic upgrade head
+$ docker restart dndserver
+```
 
 ## Web server
 Before the game client connects to the TCP lobby server, it first connects to an HTTP discovery server specified in the game's launch options using the `-server=address:port` schema to get the lobby server address to connect to. We are hosting an HTTP discovery server at `dcweb.pages.dev:80` to redirect your client traffic to `127.0.0.1` without having to host your own web server.
