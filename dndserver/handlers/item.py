@@ -90,7 +90,7 @@ def random_item_list(type, material, how_many):
 
 
 # This function produce in a proper way the rarity for gear
-# gray = 50%; white = 35%; green = 24.50%; blue = 17.15%; purple = 12%;
+# gray = 45%; white = 35%; green = 24.50%; blue = 15.50%; purple = 8%;
 def random_rarity(list_of_rarity):
     list_of_rarity = list(list_of_rarity)
     length = len(list_of_rarity)
@@ -101,7 +101,7 @@ def random_rarity(list_of_rarity):
     elif length == 1:
         return list_of_rarity[0]
 
-    list_of_chance = [50, 35, 24.5, 17.5, 12]
+    list_of_chance = [45, 35, 24.5, 15.5, 8]
     return random.choices(list_of_rarity[1:-2], list_of_chance, k=1)[0]
 
 
