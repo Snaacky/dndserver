@@ -79,7 +79,7 @@ def item_parser(item_values, inventoryId, slotId, item_count):
 ####
 def generate_random_item(merch_id, amount):
     ret = []
-    
+
     if merch_id == MerchantClass.ARMOURER:
         item_type = ItemType.ARMORS
         material = Material.PLATE
@@ -106,11 +106,11 @@ def generate_random_item(merch_id, amount):
         material = Material.LEATHER
     else:
         return ret
-    
+
     items = hItem.random_item_list(item_type, material.value, amount)
     for i in items:
         ret.append((item_parser(i, 1, 1, 1), 1))
-    
+
     return ret
 
 
