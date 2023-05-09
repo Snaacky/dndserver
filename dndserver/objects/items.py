@@ -109,7 +109,7 @@ def generate_random_item(merch_id, amount):
     items = hItem.random_item_list(item_type, material.value, amount)
     for i in items:
         ret.append((item_parser(i, 1, 1, 1), 1))
-    sorted_ret = sorted(ret, key=lambda x: sum([int(c) for c in x[0].itemId if c.isdigit()]))
+    sorted_ret = sorted(ret, key=lambda x: sum([int(c) for c in x[0].itemId[-4:] if c.isdigit()]))
     return sorted_ret
 
 
