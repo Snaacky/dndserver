@@ -49,17 +49,6 @@ class Character(base):
     skill0 = Column(String, default="")
     skill1 = Column(String, default="")
 
-    spell0 = Column(String, default="")
-    spell1 = Column(String, default="")
-    spell2 = Column(String, default="")
-    spell3 = Column(String, default="")
-    spell4 = Column(String, default="")
-    spell5 = Column(String, default="")
-    spell6 = Column(String, default="")
-    spell7 = Column(String, default="")
-    spell8 = Column(String, default="")
-    spell9 = Column(String, default="")
-
     ranking_coin = Column(Integer, default=0)
     ranking_kill = Column(Integer, default=0)
     ranking_escape = Column(Integer, default=0)
@@ -67,6 +56,24 @@ class Character(base):
     ranking_lich = Column(Integer, default=0)
     ranking_ghostking = Column(Integer, default=0)
     # TODO: store all logins in a database and grab the latest from that
+
+    def save(self):
+        db.add(self)
+        db.commit()
+
+    def delete(self):
+        db.delete(self)
+        db.commit()
+
+
+class Spell(base):
+    __tablename__ = "spells"
+
+    id = Column(Integer, primary_key=True, autoincrement="auto")
+    character_id = Column(Integer)
+    spell_id = Column(String, default="")
+    slot_id = Column(Integer)
+    sequence_id = Column(Integer)
 
     def save(self):
         db.add(self)
