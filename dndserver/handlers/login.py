@@ -40,8 +40,9 @@ def process_login(ctx, msg):
         # TODO: Create new hwid objects and save them to the db here
         res.secretToken = account.secret_token
 
-    # update_logins_by_account(account.id)
-    add_login(account.id)
+    # # add a new login
+    login = Login(account_id=account.id, login_time=arrow.utcnow())
+    login.save()
 
     # Return FAIL_PASSWORD on invalid password.
     try:
@@ -73,9 +74,3 @@ def kick_concurrent_user(newly_connected_account):
         if user.account == newly_connected_account:
             transport.loseConnection()
             break
-
-
-# add a new login
-def add_login(account_id):
-    login = Login(account_id=account_id, login_time=arrow.utcnow())
-    login.save()

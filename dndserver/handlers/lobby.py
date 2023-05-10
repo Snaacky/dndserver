@@ -28,15 +28,10 @@ def enter_lobby(ctx, msg):
 
     sessions[ctx.transport].character = query
 
-    # update the last login time of the character
+    # update the last login time of the character and Login table
     query.last_login = arrow.utcnow()
     q_login = Login(account_id=query.account_id, login_time=arrow.utcnow(), character_id=query.id)
     q_login.save()
-
-    # update character table with the last_login chararacter date
-    login_char = db.query(Character).filter(Character.id.ilike(query.id)).first()
-    login_char.last_login = arrow.utcnow()
-    login_char.save()
 
     party = Party(player_1=sessions[ctx.transport])
     sessions[ctx.transport].party = party
