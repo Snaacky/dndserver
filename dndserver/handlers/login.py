@@ -75,7 +75,7 @@ def kick_concurrent_user(newly_connected_account):
             break
 
 
+# add a new login
 def add_login(account_id):
     login = Login(account_id=account_id, login_time=arrow.utcnow())
-    db.add(login)
-    db.commit()
+    login.save()

@@ -1,6 +1,5 @@
 import random
 import arrow
-from sqlalchemy import update
 
 from dndserver.data import perks as pk
 from dndserver.data import skills as sk
@@ -8,7 +7,7 @@ from dndserver.data import spells as sp
 from dndserver.database import db
 from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.handlers import inventory
-from dndserver.models import Character, Item, ItemAttribute, Spell, Login
+from dndserver.models import Character, Item, ItemAttribute, Login, Spell
 from dndserver.persistent import sessions
 from dndserver.objects import items
 from dndserver.enums.items import ItemType, Rarity, Item as ItemEnum
@@ -227,12 +226,15 @@ def character_info(ctx, msg):
     )
 
     # update character table with the last_login chararacter date
-    q_update = update(Character).values(last_login=arrow.utcnow()).where(Character.id == character.id)
-    db.execute(q_update)
+    login_char = db.query(Character).filter(Character.id.ilike(character.id)).first()
+    login_char.last_login = arrow.utcnow()
+    login_char.save()
 
     # update login table with account_id and character_id date
-    q_login = Login(account_id=character.account_id, login_time=arrow.utcnow(), character_id=character.id)
-    Login.save(q_login)
+    # login_account = db.query(Login).filter(Login.account_id.ilike(character.account_id)).first()
+    # login_account.character_id = character.id
+    # login_account.login_time = arrow.utcnow()
+    # login_account.save()
 
     # get all the items and attributes of the character
     for item, attributes in inventory.get_all_items(character.id):
@@ -241,6 +243,12 @@ def character_info(ctx, msg):
     res = SS2C_LOBBY_CHARACTER_INFO_RES(result=pc.SUCCESS, characterDataBase=char_info)
 
     return res
+
+
+# update login table with account_id and character_id date
+def update_login(account_id, character_id):
+    q_login = Login(account_id=account_id, login_time=arrow.utcnow(), character_id=character_id)
+    q_login.save()
 
 
 def get_experience(ctx, msg):
@@ -254,6 +262,8 @@ def get_experience(ctx, msg):
 
     # 1 - 4 = 40 exp, 5 - 9 = 60 exp, 10 - 14 = 80 exp, 15 - 19 = 100
     res.expLimit = 40 + (int(character.level / 5) * 20)
+
+    update_login(character.account_id, character.id)
 
     return res
 
