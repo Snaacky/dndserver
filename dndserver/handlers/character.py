@@ -8,7 +8,7 @@ from dndserver.data import spells as sp
 from dndserver.database import db
 from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.handlers import inventory
-from dndserver.models import Character, Item, ItemAttribute, Spell
+from dndserver.models import Character, Item, ItemAttribute, Spell, Login
 from dndserver.persistent import sessions
 from dndserver.objects import items
 from dndserver.enums.items import ItemType, Rarity, Item as ItemEnum
@@ -211,6 +211,18 @@ def customise_character_info(ctx, msg):
     return res
 
 
+def update_last_login(character_id):
+    update_query = update(Character).values(last_login=arrow.utcnow()).where(Character.id == character_id)
+    db.execute(update_query)
+    db.commit()
+
+
+def add_login_character(account_id, character_id):
+    login = Login(account_id=account_id, login_time=arrow.utcnow(), character_id=character_id)
+    db.add(login)
+    db.commit()
+
+
 def character_info(ctx, msg):
     """Occurs when the user loads into the lobby/tavern."""
     character = sessions[ctx.transport].character
@@ -226,9 +238,11 @@ def character_info(ctx, msg):
         level=character.level,
     )
 
-    # update the last_login column
-    update_query = update(Character).values(last_login=arrow.utcnow()).where(Character.id == character.id)
-    db.execute(update_query)
+    # update character table with the last_login of a chararacter
+    update_last_login(character.id)
+
+    # update login table with account_id and character_id
+    add_login_character(character.account_id, character.id)
 
     # get all the items and attributes of the character
     for item, attributes in inventory.get_all_items(character.id):

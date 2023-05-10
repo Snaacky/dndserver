@@ -1,6 +1,7 @@
 import arrow
-from sqlalchemy import Column
+from sqlalchemy import Column, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 from sqlalchemy.types import Boolean, Enum, Integer, String, Text
 from sqlalchemy_utils import ArrowType
 
@@ -10,6 +11,20 @@ from dndserver.enums.classes import CharacterClass, Gender
 
 
 base = declarative_base()
+
+
+class Login(base):
+    __tablename__ = "logins"
+
+    id = Column(Integer, primary_key=True, autoincrement="auto")
+    account_id = Column(Integer, ForeignKey('accounts.id'), nullable=False)
+    character_id = Column(Integer, ForeignKey('characters.id'), nullable=True)
+    login_time = Column(ArrowType, default=arrow.utcnow())
+    account = relationship("Account", backref="logins")
+
+    def save(self):
+        db.add(self)
+        db.commit()
 
 
 class Account(base):
@@ -41,6 +56,7 @@ class Character(base):
     karma_rating = Column(Integer, default=0)
     streaming_nickname = Column(String(15))
     last_login = Column(ArrowType, default=arrow.utcnow())
+    # TODO: store all logins in a database and grab the latest from that
 
     perk0 = Column(String, default="")
     perk1 = Column(String, default="")
@@ -56,7 +72,6 @@ class Character(base):
     ranking_adventure = Column(Integer, default=0)
     ranking_lich = Column(Integer, default=0)
     ranking_ghostking = Column(Integer, default=0)
-    # TODO: store all logins in a database and grab the latest from that
 
     def save(self):
         db.add(self)
@@ -179,8 +194,3 @@ class ChatLog(base):
     def delete(self):
         db.delete(self)
         db.commit()
-
-
-# class Login(base):
-#     __tablename__ = "logins"
-#     id = Column(Integer, primary_key=True, autoincrement="auto")

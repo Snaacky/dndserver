@@ -2,9 +2,10 @@ import random
 import string
 
 import argon2
+import arrow
 
 from dndserver.database import db
-from dndserver.models import Account
+from dndserver.models import Account, Login
 from dndserver.persistent import sessions
 from dndserver.protos.Account import SC2S_ACCOUNT_LOGIN_REQ, SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES
 
@@ -39,6 +40,9 @@ def process_login(ctx, msg):
         # TODO: Create new hwid objects and save them to the db here
         res.secretToken = account.secret_token
 
+    # update_logins_by_account(account.id)
+    add_login(account.id)
+
     # Return FAIL_PASSWORD on invalid password.
     try:
         argon2.PasswordHasher().verify(account.password, req.password)
@@ -69,3 +73,9 @@ def kick_concurrent_user(newly_connected_account):
         if user.account == newly_connected_account:
             transport.loseConnection()
             break
+
+
+def add_login(account_id):
+    login = Login(account_id=account_id, login_time=arrow.utcnow())
+    db.add(login)
+    db.commit()
