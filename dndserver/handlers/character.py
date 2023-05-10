@@ -70,8 +70,10 @@ def list_characters(ctx, msg):
     req = SC2S_ACCOUNT_CHARACTER_LIST_REQ()
     req.ParseFromString(msg)
 
-    query = (db.query(Character).
-             filter_by(account_id=sessions[ctx.transport].account.id).order_by(Character.last_login).all())
+    query = (db.query(Character)
+             .filter_by(account_id=sessions[ctx.transport].account.id)
+             .order_by(Character.last_login)
+             .all())
     res = SS2C_ACCOUNT_CHARACTER_LIST_RES(totalCharacterCount=len(query), pageIndex=req.pageIndex)
 
     start = (res.pageIndex - 1) * 7
