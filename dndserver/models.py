@@ -21,6 +21,7 @@ class Login(base):
     character_id = Column(Integer, ForeignKey('characters.id'), nullable=True)
     login_time = Column(ArrowType, default=arrow.utcnow())
     account = relationship("Account", backref="logins")
+    character = relationship("Character", backref="logins")
 
     def save(self):
         db.add(self)

@@ -211,18 +211,6 @@ def customise_character_info(ctx, msg):
     return res
 
 
-def update_last_login(character_id):
-    update_query = update(Character).values(last_login=arrow.utcnow()).where(Character.id == character_id)
-    db.execute(update_query)
-    db.commit()
-
-
-def add_login_character(account_id, character_id):
-    login = Login(account_id=account_id, login_time=arrow.utcnow(), character_id=character_id)
-    db.add(login)
-    db.commit()
-
-
 def character_info(ctx, msg):
     """Occurs when the user loads into the lobby/tavern."""
     character = sessions[ctx.transport].character
@@ -238,11 +226,13 @@ def character_info(ctx, msg):
         level=character.level,
     )
 
-    # update character table with the last_login of a chararacter
-    update_last_login(character.id)
+    # update character table with the last_login chararacter date
+    q_update = update(Character).values(last_login=arrow.utcnow()).where(Character.id == character.id)
+    db.execute(q_update)
 
-    # update login table with account_id and character_id
-    add_login_character(character.account_id, character.id)
+    # update login table with account_id and character_id date
+    q_login = Login(account_id=character.account_id, login_time=arrow.utcnow(), character_id=character.id)
+    Login.save(q_login)
 
     # get all the items and attributes of the character
     for item, attributes in inventory.get_all_items(character.id):

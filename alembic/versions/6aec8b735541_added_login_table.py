@@ -1,8 +1,8 @@
 """added Login table
 
-Revision ID: 6fba7ad19a43
+Revision ID: 6aec8b735541
 Revises: c7772e3df583
-Create Date: 2023-05-10 14:30:35.630972
+Create Date: 2023-05-10 15:47:44.516564
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlalchemy_utils
 
 
 # revision identifiers, used by Alembic.
-revision = "6fba7ad19a43"
+revision = "6aec8b735541"
 down_revision = "c7772e3df583"
 branch_labels = None
 depends_on = None
