@@ -1,4 +1,6 @@
 import random
+import arrow
+from sqlalchemy import update
 
 from dndserver.data import perks as pk
 from dndserver.data import skills as sk
@@ -69,7 +71,8 @@ def list_characters(ctx, msg):
     req = SC2S_ACCOUNT_CHARACTER_LIST_REQ()
     req.ParseFromString(msg)
 
-    query = db.query(Character).filter_by(account_id=sessions[ctx.transport].account.id).all()
+    query = (db.query(Character).
+             filter_by(account_id=sessions[ctx.transport].account.id).order_by(Character.last_login).all())
     res = SS2C_ACCOUNT_CHARACTER_LIST_RES(totalCharacterCount=len(query), pageIndex=req.pageIndex)
 
     start = (res.pageIndex - 1) * 7
@@ -85,7 +88,7 @@ def list_characters(ctx, msg):
             characterClass=CharacterClass(result.character_class).value,
             gender=Gender(result.gender).value,
             createAt=result.created_at.int_timestamp,
-            # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
+            lastloginDate=result.last_login.int_timestamp  # TODO: Need to implement access logs.
         )
 
         for item, attributes in inventory.get_all_items(result.id, Define_Item.InventoryId.EQUIPMENT):
@@ -122,6 +125,7 @@ def create_character(ctx, msg):
         streaming_nickname=f"Fighter#{random.randrange(1000000, 1700000)}",
         gender=Gender(req.gender),
         character_class=char_class,
+        last_login=arrow.utcnow(),
     )
 
     # select the default perks and skills
@@ -221,6 +225,10 @@ def character_info(ctx, msg):
         gender=Gender(character.gender).value,
         level=character.level,
     )
+
+    # update the last_login column
+    update_query = update(Character).values(last_login=arrow.utcnow()).where(Character.id == character.id)
+    db.execute(update_query)
 
     # get all the items and attributes of the character
     for item, attributes in inventory.get_all_items(character.id):
