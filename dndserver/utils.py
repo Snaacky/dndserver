@@ -13,7 +13,7 @@ def make_header(msg: bytes):
 
 def get_user(username: str = None, nickname: str = None, account_id: int = None):
     """Return a user object based on the account username, character nickname or account ID provided."""
-    if not all([username, nickname, account_id]):
+    if not any([username, nickname, account_id]):
         raise Exception("Did not pass username, nickname, or account_id, need at least one")
 
     for transport, session in sessions.items():
