@@ -6,7 +6,7 @@ from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.models import BlockedUser, Character
 from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
-from dndserver.protos.Character import SACCOUNT_NICKNAME, SBLOCK_CHARACTER, SCHARACTER_FRIEND_INFO
+from dndserver.protos.Character import SACCOUNT_NICKNAME, SBLOCK_CHARACTER, SCHARACTER_FRIEND_INFO, Friend_Location
 from dndserver.protos.Common import (
     SC2S_BLOCK_CHARACTER_LIST_REQ,
     SC2S_BLOCK_CHARACTER_REQ,
@@ -15,6 +15,7 @@ from dndserver.protos.Common import (
     SS2C_BLOCK_CHARACTER_RES,
     SS2C_UNBLOCK_CHARACTER_RES,
 )
+from dndserver.protos.Defines import Define_Message
 from dndserver.protos.Friend import SC2S_FRIEND_FIND_REQ, SS2C_FRIEND_FIND_RES, SS2C_FRIEND_LIST_ALL_RES
 from dndserver.utils import get_user
 
@@ -31,18 +32,27 @@ def list_friends(ctx, msg):
     friend_info.characterId = "2"
     friend_info.gender = 2
     friend_info.level = 12
-    friend_info.locationStatus = 2
-    friend_info.PartyMemeberCount = 1
-    friend_info.PartyMaxMemeberCount = 3
+    # TODO: update this based on the status of the account.
+    friend_info.locationStatus = Friend_Location.Friend_Location_LOBBY
 
-    res = SS2C_FRIEND_LIST_ALL_RES()  # message SS2C_FRIEND_LIST_ALL_RES {
-    res.friendInfoList.extend([friend_info])  # repeated .DC.Packet.SCHARACTER_FRIEND_INFO friendInfoList = 1;
-    res.loopFlag = 1  # uint32 loopFlag = 2;
-    res.totalUserCount = 2  # uint32 totalUserCount = 3;
-    res.lobbyLocateCount = 1  # uint32 lobbyLocateCount = 4;
-    res.dungeonLocateCount = 1  # uint32 dungeonLocateCount = 5
+    # Set the member count and max member count to 0 for solo
+    friend_info.PartyMemeberCount = 0
+    friend_info.PartyMaxMemeberCount = 0
 
-    return res
+    # send the loop start
+    ctx.reply(SS2C_FRIEND_LIST_ALL_RES(loopFlag=Define_Message.LoopFlag.BEGIN))
+
+    # send all the friend data
+    res = SS2C_FRIEND_LIST_ALL_RES()
+    res.loopFlag = Define_Message.LoopFlag.PROGRESS
+    res.totalUserCount = len(res.friendInfoList)
+    res.friendInfoList.append(friend_info)
+    ctx.reply(res)
+
+    # send the loop end
+    return SS2C_FRIEND_LIST_ALL_RES(
+        loopFlag=Define_Message.LoopFlag.END, lobbyLocateCount=len(sessions), dungeonLocateCount=1337
+    )
 
 
 def find_user(ctx, msg):
