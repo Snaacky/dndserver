@@ -230,12 +230,6 @@ def character_info(ctx, msg):
     login_char.last_login = arrow.utcnow()
     login_char.save()
 
-    # update login table with account_id and character_id date
-    # login_account = db.query(Login).filter(Login.account_id.ilike(character.account_id)).first()
-    # login_account.character_id = character.id
-    # login_account.login_time = arrow.utcnow()
-    # login_account.save()
-
     # get all the items and attributes of the character
     for item, attributes in inventory.get_all_items(character.id):
         char_info.CharacterItemList.append(item_to_proto_item(item, attributes))
@@ -245,8 +239,8 @@ def character_info(ctx, msg):
     return res
 
 
-# update login table with account_id and character_id date
 def update_login(account_id, character_id):
+    """Update login table with account_id and character_id date """
     q_login = Login(account_id=account_id, login_time=arrow.utcnow(), character_id=character_id)
     q_login.save()
 
@@ -263,6 +257,7 @@ def get_experience(ctx, msg):
     # 1 - 4 = 40 exp, 5 - 9 = 60 exp, 10 - 14 = 80 exp, 15 - 19 = 100
     res.expLimit = 40 + (int(character.level / 5) * 20)
 
+    # Update the login table here, becouse get_experience() is called only once
     update_login(character.account_id, character.id)
 
     return res
