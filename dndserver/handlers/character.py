@@ -7,7 +7,7 @@ from dndserver.data import spells as sp
 from dndserver.database import db
 from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.handlers import inventory
-from dndserver.models import Character, Item, ItemAttribute, Login, Spell
+from dndserver.models import Character, Item, ItemAttribute, Spell
 from dndserver.persistent import sessions
 from dndserver.objects import items
 from dndserver.enums.items import ItemType, Rarity, Item as ItemEnum
@@ -87,7 +87,7 @@ def list_characters(ctx, msg):
             characterClass=CharacterClass(result.character_class).value,
             gender=Gender(result.gender).value,
             createAt=result.created_at.int_timestamp,
-            lastloginDate=result.last_login.int_timestamp  # TODO: Need to implement access logs.
+            lastloginDate=result.last_login.int_timestamp
         )
 
         for item, attributes in inventory.get_all_items(result.id, Define_Item.InventoryId.EQUIPMENT):
@@ -225,11 +225,6 @@ def character_info(ctx, msg):
         level=character.level,
     )
 
-    # update character table with the last_login chararacter date
-    login_char = db.query(Character).filter(Character.id.ilike(character.id)).first()
-    login_char.last_login = arrow.utcnow()
-    login_char.save()
-
     # get all the items and attributes of the character
     for item, attributes in inventory.get_all_items(character.id):
         char_info.CharacterItemList.append(item_to_proto_item(item, attributes))
@@ -237,12 +232,6 @@ def character_info(ctx, msg):
     res = SS2C_LOBBY_CHARACTER_INFO_RES(result=pc.SUCCESS, characterDataBase=char_info)
 
     return res
-
-
-def update_login(account_id, character_id):
-    """Update login table with account_id and character_id date """
-    q_login = Login(account_id=account_id, login_time=arrow.utcnow(), character_id=character_id)
-    q_login.save()
 
 
 def get_experience(ctx, msg):
@@ -256,9 +245,6 @@ def get_experience(ctx, msg):
 
     # 1 - 4 = 40 exp, 5 - 9 = 60 exp, 10 - 14 = 80 exp, 15 - 19 = 100
     res.expLimit = 40 + (int(character.level / 5) * 20)
-
-    # Update the login table here, becouse get_experience() is called only once
-    update_login(character.account_id, character.id)
 
     return res
 

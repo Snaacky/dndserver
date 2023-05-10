@@ -1,6 +1,7 @@
+import arrow
 from dndserver.database import db
 from dndserver.handlers import character
-from dndserver.models import Character
+from dndserver.models import Character, Login
 from dndserver.objects.party import Party
 from dndserver.persistent import parties, sessions
 from dndserver.protos import PacketCommand as pc
@@ -26,6 +27,16 @@ def enter_lobby(ctx, msg):
     res = SS2C_LOBBY_ENTER_RES(result=pc.SUCCESS, accountId=str(query.id))
 
     sessions[ctx.transport].character = query
+
+    # update the last login time of the character
+    query.last_login = arrow.utcnow()
+    q_login = Login(account_id=query.account_id, login_time=arrow.utcnow(), character_id=query.id)
+    q_login.save()
+
+    # update character table with the last_login chararacter date
+    login_char = db.query(Character).filter(Character.id.ilike(query.id)).first()
+    login_char.last_login = arrow.utcnow()
+    login_char.save()
 
     party = Party(player_1=sessions[ctx.transport])
     sessions[ctx.transport].party = party

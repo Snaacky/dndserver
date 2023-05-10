@@ -1,7 +1,7 @@
 import arrow
-from sqlalchemy import Column, ForeignKey
+
+from sqlalchemy import Column
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
 from sqlalchemy.types import Boolean, Enum, Integer, String, Text
 from sqlalchemy_utils import ArrowType
 
@@ -17,11 +17,9 @@ class Login(base):
     __tablename__ = "logins"
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
-    account_id = Column(Integer, ForeignKey('accounts.id'), nullable=False)
-    character_id = Column(Integer, ForeignKey('characters.id'), nullable=True)
+    account_id = Column(Integer, nullable=False)
+    character_id = Column(Integer, nullable=True)
     login_time = Column(ArrowType, default=arrow.utcnow())
-    account = relationship("Account", backref="logins")
-    character = relationship("Character", backref="logins")
 
     def save(self):
         db.add(self)
@@ -57,7 +55,6 @@ class Character(base):
     karma_rating = Column(Integer, default=0)
     streaming_nickname = Column(String(15))
     last_login = Column(ArrowType, default=arrow.utcnow())
-    # TODO: store all logins in a database and grab the latest from that
 
     perk0 = Column(String, default="")
     perk1 = Column(String, default="")
