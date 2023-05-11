@@ -2,9 +2,10 @@ import random
 import string
 
 import argon2
+import arrow
 
 from dndserver.database import db
-from dndserver.models import Account
+from dndserver.models import Hwid, Account
 from dndserver.persistent import sessions
 from dndserver.protos.Account import SC2S_ACCOUNT_LOGIN_REQ, SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES
 
@@ -36,8 +37,13 @@ def process_login(ctx, msg):
         )
         account.save()
 
-        # TODO: Create new hwid objects and save them to the db here
         res.secretToken = account.secret_token
+
+    # Check if an hwId is associated to an account_id, if not add to db
+    for hwid in req.hwIds:
+        if not (db.query(Hwid).filter((Hwid.hwid.ilike(hwid) & (Hwid.account_id.ilike(account.id)))).first()):
+            hwid = Hwid(account_id=account.id, hwid=hwid, seen_at=arrow.utcnow())
+            hwid.save()
 
     # Return FAIL_PASSWORD on invalid password.
     try:
