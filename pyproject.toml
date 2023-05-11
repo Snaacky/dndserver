@@ -21,6 +21,7 @@ twisted = {extras = ["tls"], version = "^22.10.0"}
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
 flake8 = "^6.0.0"
+pre-commit = "^3.3.1"
 
 [build-system]
 requires = ["poetry-core"]
