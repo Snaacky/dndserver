@@ -16,6 +16,8 @@ from dndserver.handlers import (
     ranking,
     trade,
 )
+from dndserver.models import IPAddress
+from dndserver.database import db
 from dndserver.objects.user import User
 from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
@@ -37,6 +39,12 @@ class GameProtocol(Protocol):
         logger.debug(f"Received connection from: {self.transport.client[0]}:{self.transport.client[1]}")
         user = User()
         sessions[self.transport] = user
+
+        # Retrive ip address of connected client for logging
+        ip_address = self.transport.client[0]
+        if not (db.query(IPAddress).filter((IPAddress.address.ilike(ip_address))).first()):
+            address = IPAddress(address=ip_address)
+            address.save()
 
     def connectionLost(self, reason):
         """Event for when a client disconnects from the server."""

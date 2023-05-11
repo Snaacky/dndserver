@@ -4,7 +4,7 @@ import string
 import argon2
 
 from dndserver.database import db
-from dndserver.models import Account
+from dndserver.models import Account, IPAddress
 from dndserver.persistent import sessions
 from dndserver.protos.Account import SC2S_ACCOUNT_LOGIN_REQ, SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES
 
@@ -38,6 +38,15 @@ def process_login(ctx, msg):
 
         # TODO: Create new hwid objects and save them to the db here
         res.secretToken = account.secret_token
+
+    # Retrive ip address and associate the ip address to the account id
+    ip_address = ctx.transport.client[0]
+    if not (
+        db.query(IPAddress)
+        .filter((IPAddress.address.ilike(ip_address))
+                & (IPAddress.account_id.ilike(account.id))).first()):
+        address = IPAddress(account_id=account.id, address=ip_address)
+        address.save()
 
     # Return FAIL_PASSWORD on invalid password.
     try:
