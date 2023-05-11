@@ -128,7 +128,7 @@ class Hwid(base):
 
     id = Column(Integer, primary_key=True, autoincrement="auto")
     account_id = Column(Integer)
-    hwid = Column(String(64), unique=True)
+    hwid = Column(String(64))
     is_banned = Column(Boolean)
     seen_at = Column(ArrowType, default=arrow.utcnow())
 
