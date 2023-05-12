@@ -56,7 +56,7 @@ def item_parser(item_values, inventoryId, slotId, item_count):
     newItem.itemCount = int(item_values.get("itemCount", item_count))
 
     propertiesArray = item_values.get("primaryPropertyArray", [])
-    if propertiesArray and len(propertiesArray) > 1:
+    if propertiesArray and len(propertiesArray) >= 1:
         for property in item_values["primaryPropertyArray"]:
             itemProperty = item.SItemProperty()
             itemProperty.propertyTypeId = property["propertyTypeId"]
@@ -66,7 +66,7 @@ def item_parser(item_values, inventoryId, slotId, item_count):
                 itemProperty.propertyValue = property["propertyValue"]
             newItem.primaryPropertyArray.append(itemProperty)
     propertiesArray = item_values.get("secondaryPropertyArray", [])
-    if propertiesArray and len(propertiesArray) > 1:
+    if propertiesArray and len(propertiesArray) >= 1:
         for property in item_values["secondaryPropertyArray"]:
             itemProperty = item.SItemProperty()
             itemProperty.propertyTypeId = property["propertyTypeId"]
@@ -79,6 +79,7 @@ def item_parser(item_values, inventoryId, slotId, item_count):
 def generate_random_item(merch_id, amount):
     ret = []
 
+    # TODO: Add Merchants when we know what they sell
     if merch_id == MerchantClass.ARMOURER:
         item_type = ItemType.ARMORS
         material = Material.PLATE
@@ -109,7 +110,10 @@ def generate_random_item(merch_id, amount):
     items = hItem.random_item_list(item_type, material.value, amount)
     for i in items:
         ret.append((item_parser(i, 1, 1, 1), 1))
+
+    # Sorting the items per rarity only becouse ATM the last items in the merch have higher price
     sorted_ret = sorted(ret, key=lambda x: sum([int(c) for c in x[0].itemId[-4:] if c.isdigit()]))
+
     return sorted_ret
 
 

@@ -5,6 +5,7 @@ from dndserver.enums.items import (ItemType,
                                    Rarity,
                                    EnhancementPhysicalWeapon,
                                    EnhancementMagicWeapon,
+                                   MagicWeapon,
                                    EnhancementArmor)
 
 # TODO We might want to store this somewhere else, and only call it once, when server starts
@@ -29,8 +30,9 @@ def load_json_data():
 load_json_data()
 
 
-# Gets the relevant data depending on the item name and type
 def get_content(name, type, rarity):
+    """Gets the relevant data depending on the item name and type"""
+
     content = {}
     dynamic_file_name = ""
     typeValue = str(type.value)
@@ -48,8 +50,9 @@ def get_content(name, type, rarity):
     return content
 
 
-# Gets the relevant data depending on the material and type
 def get_content_based_on(material, item_type):
+    """Gets the relevant data depending on the material and type"""
+
     obj = {}
     type_value = str(item_type.value)
     material_value = str(material)
@@ -61,8 +64,9 @@ def get_content_based_on(material, item_type):
     return obj
 
 
-# Gets how_many random gear from a content (list of dictionaries)
 def random_gear(content, how_many):
+    """Return a random dictionary of how many items you want from a list of dictionaries (content)"""
+
     new_result = {}
     if content:
         while len(new_result) < how_many:
@@ -73,8 +77,8 @@ def random_gear(content, how_many):
     return new_result
 
 
-# This function generate how_many armors or weapons randomly with random quality
 def random_item_list(type, material, how_many):
+    """Produce a list of random weapon or armor for merchants"""
     final_data = []
 
     if type and material and how_many:
@@ -92,9 +96,10 @@ def random_item_list(type, material, how_many):
     return final_data
 
 
-# This function produce in a proper way the rarity for gear
-# gray = 45%; white = 35%; green = 24.50%; blue = 15.50%; purple = 8%;
 def random_rarity(list_of_rarity):
+    """Produce a random rarity for gear:
+    gray = 45%; white = 35%; green = 24.50%; blue = 15.50%; purple = 8%;"""
+
     list_of_rarity = list(list_of_rarity)
     length = len(list_of_rarity)
 
@@ -108,8 +113,9 @@ def random_rarity(list_of_rarity):
     return random.choices(list_of_rarity[1:-2], list_of_chance, k=1)[0]
 
 
-# Function to be called in order to create an item
 def generate_new_item(name, type, rarity, item_count=1):
+    """Function to be called in order to create an item"""
+
     final_data = {}
     rarity_str = str(rarity.value)
     if name and type:
@@ -122,8 +128,9 @@ def generate_new_item(name, type, rarity, item_count=1):
     return final_data
 
 
-# Raw data for non weapons/armors are different, so need to be fetched differently for now
 def format_other_data(data, name, rarity, item_count):
+    """Raw data for non weapons/armors are different, so need to be fetched differently"""
+
     item_id = f"DesignDataItem:Id_Item_{name}_{rarity}001"
     if rarity == Rarity.NONE.value:
         item_id = f"DesignDataItem:Id_Item_{name}"
@@ -134,8 +141,9 @@ def format_other_data(data, name, rarity, item_count):
     return final_data
 
 
-# Gets the stat properties of the item data and formats it to be consumed
 def parse_properties_to_array(data, rarity):
+    """Gets the stat properties of the item data and formats it to be consumed"""
+
     properties = data["stats"][rarity]
     properties_array = []
     for key, value in properties.items():
@@ -144,8 +152,8 @@ def parse_properties_to_array(data, rarity):
     return properties_array
 
 
-# Prepare the data for secondary property to be consumed
 def parse_secondary_properties_to_array(rarity, item_type, name):
+    """Prepare the data for secondary property to be consumed"""
     rarity = int(rarity)
 
     if rarity == Rarity.UNCOMMON.value:
@@ -161,17 +169,17 @@ def parse_secondary_properties_to_array(rarity, item_type, name):
     return []
 
 
-# Select the effects based on rarity, item_type and name
 def effects_based_on(rarity, item_type, name):
+    """Select random sencondary effects for weapons and armors"""
+
     properties_array = []
     random_enhancements = [""]
-    number = random.choice([rarity-3, rarity-2])
-
+    number = random.choices([rarity-3, rarity-2], [5, 95], k=1)[0]
     if number == 0:
         return properties_array
 
     if item_type == ItemType.WEAPONS:
-        if name in list(EnhancementMagicWeapon):
+        if (name in weapon.value for weapon in MagicWeapon):
             weapon_enha = list(EnhancementMagicWeapon)
         else:
             weapon_enha = list(EnhancementPhysicalWeapon)
@@ -188,14 +196,15 @@ def effects_based_on(rarity, item_type, name):
             random_value = random.randrange(9, 50)
         else:
             random_value = random.randrange(1, 4)
-
         updatedKey = f"DesignDataItemPropertyType:Id_ItemPropertyType_{enha.value}"
         properties_array.append({"propertyTypeId": updatedKey, "propertyValue": random_value})
+
     return properties_array
 
 
-# Generates the stats values depending on the value ranges in the data
 def adjust_stats_based_on_ranges(property_array):
+    """Generates the stats values depending on the value ranges in the data"""
+
     new_property_array = []
     for _, obj in enumerate(property_array):
         values_array = obj["propertyValue"]
@@ -219,8 +228,9 @@ def adjust_stats_based_on_ranges(property_array):
     return new_property_array
 
 
-# Formats the itemId and properties by calling other formatters, formats the response to be consumed
 def format_data(data, name, rarity, item_type):
+    """Formats the itemId and properties by calling other formatters, formats the response to be consumed"""
+
     item_id = f"DesignDataItem:Id_Item_{name}_{rarity}001"
     if rarity == Rarity.NONE.value:
         item_id = f"DesignDataItem:Id_Item_{name}"
