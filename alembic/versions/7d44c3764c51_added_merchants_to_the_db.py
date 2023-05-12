@@ -1,8 +1,8 @@
-"""added merchants to the database
+"""Added Merchants to the DB
 
-Revision ID: 422a4c93bed7
-Revises: 1c1df7503576
-Create Date: 2023-05-09 11:29:20.337951
+Revision ID: 7d44c3764c51
+Revises: 64412c0be1f7
+Create Date: 2023-05-12 22:37:21.850294
 
 """
 from alembic import op
@@ -11,8 +11,8 @@ import sqlalchemy_utils
 
 
 # revision identifiers, used by Alembic.
-revision = "422a4c93bed7"
-down_revision = "1c1df7503576"
+revision = "7d44c3764c51"
+down_revision = "64412c0be1f7"
 branch_labels = None
 depends_on = None
 
