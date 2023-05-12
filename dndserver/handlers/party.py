@@ -43,6 +43,10 @@ def accept_invite(ctx, msg):
     # send a notification to the inviter that the invitee accepted
     send_accept_notification(ctx, req)
 
+    # check if the user accepted the invite
+    if req.inviteResult != pc.SUCCESS:
+        return SS2C_PARTY_INVITE_ANSWER_RES(result=pc.SUCCESS)
+
     # delete empty party if the user joining the party was the only member
     if len(sessions[ctx.transport].party.players) == 1:
         del parties[sessions[ctx.transport].party.id - 1]
@@ -53,6 +57,7 @@ def accept_invite(ctx, msg):
     # prevent invitee from joining the party if already member
     if any(sessions[ctx.transport].account.id == player.account.id for player in party.players):
         return SS2C_PARTY_INVITE_ANSWER_RESULT_NOT(inviteResult=pc.FAIL_PARTY_INVITE_ALREADY_PARTY)
+
     party.add_member(sessions[ctx.transport])
 
     # set the invitees party to the inviters party
@@ -88,7 +93,7 @@ def send_accept_notification(ctx, req):
             streamingModeNickName=sessions[ctx.transport].character.streaming_nickname,
             karmaRating=sessions[ctx.transport].character.karma_rating,
         ),
-        inviteResult=pc.SUCCESS,
+        inviteResult=req.inviteResult,
     )
     header = make_header(notify)
     transport.write(header + notify.SerializeToString())
