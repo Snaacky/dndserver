@@ -61,7 +61,6 @@ def accept_invite(ctx, msg):
         del sessions[ctx.transport].party
 
     # add user to the inviters party object
-    party = get_party(account_id=int(req.returnAccountId))
     party.add_member(sessions[ctx.transport])
 
     # set the invitees party to the inviters party
