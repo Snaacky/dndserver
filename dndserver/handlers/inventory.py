@@ -29,9 +29,6 @@ def get_all_items(character_id, inventory_id=None, slot_id=None):
     if slot_id is not None:
         query = query.filter_by(slot_id=slot_id)
 
-    if inventory_id is not None and slot_id is not None:
-        query = query.filter_by(inventory_id=inventory_id, slot_id=slot_id)
-
     ret = list()
 
     for item in query:
