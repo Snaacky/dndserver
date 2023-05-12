@@ -70,5 +70,6 @@ def open_map_select(ctx, msg):
     """Occurs when client opens the map selector."""
     req = SC2S_OPEN_LOBBY_MAP_REQ()
     req.ParseFromString(msg)
-    res = SS2C_OPEN_LOBBY_MAP_RES()
+
+    res = SS2C_OPEN_LOBBY_MAP_RES(result=pc.SUCCESS)
     return res
