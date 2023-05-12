@@ -24,6 +24,10 @@ def party_invite(ctx, msg):
     """Occurs when a user sends a party to another user."""
     req = SC2S_PARTY_INVITE_REQ()
     req.ParseFromString(msg)
+    party = get_party(account_id=int(req.findAccountId))
+    # prevent inviter from sending invitation if invitee is already in the party
+    if any(str(sessions[ctx.transport].account.id) == str(player.account.id) for player in party.players):
+        return SS2C_PARTY_INVITE_ANSWER_RESULT_NOT(inviteResult=pc.FAIL_PARTY_INVITE_ALREADY_PARTY)
     send_invite_notification(ctx, req)
     return SS2C_PARTY_INVITE_RES(result=pc.SUCCESS)
 
@@ -31,6 +35,8 @@ def party_invite(ctx, msg):
 def accept_invite(ctx, msg):
     """Occurs when a user accepts a party invite."""
     # req.returnAccountId == inviter
+    # sessions[ctx.transport].account.id == invitee
+
     req = SC2S_PARTY_INVITE_ANSWER_REQ()
     req.ParseFromString(msg)
 
@@ -44,6 +50,9 @@ def accept_invite(ctx, msg):
 
     # add user to the inviters party object
     party = get_party(account_id=int(req.returnAccountId))
+    # prevent invitee from joining the party if already member
+    if any(str(sessions[ctx.transport].account.id) == str(player.account.id) for player in party.players):
+        return SS2C_PARTY_INVITE_ANSWER_RESULT_NOT(inviteResult=pc.FAIL_PARTY_INVITE_ALREADY_PARTY)
     party.add_member(sessions[ctx.transport])
 
     # set the invitees party to the inviters party
