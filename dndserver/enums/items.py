@@ -50,7 +50,7 @@ class EnhancementArmor(Enum):
     _SPELL_CASTING_SPEED = "Effect_SpellCastingSpeed"
 
     # unsure
-    PHYSICAL_POWER = "Effect_PhysicalPower"
+    # PHYSICAL_POWER = "Effect_PhysicalPower"
 
 
 class EnhancementWeapon(Enum):
@@ -84,7 +84,7 @@ class EnhancementWeapon(Enum):
     _DEBUFF_DURATION_BONUS = "Effect_DebuffDurationBonus"
 
     # unsure
-    _ITEM_EQUIP_SPEED = "Effect_ItemEquipSpeed"
+    # _ITEM_EQUIP_SPEED = "Effect_ItemEquipSpeed"
 
 
 class Material(Enum):
@@ -102,7 +102,7 @@ class ItemType(Enum):
     LOOTABLES = "lootables"
     JEWELRY = "jewelry"
     OTHERS = "others"
-       
+
 
 class Item(Enum):
     ADVENTURERBOOTS = "AdventurerBoots"

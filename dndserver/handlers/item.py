@@ -162,18 +162,24 @@ def parse_secondary_properties_to_array(rarity, item_type):
 def effects_based_on(rarity, item_type):
     properties_array = []
     random_enhancements = [""]
-    how_many_effects = [rarity-3, rarity-2]
+    number = random.choice([rarity-3, rarity-2])
+    weapon_enha = list(EnhancementWeapon)
+    armor_enha = list(EnhancementArmor)
+
     if item_type == ItemType.WEAPONS:
-        random_enhancements = random.sample(list(EnhancementWeapon), k=random.choice(how_many_effects))
+        random_enhancements = random.sample(weapon_enha, k=number)
     elif item_type == ItemType.ARMORS:
-        random_enhancements = random.sample(list(EnhancementArmor), k=random.choice(how_many_effects))
+        random_enhancements = random.sample(armor_enha, k=number)
+
     if not random_enhancements:
         return properties_array
+
     for enha in random_enhancements:
         if str(enha).find("._") != -1:
             random_value = random.randrange(9, 50)
         else:
             random_value = random.randrange(1, 4)
+
         updatedKey = f"DesignDataItemPropertyType:Id_ItemPropertyType_{enha.value}"
         properties_array.append({"propertyTypeId": updatedKey, "propertyValue": random_value})
     return properties_array
