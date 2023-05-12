@@ -26,7 +26,7 @@ def party_invite(ctx, msg):
     req.ParseFromString(msg)
     party = get_party(account_id=int(req.findAccountId))
     # prevent inviter from sending invitation if invitee is already in the party
-    if any(str(sessions[ctx.transport].account.id) == str(player.account.id) for player in party.players):
+    if any(sessions[ctx.transport].account.id == player.account.id for player in party.players):
         return SS2C_PARTY_INVITE_ANSWER_RESULT_NOT(inviteResult=pc.FAIL_PARTY_INVITE_ALREADY_PARTY)
     send_invite_notification(ctx, req)
     return SS2C_PARTY_INVITE_RES(result=pc.SUCCESS)
@@ -51,7 +51,7 @@ def accept_invite(ctx, msg):
     # add user to the inviters party object
     party = get_party(account_id=int(req.returnAccountId))
     # prevent invitee from joining the party if already member
-    if any(str(sessions[ctx.transport].account.id) == str(player.account.id) for player in party.players):
+    if any(sessions[ctx.transport].account.id == player.account.id for player in party.players):
         return SS2C_PARTY_INVITE_ANSWER_RESULT_NOT(inviteResult=pc.FAIL_PARTY_INVITE_ALREADY_PARTY)
     party.add_member(sessions[ctx.transport])
 
