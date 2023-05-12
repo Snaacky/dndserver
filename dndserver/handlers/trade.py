@@ -13,12 +13,23 @@ from dndserver.protos.Trade import (
 )
 from dndserver.protos.Chat import SCHATDATA, SCHATDATA_PIECE, SCHATDATA_PIECE_ITEM, SCHATDATA_PIECE_ITEM_PROPERTY
 from dndserver.protos.Character import SACCOUNT_NICKNAME
+from dndserver.protos.Defines import Define_Trade
 
 
 def get_trade_reqs(ctx, msg):
     return SS2C_TRADE_MEMBERSHIP_REQUIREMENT_RES(
         # TODO: Unsure what these values are actually supposed to look like.
-        requirements=[STRADE_MEMBERSHIP_REQUIREMENT(memberShipType=1, memberShipValue=1)]
+        requirements=[
+            STRADE_MEMBERSHIP_REQUIREMENT(
+                memberShipType=Define_Trade.Requirement_Type.MINIMUM_LEVEL, memberShipValue=5
+            ),
+            STRADE_MEMBERSHIP_REQUIREMENT(
+                memberShipType=Define_Trade.Requirement_Type.INITIATION_FEE, memberShipValue=0
+            ),
+            STRADE_MEMBERSHIP_REQUIREMENT(
+                memberShipType=Define_Trade.Requirement_Type.COST_PER_TRADE, memberShipValue=15
+            ),
+        ]
     )
 
 
