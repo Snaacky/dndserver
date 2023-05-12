@@ -154,7 +154,6 @@ def sellback_request(ctx, msg):
     # grab all items to sell, then delete them
     for sellBackInfo in req.sellBackInfos:
         inventory.delete_item(cid, sellBackInfo)
-    ignoredInfos = []
     for recievedInfo in req.receivedInfos:
         inventory_item = inventory.get_all_items(cid, inventory_id=recievedInfo.inventoryId, slot_id=recievedInfo.slotId)
         # if there is an inventory item, we are trying to merge
@@ -167,9 +166,8 @@ def sellback_request(ctx, msg):
             # otherwise, it's a container, increase the inventory count.
             else:
                 inventory_item.inv_count = inventory_item.inv_count + recievedInfo.itemContentsCount
-            ignoredInfos.append(recievedInfo)
         # now we've processed the stack merging, if there is any requests left to process:
-        elif recievedInfo not in ignoredInfos:
+        else:
             # generate item data for that request
             item_generated = items.generate_item(
                 Item.GOLDCOINS,
