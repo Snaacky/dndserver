@@ -151,17 +151,13 @@ def sellback_request(ctx, msg):
     req = SC2S_MERCHANT_STOCK_SELL_BACK_REQ()
     req.ParseFromString(msg)
     cid = sessions[ctx.transport].character.id
-
-    # get the items we're trying to sell,
+    # grab all items to sell, then delete them
     for sellBackInfo in req.sellBackInfos:
-        inventory.delete_item(cid, sellBackInfo)  # then delete them.
-
+        inventory.delete_item(cid, sellBackInfo)
+    # then loop through the recieved items
     ignoredInfos = []
-    # now get the gold items that we're going to recieve for selling:
     for recievedInfo in req.receivedInfos:
-        # selling an item should only ever return gold coins or a container
-        # so we only want to process if the item is within those
-        match recievedInfo.itemId:
+        match recievedInfo.itemId:  # if they are a gold container or gold stack, keep going
             case "DesignDataItem:Id_Item_GoldCoinPurse":
                 pass
             case "DesignDataItem:Id_Item_GoldCoinBag":
@@ -172,20 +168,26 @@ def sellback_request(ctx, msg):
                 pass
             case _:
                 return
-        items_old = inventory.get_all_items(cid)  # get all items in the inventory, before adding the gold,
-        for _oItem in items_old:  # and then check for gold coins (in the inventory already) that might try and stack.
-            # (<dndserver.models.Item object at 0x000001AE3C8BCF70>, [])
+        # grab all items currently in the inventory
+        items_old = inventory.get_all_items(cid)
+        # loop through them,
+        for _oItem in items_old:
             old_item = _oItem[0]
+            # check if the item we're recieving in the same inventory,
             if old_item.inventory_id == recievedInfo.inventoryId:
-                if old_item.slot_id == recievedInfo.slotId:  # so. if we're trying to add an item into a slot with gold coins already, we're trying to stack.
+                # and same slot as an item that's currently in the inventory.
+                if old_item.slot_id == recievedInfo.slotId:
+                    # if it's a gold coin item, we just increment the quantity
                     if recievedInfo.itemId == "DesignDataItem:Id_Item_GoldCoins":
-                        old_item.quantity = old_item.quantity + recievedInfo.itemCount  # increment the old gold stack, instead of creating a new gold coin item.
+                        old_item.quantity = old_item.quantity + recievedInfo.itemCount
+                    # otherwise it's a container, increment the inventory count
                     else:
-                        old_item.inv_count = old_item.inv_count + recievedInfo.itemContentsCount  # the storage items use itemContentsCount
-                    ignoredInfos.append(recievedInfo)  # and ignore the recievedInfo, so that we don't save a new stack of gold underneath the old stack to the player's inventory.
-        # now! if we're not ignoring this recievedInfo, then add the gold to the inventory.
+                        old_item.inv_count = old_item.inv_count + recievedInfo.itemContentsCount
+                    # add the recieved info to an ignored list so that we dont spawn in a stack
+                    ignoredInfos.append(recievedInfo)
+        # now we've processed the stack merging, if there is any requests left to process:
         if recievedInfo not in ignoredInfos:
-            # generate item data using the recievedInfo (we only want gold for selling)
+            # generate item data for that request
             item_generated = items.generate_item(
                 Item.GOLDCOINS,
                 ItemType.LOOTABLES,
@@ -194,7 +196,7 @@ def sellback_request(ctx, msg):
                 recievedInfo.slotId,
                 recievedInfo.itemCount
             )
-            # then make that item for the player
+            # and add it to the player inventory
             item_real = mItem()
             item_real.character_id = cid
             item_real.item_id = item_generated.itemId
@@ -202,6 +204,7 @@ def sellback_request(ctx, msg):
             item_real.inventory_id = item_generated.inventoryId
             item_real.slot_id = item_generated.slotId
             item_real.save()
+    # we finished selling to the merchant and now we should
     ctx.reply(SS2C_MERCHANT_STOCK_SELL_BACK_RES(result=pc.SUCCESS))
-    # send the character info after selling an item, updates the inventory
+    # send the character info afterwards, updating the inventory
     return character.character_info(ctx=ctx, msg=bytearray())
