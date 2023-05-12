@@ -1,7 +1,11 @@
 import json
 import os
 import random
-from dndserver.enums.items import ItemType, Rarity, EnhancementWeapon, EnhancementArmor
+from dndserver.enums.items import (ItemType,
+                                   Rarity,
+                                   EnhancementPhysicalWeapon,
+                                   EnhancementMagicWeapon,
+                                   EnhancementArmor)
 
 # TODO We might want to store this somewhere else, and only call it once, when server starts
 json_data = {}
@@ -45,7 +49,6 @@ def get_content(name, type, rarity):
 
 
 # Gets the relevant data depending on the material and type
-# TODO change function in order to take a list of materials
 def get_content_based_on(material, item_type):
     obj = {}
     type_value = str(item_type.value)
@@ -142,33 +145,39 @@ def parse_properties_to_array(data, rarity):
 
 
 # Prepare the data for secondary property to be consumed
-def parse_secondary_properties_to_array(rarity, item_type):
+def parse_secondary_properties_to_array(rarity, item_type, name):
     rarity = int(rarity)
 
     if rarity == Rarity.UNCOMMON.value:
-        return effects_based_on(rarity, item_type)
+        return effects_based_on(rarity, item_type, name)
     elif rarity == Rarity.RARE.value:
-        return effects_based_on(rarity, item_type)
+        return effects_based_on(rarity, item_type, name)
     elif rarity == Rarity.EPIC.value:
-        return effects_based_on(rarity, item_type)
+        return effects_based_on(rarity, item_type, name)
     elif rarity == Rarity.LEGENDARY.value:
-        return effects_based_on(rarity, item_type)
+        return effects_based_on(rarity, item_type, name)
     elif rarity == Rarity.UNIQUE.value:
-        return effects_based_on(rarity, item_type)
+        return effects_based_on(rarity, item_type, name)
     return []
 
 
-# Helper function for parse_secondary_properties_to_array()
-def effects_based_on(rarity, item_type):
+# Select the effects based on rarity, item_type and name
+def effects_based_on(rarity, item_type, name):
     properties_array = []
     random_enhancements = [""]
     number = random.choice([rarity-3, rarity-2])
-    weapon_enha = list(EnhancementWeapon)
-    armor_enha = list(EnhancementArmor)
+
+    if number == 0:
+        return properties_array
 
     if item_type == ItemType.WEAPONS:
+        if name in list(EnhancementMagicWeapon):
+            weapon_enha = list(EnhancementMagicWeapon)
+        else:
+            weapon_enha = list(EnhancementPhysicalWeapon)
         random_enhancements = random.sample(weapon_enha, k=number)
     elif item_type == ItemType.ARMORS:
+        armor_enha = list(EnhancementArmor)
         random_enhancements = random.sample(armor_enha, k=number)
 
     if not random_enhancements:
@@ -216,6 +225,6 @@ def format_data(data, name, rarity, item_type):
     if rarity == Rarity.NONE.value:
         item_id = f"DesignDataItem:Id_Item_{name}"
     primary_property_array = adjust_stats_based_on_ranges(parse_properties_to_array(data, rarity))
-    secondary_property_array = parse_secondary_properties_to_array(rarity, item_type)
+    secondary_property_array = parse_secondary_properties_to_array(rarity, item_type, name)
     return {"itemId": item_id, "primaryPropertyArray": primary_property_array,
             "secondaryPropertyArray": secondary_property_array}
