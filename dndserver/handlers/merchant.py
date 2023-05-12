@@ -154,39 +154,22 @@ def sellback_request(ctx, msg):
     # grab all items to sell, then delete them
     for sellBackInfo in req.sellBackInfos:
         inventory.delete_item(cid, sellBackInfo)
-    # then loop through the recieved items
     ignoredInfos = []
     for recievedInfo in req.receivedInfos:
-        match recievedInfo.itemId:  # if they are a gold container or gold stack, keep going
-            case "DesignDataItem:Id_Item_GoldCoinPurse":
-                pass
-            case "DesignDataItem:Id_Item_GoldCoinBag":
-                pass
-            case "DesignDataItem:Id_Item_GoldCoinChest":
-                pass
-            case "DesignDataItem:Id_Item_GoldCoins":
-                pass
-            case _:
-                return
-        # grab all items currently in the inventory
-        items_old = inventory.get_all_items(cid)
-        # loop through them,
-        for _oItem in items_old:
-            old_item = _oItem[0]
-            # check if the item we're recieving in the same inventory,
-            if old_item.inventory_id == recievedInfo.inventoryId:
-                # and same slot as an item that's currently in the inventory.
-                if old_item.slot_id == recievedInfo.slotId:
-                    # if it's a gold coin item, we just increment the quantity
-                    if recievedInfo.itemId == "DesignDataItem:Id_Item_GoldCoins":
-                        old_item.quantity = old_item.quantity + recievedInfo.itemCount
-                    # otherwise it's a container, increment the inventory count
-                    else:
-                        old_item.inv_count = old_item.inv_count + recievedInfo.itemContentsCount
-                    # add the recieved info to an ignored list so that we dont spawn in a stack
-                    ignoredInfos.append(recievedInfo)
+        inventory_item = inventory.get_all_items(cid, inventory_id=recievedInfo.inventoryId, slot_id=recievedInfo.slotId)
+        # if there is an inventory item, we are trying to merge
+        if len(inventory_item) != 0:
+            # [(<dndserver.models.Item object at 0x000001B1D8DEB040>, [])]
+            inventory_item = inventory_item[0][0]
+            # if the we're modifying GoldCoins, increase the stack count.
+            if recievedInfo.itemId == "DesignDataItem:Id_Item_GoldCoins":
+                inventory_item.quantity = inventory_item.quantity + recievedInfo.itemCount
+            # otherwise, it's a container, increase the inventory count.
+            else:
+                inventory_item.inv_count = inventory_item.inv_count + recievedInfo.itemContentsCount
+            ignoredInfos.append(recievedInfo)
         # now we've processed the stack merging, if there is any requests left to process:
-        if recievedInfo not in ignoredInfos:
+        elif recievedInfo not in ignoredInfos:
             # generate item data for that request
             item_generated = items.generate_item(
                 Item.GOLDCOINS,
