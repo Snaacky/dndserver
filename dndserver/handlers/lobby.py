@@ -71,5 +71,5 @@ def open_map_select(ctx, msg):
     req = SC2S_OPEN_LOBBY_MAP_REQ()
     req.ParseFromString(msg)
 
-    res = SS2C_OPEN_LOBBY_MAP_RES(result=pc.SUCCESS)
+    res = SS2C_OPEN_LOBBY_MAP_RES()
     return res
