@@ -47,9 +47,9 @@ def accept_invite(ctx, msg):
     if any(sessions[ctx.transport].account.id == player.account.id for player in party.players):
         # do not process the response if we are already in the party we are trying to join
         return SS2C_PARTY_INVITE_ANSWER_RES(result=pc.SUCCESS)
-    else:
-        # send a notification with the response to the inviter
-        send_accept_notification(ctx, req)
+
+    # send a notification with the response to the inviter
+    send_accept_notification(ctx, req)
 
     # check if the user accepted the invite
     if req.inviteResult != pc.SUCCESS:
