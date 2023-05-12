@@ -37,7 +37,7 @@ $ python -m dndserver.server
 
 For live reloading during development launch using
 ```
-python -m jurigged .\dndserver\server.py
+python -m jurigged -v .\dndserver\server.py
 ```
 
 ### Docker
