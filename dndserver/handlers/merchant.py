@@ -3,6 +3,9 @@ from dndserver.objects import items
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Defines import Define_Message
 from dndserver.enums.items import ItemType, Rarity, Item
+from dndserver.models import Item as mItem
+from dndserver.handlers import inventory
+from dndserver.persistent import sessions
 from dndserver.protos.Merchant import (
     SC2S_MERCHANT_STOCK_BUY_ITEM_LIST_REQ,
     SC2S_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_REQ,
@@ -12,6 +15,8 @@ from dndserver.protos.Merchant import (
     SS2C_MERCHANT_LIST_RES,
     SS2C_MERCHANT_STOCK_BUY_ITEM_LIST_RES,
     SS2C_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_RES,
+    SC2S_MERCHANT_STOCK_SELL_BACK_REQ,
+    SS2C_MERCHANT_STOCK_SELL_BACK_RES
 )
 
 
@@ -138,4 +143,36 @@ def get_sellback_list(ctx, msg):
     # let the protocol send stage 3
     return SS2C_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_RES(
         result=pc.SUCCESS, loopMessageFlag=Define_Message.LoopFlag.END, stockList=[]
+    )
+
+
+def sellback_request(ctx, msg):
+    """Occurs when the user requests to "sellback" to one of the merchants"""
+    req = SC2S_MERCHANT_STOCK_SELL_BACK_REQ()
+    req.ParseFromString(msg)
+    cid = sessions[ctx.transport].character.id
+
+    for sellBackInfo in req.sellBackInfos:
+        inventory.delete_item(cid, sellBackInfo) # delete the items that you are selling
+
+    for recievedInfo in req.receivedInfos:
+        # generate item data using the recievedInfo
+        item_generated = items.generate_item(
+            Item.GOLDCOINS,
+            ItemType.LOOTABLES,
+            Rarity.NONE,
+            recievedInfo.inventoryId,
+            recievedInfo.slotId,
+            recievedInfo.itemCount)
+        # and then add it to the inventory
+        item_real = mItem()
+        item_real.character_id = cid
+        item_real.item_id = item_generated.itemId
+        item_real.quantity = item_generated.itemCount
+        item_real.inventory_id = item_generated.inventoryId
+        item_real.slot_id = item_generated.slotId
+        item_real.save()
+    # TODO: update inventory
+    return SS2C_MERCHANT_STOCK_SELL_BACK_RES(
+        result=pc.SUCCESS
     )
