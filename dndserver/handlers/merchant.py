@@ -4,7 +4,7 @@ from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Defines import Define_Message
 from dndserver.enums.items import ItemType, Rarity, Item
 from dndserver.models import Item as mItem
-from dndserver.handlers import inventory
+from dndserver.handlers import character, inventory
 from dndserver.persistent import sessions
 from dndserver.protos.Merchant import (
     SC2S_MERCHANT_STOCK_BUY_ITEM_LIST_REQ,
@@ -18,6 +18,7 @@ from dndserver.protos.Merchant import (
     SC2S_MERCHANT_STOCK_SELL_BACK_REQ,
     SS2C_MERCHANT_STOCK_SELL_BACK_RES
 )
+from dndserver.protos.Inventory import SS2C_INVENTORY_SINGLE_UPDATE_RES
 
 
 def create_merchant(name, remaining_time):
@@ -145,9 +146,8 @@ def get_sellback_list(ctx, msg):
         result=pc.SUCCESS, loopMessageFlag=Define_Message.LoopFlag.END, stockList=[]
     )
 
-
 def sellback_request(ctx, msg):
-    """Occurs when the user requests to "sellback" to one of the merchants"""
+    """Occurs when the user requests to sellback to one of the merchants."""
     req = SC2S_MERCHANT_STOCK_SELL_BACK_REQ()
     req.ParseFromString(msg)
     cid = sessions[ctx.transport].character.id
@@ -156,6 +156,9 @@ def sellback_request(ctx, msg):
         inventory.delete_item(cid, sellBackInfo) # delete the items that you are selling
 
     for recievedInfo in req.receivedInfos:
+        # selling an item should only ever return gold coins, with the exception of starter gear which doesn't return a recievedInfo
+        if recievedInfo.itemId != "DesignDataItem:Id_Item_GoldCoins": return
+
         # generate item data using the recievedInfo
         item_generated = items.generate_item(
             Item.GOLDCOINS,
@@ -164,6 +167,7 @@ def sellback_request(ctx, msg):
             recievedInfo.inventoryId,
             recievedInfo.slotId,
             recievedInfo.itemCount)
+
         # and then add it to the inventory
         item_real = mItem()
         item_real.character_id = cid
@@ -172,7 +176,7 @@ def sellback_request(ctx, msg):
         item_real.inventory_id = item_generated.inventoryId
         item_real.slot_id = item_generated.slotId
         item_real.save()
-    # TODO: update inventory
-    return SS2C_MERCHANT_STOCK_SELL_BACK_RES(
-        result=pc.SUCCESS
-    )
+    
+    ctx.reply(SS2C_MERCHANT_STOCK_SELL_BACK_RES(result=pc.SUCCESS))
+    # send the character info after selling an item, updates the inventory
+    return character.character_info(ctx=ctx, msg=bytearray())
