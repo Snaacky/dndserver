@@ -159,20 +159,30 @@ def sellback_request(ctx, msg):
     ignoredInfos = []
     # now get the gold items that we're going to recieve for selling:
     for recievedInfo in req.receivedInfos:
-        # selling an item should only ever return gold coins, with the exception of starter gear which doesn't return a recievedInfo.
-        if recievedInfo.itemId != "DesignDataItem:Id_Item_GoldCoins":
-            return
-
+        # selling an item should only ever return gold coins or a container
+        # so we only want to process if the item is within those
+        match recievedInfo.itemId:
+            case "DesignDataItem:Id_Item_GoldCoinPurse":
+                pass
+            case "DesignDataItem:Id_Item_GoldCoinBag":
+                pass
+            case "DesignDataItem:Id_Item_GoldCoinChest":
+                pass
+            case "DesignDataItem:Id_Item_GoldCoins":
+                pass
+            case _:
+                return
         items_old = inventory.get_all_items(cid)  # get all items in the inventory, before adding the gold,
         for _oItem in items_old:  # and then check for gold coins (in the inventory already) that might try and stack.
             # (<dndserver.models.Item object at 0x000001AE3C8BCF70>, [])
             old_item = _oItem[0]
-            # we only care about the gold coins, that are in the same inventory as the gold we're going to recieve.
-            if old_item.item_id == "DesignDataItem:Id_Item_GoldCoins" and old_item.inventory_id == recievedInfo.inventoryId:
+            if old_item.inventory_id == recievedInfo.inventoryId:
                 if old_item.slot_id == recievedInfo.slotId:  # so. if we're trying to add an item into a slot with gold coins already, we're trying to stack.
-                    old_item.quantity = old_item.quantity + recievedInfo.itemCount  # increment the old gold stack, instead of creating a new gold coin item.
+                    if recievedInfo.itemId == "DesignDataItem:Id_Item_GoldCoins":
+                        old_item.quantity = old_item.quantity + recievedInfo.itemCount  # increment the old gold stack, instead of creating a new gold coin item.
+                    else:
+                        old_item.inv_count = old_item.inv_count + recievedInfo.itemContentsCount  # the storage items use itemContentsCount
                     ignoredInfos.append(recievedInfo)  # and ignore the recievedInfo, so that we don't save a new stack of gold underneath the old stack to the player's inventory.
-
         # now! if we're not ignoring this recievedInfo, then add the gold to the inventory.
         if recievedInfo not in ignoredInfos:
             # generate item data using the recievedInfo (we only want gold for selling)
