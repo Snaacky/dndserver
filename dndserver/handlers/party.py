@@ -10,12 +10,14 @@ from dndserver.protos.Party import (
     SC2S_PARTY_EXIT_REQ,
     SC2S_PARTY_INVITE_ANSWER_REQ,
     SC2S_PARTY_INVITE_REQ,
+    SC2S_PARTY_MEMBER_KICK_REQ,
     SS2C_PARTY_EXIT_RES,
     SS2C_PARTY_INVITE_ANSWER_RES,
     SS2C_PARTY_INVITE_ANSWER_RESULT_NOT,
     SS2C_PARTY_INVITE_NOT,
     SS2C_PARTY_INVITE_RES,
     SS2C_PARTY_MEMBER_INFO_NOT,
+    SS2C_PARTY_MEMBER_KICK_RES,
 )
 from dndserver.utils import get_party, get_user, make_header
 
@@ -153,3 +155,21 @@ def leave_party(ctx, msg):
     send_party_info_notification(party)
     send_party_info_notification(new_party)
     return SS2C_PARTY_EXIT_RES(result=pc.SUCCESS)
+
+def kick_member(ctx, msg):
+    """Occurs when party leader clicks on Kick"""
+    req = SC2S_PARTY_MEMBER_KICK_REQ()
+    req.ParseFromString(msg)
+    party = get_party(account_id=sessions[ctx.transport].account.id)
+    if party.leader == sessions[ctx.transport]:
+        _, kicked_user = get_user(account_id=int(req.accountId))
+        party.remove_member(kicked_user)
+        new_party = Party(player_1=kicked_user)
+        new_party.leader = kicked_user
+        kicked_user.party = new_party
+        parties.append(new_party)
+        send_party_info_notification(party)
+        send_party_info_notification(new_party)
+        return SS2C_PARTY_MEMBER_KICK_RES(result=pc.SUCCESS)
+    else:
+        return SS2C_PARTY_MEMBER_KICK_RES(result=pc.FAIL_GENERAL) 
