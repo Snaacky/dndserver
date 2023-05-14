@@ -41,6 +41,10 @@ class GameProtocol(Protocol):
     def connectionLost(self, reason):
         """Event for when a client disconnects from the server."""
         logger.debug(f"Lost connection to: {self.transport.client[0]}:{self.transport.client[1]}")
+
+        # cleanup anything left behind from the gathering hall
+        gatheringhall.cleanup(self)
+
         del sessions[self.transport]
 
     def dataReceived(self, data: bytes) -> None:
