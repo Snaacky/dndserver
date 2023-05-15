@@ -231,7 +231,11 @@ def character_info(ctx, msg):
 
     # get all the items and attributes of the character
     for item, attributes in inventory.get_all_items(character.id):
-        char_info.CharacterItemList.append(item_to_proto_item(item, attributes))
+        # check if the item is in storage or not
+        if item.inventory_id >= Define_Item.InventoryId.STORAGE:
+            char_info.CharacterStorageItemList.append(item_to_proto_item(item, attributes))
+        else:
+            char_info.CharacterItemList.append(item_to_proto_item(item, attributes))
 
     res = SS2C_LOBBY_CHARACTER_INFO_RES(result=pc.SUCCESS, characterDataBase=char_info)
 
