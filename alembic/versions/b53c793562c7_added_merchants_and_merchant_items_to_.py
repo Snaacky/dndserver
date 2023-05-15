@@ -50,7 +50,7 @@ def upgrade() -> None:
     with op.batch_alter_table("items", schema=None) as batch_op:
         batch_op.add_column(sa.Column("merchant_id", sa.Integer(), nullable=True))
         batch_op.add_column(sa.Column("remaining", sa.Integer(), nullable=True))
-        batch_op.add_column(sa.Column("index", sa.Integer(), nullable=True))
+        batch_op.add_column(sa.Column("index", sa.Integer(), nullable=True, server_default="0"))
 
     # ### end Alembic commands ###
 
