@@ -207,7 +207,7 @@ def merge_request(ctx, msg):
     new = db.query(Item).filter_by(character_id=character.id).filter_by(id=req.dstInfo.uniqueId).first()
 
     # get the amount we want to merge
-    amount = new.inv_count if new.inv_count > 0 else new.quantity
+    amount = old.inv_count if old.inv_count > 0 else old.quantity
 
     # merge the items
     merge_items(old, new, amount, character.id)
