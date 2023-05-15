@@ -3,6 +3,9 @@ from dndserver.objects import items
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Defines import Define_Message
 from dndserver.enums.items import ItemType, Rarity, Item
+from dndserver.models import Item as mItem
+from dndserver.handlers import character, inventory
+from dndserver.persistent import sessions
 from dndserver.protos.Merchant import (
     SC2S_MERCHANT_STOCK_BUY_ITEM_LIST_REQ,
     SC2S_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_REQ,
@@ -12,6 +15,8 @@ from dndserver.protos.Merchant import (
     SS2C_MERCHANT_LIST_RES,
     SS2C_MERCHANT_STOCK_BUY_ITEM_LIST_RES,
     SS2C_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_RES,
+    SC2S_MERCHANT_STOCK_SELL_BACK_REQ,
+    SS2C_MERCHANT_STOCK_SELL_BACK_RES
 )
 
 
@@ -139,3 +144,48 @@ def get_sellback_list(ctx, msg):
     return SS2C_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_RES(
         result=pc.SUCCESS, loopMessageFlag=Define_Message.LoopFlag.END, stockList=[]
     )
+
+
+def sellback_request(ctx, msg):
+    """Occurs when the user requests to sellback to one of the merchants."""
+    req = SC2S_MERCHANT_STOCK_SELL_BACK_REQ()
+    req.ParseFromString(msg)
+    cid = sessions[ctx.transport].character.id
+    # grab all items to sell, then delete them
+    for sellBackInfo in req.sellBackInfos:
+        inventory.delete_item(cid, sellBackInfo)
+    for recievedInfo in req.receivedInfos:
+        inventory_item = inventory.get_all_items(cid, inventory_id=recievedInfo.inventoryId, slot_id=recievedInfo.slotId)
+        # if there is an inventory item, we are trying to merge
+        if len(inventory_item) != 0:
+            # [(<dndserver.models.Item object at 0x000001B1D8DEB040>, [])]
+            inventory_item = inventory_item[0][0]
+            # if the we're modifying GoldCoins, increase the stack count.
+            if recievedInfo.itemId == "DesignDataItem:Id_Item_GoldCoins":
+                inventory_item.quantity = inventory_item.quantity + recievedInfo.itemCount
+            # otherwise, it's a container, increase the inventory count.
+            else:
+                inventory_item.inv_count = inventory_item.inv_count + recievedInfo.itemContentsCount
+        # now we've processed the stack merging, if there is any requests left to process:
+        else:
+            # generate item data for that request
+            item_generated = items.generate_item(
+                Item.GOLDCOINS,
+                ItemType.LOOTABLES,
+                Rarity.NONE,
+                recievedInfo.inventoryId,
+                recievedInfo.slotId,
+                recievedInfo.itemCount
+            )
+            # and add it to the player inventory
+            item_real = mItem()
+            item_real.character_id = cid
+            item_real.item_id = item_generated.itemId
+            item_real.quantity = item_generated.itemCount
+            item_real.inventory_id = item_generated.inventoryId
+            item_real.slot_id = item_generated.slotId
+            item_real.save()
+    # we finished selling to the merchant and now we should
+    ctx.reply(SS2C_MERCHANT_STOCK_SELL_BACK_RES(result=pc.SUCCESS))
+    # send the character info afterwards, updating the inventory
+    return character.character_info(ctx=ctx, msg=bytearray())
