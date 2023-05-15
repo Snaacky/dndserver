@@ -353,8 +353,6 @@ def move_single_request(ctx, msg):
             db.query(Item)
             .filter_by(character_id=character.id)
             .filter_by(id=old.itemUniqueId)
-            .filter_by(slot_id=old.slotId)
-            .filter_by(inventory_id=old.inventoryId)
             .filter_by(item_id=old.itemId)
             .first()
         )
