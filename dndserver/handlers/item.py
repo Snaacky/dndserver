@@ -1,12 +1,14 @@
 import json
 import os
 import random
-from dndserver.enums.items import (ItemType,
-                                   Rarity,
-                                   EnhancementPhysicalWeapon,
-                                   EnhancementMagicWeapon,
-                                   MagicWeapon,
-                                   EnhancementArmor)
+from dndserver.enums.items import (
+    ItemType,
+    Rarity,
+    EnhancementPhysicalWeapon,
+    EnhancementMagicWeapon,
+    MagicWeapon,
+    EnhancementArmor,
+)
 
 # TODO We might want to store this somewhere else, and only call it once, when server starts
 json_data = {}
@@ -77,13 +79,13 @@ def random_gear(content, how_many):
     return new_result
 
 
-def random_item_list(type, material, how_many):
+def random_item_list(type, material, item_count):
     """Produce a list of random weapon or armor for merchants"""
     final_data = []
 
-    if type and material and how_many:
+    if type and material and item_count:
         all_gear_with = get_content_based_on(material, type)
-        input_list = random_gear(all_gear_with, how_many)
+        input_list = random_gear(all_gear_with, item_count)
 
         for item in input_list.keys():
             name = input_list[item]["name"]
@@ -136,8 +138,10 @@ def format_other_data(data, name, rarity, item_count):
         item_id = f"DesignDataItem:Id_Item_{name}"
     final_data = {"itemId": item_id}
     maxCount = int(data["Properties"]["Item"]["MaxCount"])
-    if maxCount and item_count < maxCount:
-        final_data["itemCount"] = item_count
+    if maxCount and int(item_count) <= maxCount:
+        final_data["itemCount"] = int(item_count)
+    else:
+        final_data["itemCount"] = maxCount
     return final_data
 
 
@@ -174,7 +178,7 @@ def effects_based_on(rarity, item_type, name):
 
     properties_array = []
     random_enhancements = [""]
-    number = random.choices([rarity-3, rarity-2], [5, 95], k=1)[0]
+    number = random.choices([rarity - 3, rarity - 2], [5, 95], k=1)[0]
     if number == 0:
         return properties_array
 
@@ -236,5 +240,8 @@ def format_data(data, name, rarity, item_type):
         item_id = f"DesignDataItem:Id_Item_{name}"
     primary_property_array = adjust_stats_based_on_ranges(parse_properties_to_array(data, rarity))
     secondary_property_array = parse_secondary_properties_to_array(rarity, item_type, name)
-    return {"itemId": item_id, "primaryPropertyArray": primary_property_array,
-            "secondaryPropertyArray": secondary_property_array}
+    return {
+        "itemId": item_id,
+        "primaryPropertyArray": primary_property_array,
+        "secondaryPropertyArray": secondary_property_array,
+    }
