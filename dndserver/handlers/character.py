@@ -70,10 +70,12 @@ def list_characters(ctx, msg):
     req = SC2S_ACCOUNT_CHARACTER_LIST_REQ()
     req.ParseFromString(msg)
 
-    query = (db.query(Character)
-             .filter_by(account_id=sessions[ctx.transport].account.id)
-             .order_by(Character.last_login)
-             .all())
+    query = (
+        db.query(Character)
+        .filter_by(account_id=sessions[ctx.transport].account.id)
+        .order_by(Character.last_login)
+        .all()
+    )
     res = SS2C_ACCOUNT_CHARACTER_LIST_RES(totalCharacterCount=len(query), pageIndex=req.pageIndex)
 
     start = (res.pageIndex - 1) * 7
@@ -89,7 +91,7 @@ def list_characters(ctx, msg):
             characterClass=CharacterClass(result.character_class).value,
             gender=Gender(result.gender).value,
             createAt=result.created_at.int_timestamp,
-            lastloginDate=result.last_login.int_timestamp
+            lastloginDate=result.last_login.int_timestamp,
         )
 
         for item, attributes in inventory.get_all_items(result.id, Define_Item.InventoryId.EQUIPMENT):
