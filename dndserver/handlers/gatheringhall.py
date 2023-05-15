@@ -58,6 +58,19 @@ def gathering_hall_equip(ctx, msg):
     return SS2C_GATHERING_HALL_TARGET_EQUIPPED_ITEM_RES(result=pc.SUCCESS, equippedItems=None, characterInfo=charinfo)
 
 
+def cleanup(ctx):
+    # Find the client's channel
+    current_channel = None
+    for ch in channels:
+        if ctx in channels[ch]["clients"]:
+            current_channel = ch
+            break
+
+    # remove the client from the channel if the client was in a channel
+    if current_channel:
+        channels[current_channel]["clients"].remove(ctx)
+
+
 def gathering_hall_channel_exit(ctx, msg):
     req = SC2S_GATHERING_HALL_CHANNEL_EXIT_REQ()
     req.ParseFromString(msg)
