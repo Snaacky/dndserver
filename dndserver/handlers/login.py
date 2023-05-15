@@ -43,8 +43,9 @@ def process_login(ctx, msg):
     ip_address = ctx.transport.client[0]
     if not (
         db.query(IPAddress)
-        .filter((IPAddress.address.ilike(ip_address))
-                & (IPAddress.account_id.ilike(account.id))).first()):
+        .filter((IPAddress.address.ilike(ip_address)) & (IPAddress.account_id.ilike(account.id)))
+        .first()
+    ):
         address = IPAddress(account_id=account.id, address=ip_address)
         address.save()
 
