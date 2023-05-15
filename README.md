@@ -35,6 +35,11 @@ $ alembic upgrade head
 $ python -m dndserver.server
 ```
 
+For live reloading during development launch using
+```
+python -m jurigged -v .\dndserver\server.py
+```
+
 ### Docker
 ```
 $ wget https://raw.githubusercontent.com/Snaacky/dndserver/master/docker-compose.yml
