@@ -3,6 +3,8 @@ import os
 import signal
 from loguru import logger
 from twisted.internet import reactor
+import threading
+
 
 from dndserver.config import config
 from dndserver.protocol import GameFactory
@@ -20,9 +22,12 @@ async def main():
     tcpFactory = GameFactory()
     reactor.listenTCP(config.server.port, tcpFactory)
 
+    # Start the console function in a separate thread
+    console_thread = threading.Thread(target=console)
+    console_thread.start()
+
     # Start running the TCP server.
     logger.info(f"Running game server on tcp://{config.server.host}:{config.server.port}")
-    reactor.callWhenRunning(console)
     reactor.run()
 
 
