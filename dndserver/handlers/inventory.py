@@ -33,7 +33,7 @@ def get_all_items(character_id, inventory_id=None, slot_id=None):
 
     for item in query:
         # add the attributes of the item
-        attributes = db.query(ItemAttribute).filter_by(item_id=item.id).filter_by(index=0).all()
+        attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
 
         # add the attributes and the item
         ret.append((item, attributes))
