@@ -105,6 +105,7 @@ class GameProtocol(Protocol):
                 pc.C2S_PARTY_INVITE_REQ: party.party_invite,
                 pc.C2S_PARTY_EXIT_REQ: party.leave_party,
                 pc.C2S_PARTY_INVITE_ANSWER_REQ: party.accept_invite,
+                pc.C2S_PARTY_READY_REQ: party.set_ready_state,
                 pc.C2S_PARTY_MEMBER_KICK_REQ: party.kick_member,
                 pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
                 pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
