@@ -49,6 +49,10 @@ class GameProtocol(Protocol):
     def connectionLost(self, reason):
         """Event for when a client disconnects from the server."""
         logger.debug(f"Lost connection to: {self.transport.client[0]}:{self.transport.client[1]}")
+
+        # cleanup anything left behind from the gathering hall
+        gatheringhall.cleanup(self)
+
         del sessions[self.transport]
 
     def dataReceived(self, data: bytes) -> None:
@@ -103,9 +107,11 @@ class GameProtocol(Protocol):
                 pc.C2S_MERCHANT_LIST_REQ: merchant.get_merchant_list,
                 pc.C2S_MERCHANT_STOCK_BUY_ITEM_LIST_REQ: merchant.get_buy_list,
                 pc.C2S_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_REQ: merchant.get_sellback_list,
+                pc.C2S_MERCHANT_STOCK_SELL_BACK_REQ: merchant.sellback_request,
                 pc.C2S_PARTY_INVITE_REQ: party.party_invite,
                 pc.C2S_PARTY_EXIT_REQ: party.leave_party,
                 pc.C2S_PARTY_INVITE_ANSWER_REQ: party.accept_invite,
+                pc.C2S_PARTY_MEMBER_KICK_REQ: party.kick_member,
                 pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
                 pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
                 pc.C2S_RANKING_RANGE_REQ: ranking.get_ranking,
