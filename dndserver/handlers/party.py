@@ -4,7 +4,7 @@ from dndserver.handlers import character as Char
 from dndserver.objects.party import Party
 from dndserver.persistent import parties, sessions
 from dndserver.protos import PacketCommand as pc
-from dndserver.protos.Defines import Define_Item
+from dndserver.protos.Defines import Define_Item, Define_Common
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_PARTY_INFO
 from dndserver.protos.Party import (
     SC2S_PARTY_EXIT_REQ,
@@ -17,6 +17,9 @@ from dndserver.protos.Party import (
     SS2C_PARTY_INVITE_NOT,
     SS2C_PARTY_INVITE_RES,
     SS2C_PARTY_MEMBER_INFO_NOT,
+    SC2S_PARTY_READY_REQ,
+    SS2C_PARTY_READY_RES,
+    SS2C_PARTY_LOCATION_UPDATE_NOT,
     SS2C_PARTY_MEMBER_KICK_RES,
 )
 from dndserver.utils import get_party, get_user, make_header
@@ -121,8 +124,8 @@ def send_party_info_notification(party):
         info.gender = Gender(user.character.gender).value
         info.level = user.character.level
         info.isPartyLeader = True if party.leader == user else False
-        info.isReady = 0  # TODO: Need to unhardcode these 2
-        info.isInGame = 0
+        info.isReady = user.state.is_ready
+        info.isInGame = user.state.location == Define_Common.MetaLocation.INGAME
 
         for item, attribute in inventory.get_all_items(user.character.id, Define_Item.InventoryId.EQUIPMENT):
             info.equipItemList.extend([Char.item_to_proto_item(item, attribute)])
@@ -132,6 +135,23 @@ def send_party_info_notification(party):
 
     header = make_header(notify)
     for user in party.players:
+        transport, _ = get_user(account_id=user.account.id)
+        transport.write(header + notify.SerializeToString())
+
+
+def send_party_location_notification(party, session):
+    """Notification send the other party members that updates the location of the provided user"""
+    notify = SS2C_PARTY_LOCATION_UPDATE_NOT()
+    notify.accountId = str(session.account.id)
+    notify.characterId = str(session.character.id)
+    notify.updateLocation = session.state.location
+
+    header = make_header(notify)
+    for user in party.players:
+        # check if we have the user that started the update. No need to send it to that user
+        if user.account.id == session.account.id:
+            continue
+
         transport, _ = get_user(account_id=user.account.id)
         transport.write(header + notify.SerializeToString())
 
@@ -164,6 +184,22 @@ def leave_party(ctx, msg):
     send_party_info_notification(new_party)
     return SS2C_PARTY_EXIT_RES(result=pc.SUCCESS)
 
+
+def set_ready_state(ctx, msg):
+    """Occurs when a user presses the ready button in a party."""
+    req = SC2S_PARTY_READY_REQ()
+    req.ParseFromString(msg)
+
+    # change the state of the user
+    sessions[ctx.transport].state.is_ready = req.isReady
+
+    # notify the party with the change to the ready state
+    party = get_party(account_id=sessions[ctx.transport].account.id)
+    send_party_info_notification(party)
+
+    return SS2C_PARTY_READY_RES(result=pc.SUCCESS)
+
+
 def kick_member(ctx, msg):
     """Occurs when party leader clicks on Kick"""
     req = SC2S_PARTY_MEMBER_KICK_REQ()
@@ -180,4 +216,4 @@ def kick_member(ctx, msg):
         send_party_info_notification(new_party)
         return SS2C_PARTY_MEMBER_KICK_RES(result=pc.SUCCESS)
     else:
-        return SS2C_PARTY_MEMBER_KICK_RES(result=pc.FAIL_GENERAL) 
+        return SS2C_PARTY_MEMBER_KICK_RES(result=pc.FAIL_GENERAL)

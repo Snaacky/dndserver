@@ -207,7 +207,7 @@ def merge_request(ctx, msg):
     new = db.query(Item).filter_by(character_id=character.id).filter_by(id=req.dstInfo.uniqueId).first()
 
     # get the amount we want to merge
-    amount = new.inv_count if new.inv_count > 0 else new.quantity
+    amount = old.inv_count if old.inv_count > 0 else old.quantity
 
     # merge the items
     merge_items(old, new, amount, character.id)
@@ -360,6 +360,7 @@ def move_single_request(ctx, msg):
             .filter_by(character_id=character.id)
             .filter_by(id=old.itemUniqueId)
             .filter_by(item_id=old.itemId)
+            .filter_by(index=0)
             .first()
         )
 
@@ -381,6 +382,7 @@ def move_single_request(ctx, msg):
             db.query(Item)
             .filter_by(character_id=character.id)
             .filter_by(id=new.itemUniqueId)
+            .filter_by(index=0)
             .filter_by(slot_id=new.slotId)
             .filter_by(inventory_id=new.inventoryId)
             .first()

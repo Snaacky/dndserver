@@ -1,8 +1,8 @@
-"""Added Merchants to the DB
+"""Added merchants and merchant items to the database
 
-Revision ID: 7d44c3764c51
+Revision ID: b53c793562c7
 Revises: 64412c0be1f7
-Create Date: 2023-05-12 22:37:21.850294
+Create Date: 2023-05-15 19:14:57.721641
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlalchemy_utils
 
 
 # revision identifiers, used by Alembic.
-revision = "7d44c3764c51"
+revision = "b53c793562c7"
 down_revision = "64412c0be1f7"
 branch_labels = None
 depends_on = None
@@ -50,7 +50,7 @@ def upgrade() -> None:
     with op.batch_alter_table("items", schema=None) as batch_op:
         batch_op.add_column(sa.Column("merchant_id", sa.Integer(), nullable=True))
         batch_op.add_column(sa.Column("remaining", sa.Integer(), nullable=True))
-        batch_op.add_column(sa.Column("index", sa.Integer(), nullable=True))
+        batch_op.add_column(sa.Column("index", sa.Integer(), nullable=True, server_default="0"))
 
     # ### end Alembic commands ###
 

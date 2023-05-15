@@ -3,14 +3,13 @@ import arrow
 from dndserver.database import db
 from dndserver.data import merchant as MerchantData
 from dndserver.enums.classes import MerchantClass
-from dndserver.models import Merchant, ItemAttribute
+from dndserver.models import Merchant, ItemAttribute, Item
 from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Defines import Define_Message
+from dndserver.enums.items import ItemType, Rarity
+from dndserver.enums.items import Item as eItem
 from dndserver.objects import items as ObjItems
-from dndserver.enums.items import ItemType, Rarity, Item
-from dndserver.models import Item as mItem
-from dndserver.handlers import character, inventory
 from dndserver.protos.Merchant import (
     SC2S_MERCHANT_STOCK_BUY_ITEM_LIST_REQ,
     SC2S_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_REQ,
@@ -25,11 +24,12 @@ from dndserver.protos.Merchant import (
     SC2S_MERCHANT_STOCK_SELL_BACK_REQ,
     SS2C_MERCHANT_STOCK_SELL_BACK_RES,
 )
+from dndserver.handlers import character, inventory
 
 
 def delete_items_merchant(merchant_id):
     """Helper function to delete all items a merchant has"""
-    items = db.query(mItem).filter_by(merchant_id=merchant_id).all()
+    items = db.query(Item).filter_by(merchant_id=merchant_id).all()
 
     for item in items:
         # get the attributes for the item
@@ -115,7 +115,7 @@ def db_create_merchant(character_id, merchant_class, refresh_time):
 
 def db_create_merchant_item(merchant_id, item, index, remaining, character_id):
     """Creates a database entry for the merchant with item attributes and the amount remaining"""
-    it = mItem()
+    it = Item()
     it.character_id = character_id
     it.merchant_id = merchant_id
     it.remaining = remaining
@@ -167,7 +167,7 @@ def generate_items_merchant(merchant, merchant_id, character_id):
 def add_to_inventory_merchant(unique_id, info, character_id):
     """Helper function to add a bought item to the inventory of the character"""
     # get the selected item from the database
-    item = db.query(mItem).filter_by(character_id=character_id).filter_by(index=unique_id).first()
+    item = db.query(Item).filter_by(character_id=character_id).filter_by(index=unique_id).first()
 
     # check if we have the item
     if item is None or item.remaining == 0:
@@ -176,7 +176,7 @@ def add_to_inventory_merchant(unique_id, info, character_id):
     # check if we need to merge or create a new item
     if info.itemUniqueId == 0:
         # create a new item for the user. Copy the item from the db to the
-        it = mItem()
+        it = Item()
         it.item_id = item.item_id
         it.quantity = item.quantity
         it.ammo_count = item.ammo_count
@@ -200,7 +200,7 @@ def add_to_inventory_merchant(unique_id, info, character_id):
             attr.save()
     else:
         # we need to merge. Add to the count of the item
-        it = db.query(mItem).filter_by(id=info.itemUniqueId).first()
+        it = db.query(Item).filter_by(id=info.itemUniqueId).first()
 
         # increment the item with the item count
         it.quantity += item.quantity
@@ -271,7 +271,7 @@ def get_buy_list(ctx, msg):
     merchant = db.query(Merchant).filter_by(character_id=char.id, merchant=MerchantClass(req.merchantId)).first()
 
     # get all the item this merchant is selling
-    items = db.query(mItem).filter_by(merchant_id=merchant.id).all()
+    items = db.query(Item).filter_by(merchant_id=merchant.id).all()
 
     # check if we have any items to show. If we dont we regenerate them
     if len(items) == 0:
@@ -279,7 +279,7 @@ def get_buy_list(ctx, msg):
         generate_items_merchant(merchant.merchant, merchant.id, char.id)
 
         # requery the items to fetch all the new items
-        items = db.query(mItem).filter_by(merchant_id=merchant.id).all()
+        items = db.query(Item).filter_by(merchant_id=merchant.id).all()
 
     res = SS2C_MERCHANT_STOCK_BUY_ITEM_LIST_RES()
     res.result = pc.SUCCESS
@@ -319,7 +319,7 @@ def buy_item(ctx, msg):
     for item in req.dealItemList:
         # get the item
         query = (
-            db.query(mItem)
+            db.query(Item)
             .filter_by(character_id=sessions[ctx.transport].character.id)
             .filter_by(id=item.itemUniqueId)
             .first()
@@ -412,7 +412,7 @@ def sellback_request(ctx, msg):
         else:
             # generate item data for that request
             item_generated = ObjItems.generate_item(
-                Item.GOLDCOINS,
+                eItem.GOLDCOINS,
                 ItemType.LOOTABLES,
                 Rarity.NONE,
                 recievedInfo.inventoryId,
@@ -420,7 +420,7 @@ def sellback_request(ctx, msg):
                 recievedInfo.itemCount,
             )
             # and add it to the player inventory
-            item_real = mItem()
+            item_real = Item()
             item_real.character_id = cid
             item_real.item_id = item_generated.itemId
             item_real.quantity = item_generated.itemCount
