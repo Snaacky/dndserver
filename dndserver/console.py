@@ -4,14 +4,6 @@ from dndserver.enums.items import ItemType, Rarity, Item as ItemEnum
 from dndserver.models import Item
 from dndserver.utils import get_user
 
-commands = {
-    "/help": {"function": help, "help": ""},
-    "/give_item": {"function": give_item, "help": "/give_item <user> <item_name> <rarity> [amount]"},
-    "/list_items": {"function": list_items, "help": "/list_items [filter]"},
-    "/list_rarity": {"function": list_rarity, "help": "/list_rarity [filter]"},
-    "/exit": {"function": exit, "help": "/exit"}
-    # add more commands here
-}
 
 def list_items(filter=None):
     for key in ItemEnum:
@@ -20,6 +12,7 @@ def list_items(filter=None):
         elif not filter:
             print(key.name)
 
+
 def list_rarity(filter=None):
     for key in Rarity:
         if filter is not None and filter in key.name:
@@ -27,10 +20,12 @@ def list_rarity(filter=None):
         elif not filter:
             print(key.name)
 
+
 def help():
     print("List of available commands:")
     for _, info in commands.items():
         print(info["help"])
+
 
 def give_item(user, item_name, item_type, rarity=Rarity.NONE, amount=1):
     _, userAccount = get_user(nickname=user)
@@ -49,8 +44,20 @@ def give_item(user, item_name, item_type, rarity=Rarity.NONE, amount=1):
     it.slot_id = item.slotId
     it.save()
 
+
 def exit():
     sys.exit(0)
+
+
+commands = {
+    "/help": {"function": help, "help": ""},
+    "/give_item": {"function": give_item, "help": "/give_item <user> <item_name> <rarity> [amount]"},
+    "/list_items": {"function": list_items, "help": "/list_items [filter]"},
+    "/list_rarity": {"function": list_rarity, "help": "/list_rarity [filter]"},
+    "/exit": {"function": exit, "help": "/exit"}
+    # add more commands here
+}
+
 
 def console():
     line = None
@@ -59,7 +66,7 @@ def console():
             line = input("> ")
         except EOFError:
             pass
-        
+
         if not line:
             return
         parts = line.split()
