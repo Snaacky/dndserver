@@ -278,20 +278,21 @@ def get_empty_slot(character_id, size=(1, 1)):
     # get the items from the bag and sort them
     items = inventory.get_all_items(character_id, Define_Item.InventoryId.BAG)
     items.sort(key=lambda i: i[0].slot_id, reverse=True)
+    items.extend([(None, None)] * (50 - len(items)))
 
-    for index, (item, _) in zip(range(50), items):
+    for index, (item, _) in enumerate(items):
         # TODO: get the size of the current item and use the size of the item we want to place
-        if index != item.slot_id:
-            return (Define_Item.InventoryId.BAG, index)
+        if item is None or index != item.slot_id:
+            return (Define_Item.InventoryId.BAG, index + 1)
 
     # do the same thing for the storage
-    items = inventory.get_all_items(character_id, Define_Item.InventoryId.STORAGE).sort(
-        key=lambda i: i[0].slot_id, reverse=True
-    )
+    items = inventory.get_all_items(character_id, Define_Item.InventoryId.STORAGE)
+    items.sort(key=lambda i: i[0].slot_id, reverse=True)
+    items.extend([(None, None)] * (240 - len(items)))
 
-    for index, (item, _) in zip(range(240), items):
+    for index, (item, _) in enumerate(items):
         # TODO: get the size of the current item and use the size of the item we want to place
-        if index != item.slot_id:
+        if item is None or index != item.slot_id:
             return (Define_Item.InventoryId.STORAGE, index)
 
     # we have no space return None
