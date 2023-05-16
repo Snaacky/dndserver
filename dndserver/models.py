@@ -6,7 +6,7 @@ from sqlalchemy_utils import ArrowType
 
 from dndserver.config import config
 from dndserver.database import db
-from dndserver.enums.classes import CharacterClass, Gender
+from dndserver.enums.classes import CharacterClass, Gender, MerchantClass
 
 
 base = declarative_base()
@@ -103,10 +103,17 @@ class Item(base):
     character_id = Column(Integer)
     item_id = Column(String)
     quantity = Column(Integer)
-    inventory_id = Column(Integer)
-    slot_id = Column(Integer)
     ammo_count = Column(Integer, default=0)
     inv_count = Column(Integer, default=0)
+
+    # for the character
+    slot_id = Column(Integer)
+    inventory_id = Column(Integer)
+
+    # for the merchant
+    merchant_id = Column(Integer, default=0)
+    remaining = Column(Integer, default=0)
+    index = Column(Integer, default=0)
 
     def save(self):
         db.add(self)
@@ -125,6 +132,23 @@ class ItemAttribute(base):
     primary = Column(Boolean)
     property = Column(String)
     value = Column(Integer)
+
+    def save(self):
+        db.add(self)
+        db.commit()
+
+    def delete(self):
+        db.delete(self)
+        db.commit()
+
+
+class Merchant(base):
+    __tablename__ = "merchants"
+
+    id = Column(Integer, primary_key=True, autoincrement="auto")
+    character_id = Column(Integer)
+    merchant = Column(Enum(MerchantClass))
+    refresh_time = Column(ArrowType, default=arrow.utcnow())
 
     def save(self):
         db.add(self)
