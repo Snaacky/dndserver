@@ -1,8 +1,8 @@
-"""added Login table
+"""Added Login Table
 
-Revision ID: e0609644dd8c
-Revises: 64412c0be1f7
-Create Date: 2023-05-10 20:07:24.540366
+Revision ID: 489dbe73a913
+Revises: b53c793562c7
+Create Date: 2023-05-16 19:03:34.855509
 
 """
 from alembic import op
@@ -11,8 +11,8 @@ import sqlalchemy_utils
 
 
 # revision identifiers, used by Alembic.
-revision = "e0609644dd8c"
-down_revision = "64412c0be1f7"
+revision = "489dbe73a913"
+down_revision = "b53c793562c7"
 branch_labels = None
 depends_on = None
 
