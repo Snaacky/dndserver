@@ -41,7 +41,7 @@ def process_login(ctx, msg):
 
     # Check if an hwId is associated to an account_id, if not add to db
     for hwid in req.hwIds:
-        if not (db.query(Hwid).filter((Hwid.hwid.ilike(hwid) & (Hwid.account_id.ilike(account.id)))).first()):
+        if not db.query(Hwid).filter_by(hwid=hwid).filter_by(account_id=account.id).first():
             hwid = Hwid(account_id=account.id, hwid=hwid, seen_at=arrow.utcnow())
             hwid.save()
 
