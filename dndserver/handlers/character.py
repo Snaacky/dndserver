@@ -37,17 +37,19 @@ from dndserver.protos.CharacterClass import (
 )
 from dndserver.protos.Defines import Define_Message
 from dndserver.protos.Customize import (
-    SS2C_CUSTOMIZE_CHARACTER_INFO_RES,
-    SS2C_CUSTOMIZE_ITEM_INFO_RES,
     SS2C_CUSTOMIZE_ACTION_INFO_RES,
+    SS2C_CUSTOMIZE_CHARACTER_INFO_RES,
     SS2C_CUSTOMIZE_EMOTE_INFO_RES,
+    SS2C_CUSTOMIZE_ITEM_INFO_RES,
+    SS2C_CUSTOMIZE_LOBBY_EMOTE_INFO_RES,
 )
 from dndserver.protos.Defines import Define_Character, Define_Class, Define_Item
 from dndserver.protos.Item import (
-  SCUSTOMIZE_CHARACTER,
-  SCUSTOMIZE_ITEM,
-  SCUSTOMIZE_ACTION,
-  SEMOTE,
+    SCUSTOMIZE_ACTION,
+    SCUSTOMIZE_CHARACTER,
+    SCUSTOMIZE_ITEM,
+    SCUSTOMIZE_LOBBY_EMOTE,
+    SEMOTE,
 )
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 
@@ -665,6 +667,13 @@ def emote_info(ctx, msg):
     res.emotes.append(custom)
     return res
 
+def lobby_emote_info(ctx, msg):
+    custom = SCUSTOMIZE_LOBBY_EMOTE(lobbyEmoteId="1", equipSlotIndex=1, isNew=1)
+    res = SS2C_CUSTOMIZE_LOBBY_EMOTE_INFO_RES()
+    res.loopFlag = Define_Message.LoopFlag.NONE
+    res.customizeLobbyEmoteIds.append(custom)
+    return res
+
 def item_info(ctx, msg):
     custom = SCUSTOMIZE_ITEM(customizeItemId="1", isEquip=1, isNew=1)
     res = SS2C_CUSTOMIZE_ITEM_INFO_RES()
@@ -678,4 +687,3 @@ def action_info(ctx, msg):
     res.loopFlag = Define_Message.LoopFlag.NONE
     res.customizeActionIds.append(custom)
     return res
-  
