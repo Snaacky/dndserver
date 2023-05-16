@@ -73,6 +73,10 @@ def accept_invite(ctx, msg):
 
     send_party_info_notification(party)
 
+    # send the location of everyone to everyone
+    for user in party.players:
+        send_party_location_notification(party, user)
+
     return SS2C_PARTY_INVITE_ANSWER_RES(result=pc.SUCCESS)
 
 
