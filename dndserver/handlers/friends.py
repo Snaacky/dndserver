@@ -1,11 +1,10 @@
-import random
-
 from dndserver.config import config
 from dndserver.database import db
 from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.models import BlockedUser, Character
 from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
+from dndserver.protos.Defines import Define_Common
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SBLOCK_CHARACTER, SCHARACTER_FRIEND_INFO, Friend_Location
 from dndserver.protos.Common import (
     SC2S_BLOCK_CHARACTER_LIST_REQ,
@@ -18,40 +17,72 @@ from dndserver.protos.Common import (
 from dndserver.protos.Defines import Define_Message
 from dndserver.protos.Friend import SC2S_FRIEND_FIND_REQ, SS2C_FRIEND_FIND_RES, SS2C_FRIEND_LIST_ALL_RES
 from dndserver.utils import get_user
+from dndserver.handlers.party import get_party
 
 
 def list_friends(ctx, msg):
-    nickname = SACCOUNT_NICKNAME()
-    nickname.originalNickName = "gay"
-    nickname.streamingModeNickName = f"Fighter#{random.randrange(1000000, 1700000)}"
-
-    friend_info = SCHARACTER_FRIEND_INFO()
-    friend_info.accountId = "2"
-    friend_info.nickName.CopyFrom(nickname)
-    friend_info.characterClass = "DesignDataPlayerCharacter:Id_PlayerCharacter_Fighter"
-    friend_info.characterId = "2"
-    friend_info.gender = 2
-    friend_info.level = 12
-    # TODO: update this based on the status of the account.
-    friend_info.locationStatus = Friend_Location.Friend_Location_LOBBY
-
-    # Set the member count and max member count to 0 for solo
-    friend_info.PartyMemeberCount = 0
-    friend_info.PartyMaxMemeberCount = 0
-
     # send the loop start
     ctx.reply(SS2C_FRIEND_LIST_ALL_RES(loopFlag=Define_Message.LoopFlag.BEGIN))
 
-    # send all the friend data
     res = SS2C_FRIEND_LIST_ALL_RES()
     res.loopFlag = Define_Message.LoopFlag.PROGRESS
+
+    # counters for the lobby and the dungeon
+    in_lobby = 0
+    in_dungeon = 0
+
+    # process every character that is online. The client side will not show the current user in the list. So no need
+    # to filter it out
+    for user in sessions.values():
+        # make sure the user is logged in to the lobby
+        if user.character is None:
+            continue
+
+        nickname = SACCOUNT_NICKNAME(
+            originalNickName=user.character.nickname, streamingModeNickName=user.character.streaming_nickname
+        )
+
+        friend_info = SCHARACTER_FRIEND_INFO()
+        friend_info.accountId = str(user.account.id)
+        friend_info.nickName.CopyFrom(nickname)
+        friend_info.characterClass = CharacterClass(user.character.character_class).value
+        friend_info.characterId = str(user.character.id)
+        friend_info.gender = Gender(user.character.gender).value
+        friend_info.level = user.character.level
+
+        # get information about the party of the user
+        party = get_party(account_id=user.account.id)
+        is_solo = len(party.players) <= 1
+        location = (
+            Friend_Location.Friend_Location_DUNGEON
+            if user.state.location == Define_Common.MetaLocation.INGAME
+            else Friend_Location.Friend_Location_LOBBY
+        )
+
+        friend_info.locationStatus = location
+
+        # Set the member count and max member count (special case for solo, that should be 0 not 1)
+        friend_info.PartyMemeberCount = len(party.players) if not is_solo else 0
+        friend_info.PartyMaxMemeberCount = 3 if not is_solo else 0
+
+        # update the players in the dungeon and lobby
+        if location == Friend_Location.Friend_Location_DUNGEON:
+            in_dungeon += 1
+        else:
+            in_lobby += 1
+
+        # add the user information to the friend list
+        res.friendInfoList.append(friend_info)
+
+    # set the total amount of users. TODO: Not sure if this is the correct location to set it
     res.totalUserCount = len(res.friendInfoList)
-    res.friendInfoList.append(friend_info)
+
+    # send all the friend data
     ctx.reply(res)
 
     # send the loop end
     return SS2C_FRIEND_LIST_ALL_RES(
-        loopFlag=Define_Message.LoopFlag.END, lobbyLocateCount=len(sessions), dungeonLocateCount=1337
+        loopFlag=Define_Message.LoopFlag.END, lobbyLocateCount=in_lobby, dungeonLocateCount=in_dungeon
     )
 
 
@@ -73,6 +104,16 @@ def find_user(ctx, msg):
 
     _, session = get_user(nickname=req.nickName.originalNickName)
     if session:
+        # get information about the account we are requesting
+        party = get_party(account_id=sessions[ctx.transport].account.id)
+        is_solo = len(party.players) <= 1
+        location = (
+            Friend_Location.Friend_Location_DUNGEON
+            if session.state.location == Define_Common.MetaLocation.INGAME
+            else Friend_Location.Friend_Location_LOBBY
+        )
+
+        # add the friend info
         friend = SCHARACTER_FRIEND_INFO(
             accountId=str(session.account.id),
             nickName=SACCOUNT_NICKNAME(
@@ -83,9 +124,9 @@ def find_user(ctx, msg):
             characterId=str(session.character.id),
             gender=Gender(session.character.gender).value,
             level=session.character.level,
-            locationStatus=1,  # TODO: Remove the hardcoding from these bottom 3.
-            PartyMemeberCount=1,
-            PartyMaxMemeberCount=3,
+            locationStatus=location,
+            PartyMemeberCount=len(party.players) if not is_solo else 0,
+            PartyMaxMemeberCount=3 if not is_solo else 0,
         )
         res.friendInfo.CopyFrom(friend)
 
