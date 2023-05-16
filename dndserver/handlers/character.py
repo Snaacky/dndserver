@@ -36,10 +36,19 @@ from dndserver.protos.CharacterClass import (
     SS2C_CLASS_SPELL_SLOT_MOVE_RES,
 )
 from dndserver.protos.Defines import Define_Message
-from dndserver.protos.Customize import SS2C_CUSTOMIZE_CHARACTER_INFO_RES, SS2C_CUSTOMIZE_ITEM_INFO_RES, SS2C_CUSTOMIZE_ACTION_INFO_RES
+from dndserver.protos.Customize import (
+    SS2C_CUSTOMIZE_CHARACTER_INFO_RES,
+    SS2C_CUSTOMIZE_ITEM_INFO_RES,
+    SS2C_CUSTOMIZE_ACTION_INFO_RES,
+    SS2C_CUSTOMIZE_EMOTE_INFO_RES,
+)
 from dndserver.protos.Defines import Define_Character, Define_Class, Define_Item
-from dndserver.protos.Item import SCUSTOMIZE_CHARACTER, SCUSTOMIZE_ITEM, SCUSTOMIZE_ACTION
-
+from dndserver.protos.Item import (
+  SCUSTOMIZE_CHARACTER,
+  SCUSTOMIZE_ITEM,
+  SCUSTOMIZE_ACTION,
+  SEMOTE,
+)
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 
 
@@ -649,6 +658,12 @@ def create_items_per_class(char_class):
             ]
     return []
 
+def emote_info(ctx, msg):
+    custom = SEMOTE(emoteId="1", equipSlotIndex=1, isNew=1)
+    res = SS2C_CUSTOMIZE_EMOTE_INFO_RES()
+    res.loopFlag = Define_Message.LoopFlag.NONE
+    res.emotes.append(custom)
+    return res
 
 def item_info(ctx, msg):
     custom = SCUSTOMIZE_ITEM(customizeItemId="1", isEquip=1, isNew=1)
@@ -663,3 +678,4 @@ def action_info(ctx, msg):
     res.loopFlag = Define_Message.LoopFlag.NONE
     res.customizeActionIds.append(custom)
     return res
+  
