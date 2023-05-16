@@ -62,7 +62,7 @@ def count_friends():
             in_dungeon += 1
         else:
             in_lobby += 1
-        return friend_info, in_lobby, in_dungeon
+    return friend_info, in_lobby, in_dungeon
 
 
 def list_friends(ctx, msg):
