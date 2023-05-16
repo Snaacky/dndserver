@@ -3,6 +3,7 @@ from dndserver.database import db
 from dndserver.handlers import character
 from dndserver.models import Character, Login
 from dndserver.objects.party import Party
+from dndserver.objects.state import State
 from dndserver.persistent import parties, sessions
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Account import SC2S_LOBBY_ENTER_REQ, SS2C_LOBBY_ENTER_RES
@@ -27,6 +28,7 @@ def enter_lobby(ctx, msg):
     res = SS2C_LOBBY_ENTER_RES(result=pc.SUCCESS, accountId=str(query.id))
 
     sessions[ctx.transport].character = query
+    sessions[ctx.transport].state = State()
 
     # update the last login time of the character and Login table
     query.last_login = arrow.utcnow()
