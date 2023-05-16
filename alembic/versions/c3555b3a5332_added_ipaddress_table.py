@@ -1,8 +1,8 @@
-"""added IPAddress Table
+"""Added IPAddress Table
 
-Revision ID: da3ce2b00c91
-Revises: 64412c0be1f7
-Create Date: 2023-05-11 16:26:33.766461
+Revision ID: c3555b3a5332
+Revises: b53c793562c7
+Create Date: 2023-05-16 18:59:05.677516
 
 """
 from alembic import op
@@ -11,8 +11,8 @@ import sqlalchemy_utils
 
 
 # revision identifiers, used by Alembic.
-revision = "da3ce2b00c91"
-down_revision = "64412c0be1f7"
+revision = "c3555b3a5332"
+down_revision = "b53c793562c7"
 branch_labels = None
 depends_on = None
 
