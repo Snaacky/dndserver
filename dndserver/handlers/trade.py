@@ -730,6 +730,7 @@ def chat(ctx, msg):
 
 
 def process_membership(ctx, msg):
+    """Occurs when the user tries to become a trader"""
     char = sessions[ctx.transport].character
 
     # check if the level of the user is high enough
