@@ -42,7 +42,7 @@ class GameProtocol(Protocol):
 
         # Retrive ip address of connected client for logging
         ip_address = self.transport.client[0]
-        if not (db.query(IPAddress).filter((IPAddress.address.ilike(ip_address))).first()):
+        if not db.query(IPAddress).filter((IPAddress.address.ilike(ip_address))).first():
             address = IPAddress(address=ip_address)
             address.save()
 
