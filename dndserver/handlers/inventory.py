@@ -19,12 +19,15 @@ from dndserver.protos.Inventory import (
 )
 
 
-def get_all_items(character_id, inventory_id=None):
+def get_all_items(character_id, inventory_id=None, slot_id=None):
     """Helper function to get all items for a character id"""
-    query = db.query(Item).filter_by(character_id=character_id)
+    query = db.query(Item).filter_by(character_id=character_id).filter_by(index=0)
 
     if inventory_id is not None:
-        query.filter_by(inventory_id=inventory_id)
+        query = query.filter_by(inventory_id=inventory_id)
+
+    if slot_id is not None:
+        query = query.filter_by(slot_id=slot_id)
 
     ret = list()
 
@@ -204,7 +207,7 @@ def merge_request(ctx, msg):
     new = db.query(Item).filter_by(character_id=character.id).filter_by(id=req.dstInfo.uniqueId).first()
 
     # get the amount we want to merge
-    amount = new.inv_count if new.inv_count > 0 else new.quantity
+    amount = old.inv_count if old.inv_count > 0 else old.quantity
 
     # merge the items
     merge_items(old, new, amount, character.id)
@@ -321,7 +324,13 @@ def move_request(ctx, msg):
     char_query = db.query(Character).filter_by(id=sessions[ctx.transport].character.id).first()
 
     # get the current item in the database
-    item_query = db.query(Item).filter_by(character_id=char_query.id).filter_by(id=req.srcInfo.uniqueId).first()
+    item_query = (
+        db.query(Item)
+        .filter_by(character_id=char_query.id)
+        .filter_by(id=req.srcInfo.uniqueId)
+        .filter_by(index=0)
+        .first()
+    )
 
     if item_query is not None:
         item_query.inventory_id = req.dstInventoryId
@@ -350,9 +359,8 @@ def move_single_request(ctx, msg):
             db.query(Item)
             .filter_by(character_id=character.id)
             .filter_by(id=old.itemUniqueId)
-            .filter_by(slot_id=old.slotId)
-            .filter_by(inventory_id=old.inventoryId)
             .filter_by(item_id=old.itemId)
+            .filter_by(index=0)
             .first()
         )
 
@@ -374,6 +382,7 @@ def move_single_request(ctx, msg):
             db.query(Item)
             .filter_by(character_id=character.id)
             .filter_by(id=new.itemUniqueId)
+            .filter_by(index=0)
             .filter_by(slot_id=new.slotId)
             .filter_by(inventory_id=new.inventoryId)
             .first()
