@@ -66,8 +66,10 @@ def format_other_data(data, name, rarity, item_count):
         item_id = f"DesignDataItem:Id_Item_{name}"
     final_data = {"itemId": item_id}
     maxCount = int(data["Properties"]["Item"]["MaxCount"])
-    if maxCount and item_count < maxCount:
-        final_data["itemCount"] = item_count
+    if maxCount and int(item_count) <= maxCount:
+        final_data["itemCount"] = int(item_count)
+    else:
+        final_data["itemCount"] = maxCount
     return final_data
 
 

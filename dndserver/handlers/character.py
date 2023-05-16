@@ -5,7 +5,7 @@ from dndserver.data import skills as sk
 from dndserver.data import spells as sp
 from dndserver.database import db
 from dndserver.enums.classes import CharacterClass, Gender
-from dndserver.handlers import inventory
+from dndserver.handlers import inventory, merchant
 from dndserver.models import Character, Item, ItemAttribute, Spell
 from dndserver.persistent import sessions
 from dndserver.objects import items
@@ -35,23 +35,36 @@ from dndserver.protos.CharacterClass import (
     SC2S_CLASS_SPELL_SLOT_MOVE_REQ,
     SS2C_CLASS_SPELL_SLOT_MOVE_RES,
 )
-from dndserver.protos.Customize import SS2C_CUSTOMIZE_CHARACTER_INFO_RES
+from dndserver.protos.Defines import Define_Message
+from dndserver.protos.Customize import (
+    SS2C_CUSTOMIZE_CHARACTER_INFO_RES,
+    SS2C_CUSTOMIZE_ITEM_INFO_RES,
+    SS2C_CUSTOMIZE_ACTION_INFO_RES,
+    SS2C_CUSTOMIZE_EMOTE_INFO_RES,
+)
 from dndserver.protos.Defines import Define_Character, Define_Class, Define_Item
-from dndserver.protos.Item import SCUSTOMIZE_CHARACTER
+from dndserver.protos.Item import (
+  SCUSTOMIZE_CHARACTER,
+  SCUSTOMIZE_ITEM,
+  SCUSTOMIZE_ACTION,
+  SEMOTE,
+)
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 
 
-def item_to_proto_item(item, attributes):
+def item_to_proto_item(item, attributes, for_character=True):
     """Helper function to create a proto item from a database item and attributes"""
     ret = pItem.SItem()
 
     ret.itemUniqueId = item.id
     ret.itemId = item.item_id
     ret.itemCount = item.quantity
-    ret.inventoryId = item.inventory_id
-    ret.slotId = item.slot_id
     ret.itemAmmoCount = item.ammo_count
     ret.itemContentsCount = item.inv_count
+
+    if for_character:
+        ret.inventoryId = item.inventory_id
+        ret.slotId = item.slot_id
 
     for attribute in attributes:
         property = pItem.SItemProperty(propertyTypeId=attribute.property, propertyValue=attribute.value)
@@ -178,6 +191,9 @@ def delete_character(ctx, msg):
         res.result = pc.FAIL_GENERAL
         return res
 
+    # delete all the merchants and items they have
+    merchant.delete_merchants(query.id)
+
     # also delete all the items this character has
     items = db.query(Item).filter_by(character_id=req.characterId)
     for item in items:
@@ -224,7 +240,11 @@ def character_info(ctx, msg):
 
     # get all the items and attributes of the character
     for item, attributes in inventory.get_all_items(character.id):
-        char_info.CharacterItemList.append(item_to_proto_item(item, attributes))
+        # check if the item is in storage or not
+        if item.inventory_id >= Define_Item.InventoryId.STORAGE:
+            char_info.CharacterStorageItemList.append(item_to_proto_item(item, attributes))
+        else:
+            char_info.CharacterItemList.append(item_to_proto_item(item, attributes))
 
     res = SS2C_LOBBY_CHARACTER_INFO_RES(result=pc.SUCCESS, characterDataBase=char_info)
 
@@ -637,3 +657,25 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
             ]
     return []
+
+def emote_info(ctx, msg):
+    custom = SEMOTE(emoteId="1", equipSlotIndex=1, isNew=1)
+    res = SS2C_CUSTOMIZE_EMOTE_INFO_RES()
+    res.loopFlag = Define_Message.LoopFlag.NONE
+    res.emotes.append(custom)
+    return res
+
+def item_info(ctx, msg):
+    custom = SCUSTOMIZE_ITEM(customizeItemId="1", isEquip=1, isNew=1)
+    res = SS2C_CUSTOMIZE_ITEM_INFO_RES()
+    res.loopFlag = Define_Message.LoopFlag.NONE
+    res.customizeItems.append(custom)
+    return res
+
+def action_info(ctx, msg):
+    custom = SCUSTOMIZE_ACTION(customizeActionId="1", isEquip=1, isNew=1)
+    res = SS2C_CUSTOMIZE_ACTION_INFO_RES()
+    res.loopFlag = Define_Message.LoopFlag.NONE
+    res.customizeActionIds.append(custom)
+    return res
+  
