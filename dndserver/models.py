@@ -40,6 +40,7 @@ class Character(base):
     experience = Column(Integer, default=0)
     karma_rating = Column(Integer, default=0)
     streaming_nickname = Column(String(15))
+    is_trader = Column(Boolean, default=False)
 
     perk0 = Column(String, default="")
     perk1 = Column(String, default="")

@@ -44,6 +44,7 @@ class GameProtocol(Protocol):
 
         # cleanup anything left behind from the gathering hall
         gatheringhall.cleanup(self)
+        trade.cleanup(self)
 
         del sessions[self.transport]
 
@@ -108,14 +109,22 @@ class GameProtocol(Protocol):
                 pc.C2S_PARTY_INVITE_REQ: party.party_invite,
                 pc.C2S_PARTY_EXIT_REQ: party.leave_party,
                 pc.C2S_PARTY_INVITE_ANSWER_REQ: party.accept_invite,
-                pc.C2S_TRADE_CHANNEL_CHAT_REQ: trade.chat_request,
-                pc.C2S_TRADE_CHANNEL_EXIT_REQ: trade.exit,
-                pc.C2S_TRADE_CHANNEL_LIST_REQ: trade.get_trade_channels,
-                pc.C2S_TRADE_CHANNEL_SELECT_REQ: trade.select_trade_channel,
+                pc.C2S_TRADE_CHANNEL_CHAT_REQ: trade.chat,
+                pc.C2S_TRADE_CHANNEL_EXIT_REQ: trade.exit_channel,
+                pc.C2S_TRADE_CHANNEL_LIST_REQ: trade.get_channels,
+                pc.C2S_TRADE_CHANNEL_SELECT_REQ: trade.select_channel,
                 pc.C2S_PARTY_READY_REQ: party.set_ready_state,
                 pc.C2S_PARTY_MEMBER_KICK_REQ: party.kick_member,
                 pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
                 pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
+                pc.C2S_TRADE_REQUEST_REQ: trade.trade_request,
+                pc.C2S_TRADE_ANSWER_REQ: trade.accept_invite,
+                pc.C2S_TRADING_CHAT_REQ: trade.private_chat,
+                pc.C2S_TRADING_CLOSE_REQ: trade.cancel_trade,
+                pc.C2S_TRADING_ITEM_UPDATE_REQ: trade.move_item,
+                pc.C2S_TRADING_READY_REQ: trade.ready,
+                pc.C2S_TRADING_CONFIRM_CANCEL_REQ: trade.cancel_confirm,
+                pc.C2S_TRADING_CONFIRM_READY_REQ: trade.confirm,
                 pc.C2S_RANKING_RANGE_REQ: ranking.get_ranking,
                 pc.C2S_RANKING_CHARACTER_REQ: ranking.get_character_ranking,
                 pc.C2S_GATHERING_HALL_CHANNEL_CHAT_REQ: gatheringhall.chat,
@@ -133,7 +142,9 @@ class GameProtocol(Protocol):
                 return self.heartbeat()
 
             res = handlers[handler[0]](self, msg)
-            self.reply(msg=res)
+
+            if res is not None:
+                self.reply(msg=res)
 
     def heartbeat(self):
         """Send a D&D keepalive packet."""
