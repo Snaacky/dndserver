@@ -72,6 +72,7 @@ class GameProtocol(Protocol):
                 pc.C2S_ACCOUNT_CHARACTER_DELETE_REQ: character.delete_character,
                 pc.C2S_ACCOUNT_CHARACTER_LIST_REQ: character.list_characters,
                 pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.character_info,
+                pc.C2S_CUSTOMIZE_LOBBY_EMOTE_INFO_REQ: character.lobby_emote_info,
                 pc.C2S_CUSTOMIZE_EMOTE_INFO_REQ: character.emote_info,
                 pc.C2S_CUSTOMIZE_ITEM_INFO_REQ: character.item_info,
                 pc.C2S_CUSTOMIZE_ACTION_INFO_REQ: character.action_info,
