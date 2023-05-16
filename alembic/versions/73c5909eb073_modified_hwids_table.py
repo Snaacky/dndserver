@@ -1,8 +1,8 @@
-"""Modified HWIDs Table, hwid is not more unique
+"""modified hwids table
 
-Revision ID: ce81c90ea56b
-Revises: 64412c0be1f7
-Create Date: 2023-05-11 21:34:00.622417
+Revision ID: 73c5909eb073
+Revises: b53c793562c7
+Create Date: 2023-05-16 18:47:35.075991
 
 """
 from alembic import op
@@ -11,8 +11,8 @@ import sqlalchemy_utils
 
 
 # revision identifiers, used by Alembic.
-revision = "ce81c90ea56b"
-down_revision = "64412c0be1f7"
+revision = "73c5909eb073"
+down_revision = "b53c793562c7"
 branch_labels = None
 depends_on = None
 
