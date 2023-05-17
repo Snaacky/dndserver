@@ -61,7 +61,7 @@ class GameProtocol(Protocol):
 
         # Only begin parsing the message if there's at least enough data for the header to be present
         while len(self.buffer) >= 8:
-            length, _id = struct.unpack("<hxxhxx", self.buffer[:8])
+            length, _id = struct.unpack("<HxxHxx", self.buffer[:8])
 
             # Break if there is not enough data in the buffer yet to parse the full message.
             if len(self.buffer) < length:
