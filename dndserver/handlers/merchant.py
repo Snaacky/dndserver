@@ -1,4 +1,5 @@
 import arrow
+import re
 
 from dndserver.database import db
 from dndserver.data import merchant as MerchantData
@@ -302,44 +303,47 @@ def get_buy_list(ctx, msg):
         if item.remaining == 0:
             continue
 
-        attributes = []
-
         # check if we should show the attributes and stats
         if merchant.merchant != MerchantClass.GOBLINMERCHANT:
             # get the attributes for the item
             attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
 
-        else:
-            # we should not show the stats. Replace all the stats for "Unidentified"
-            item_attr = db.query(ItemAttribute).filter_by(item_id=item.id).all()
-
-            # make sure we have at least one primary item in the item attributes. Otherwise
-            # the game will show random stats
-            if not any(attr.primary for attr in item_attr):
-                # for some reason the item does not have a primary property. Add the unidentified here
-                at = ItemAttribute()
-                at.item_id = item.id
-                at.primary = True
-                at.property = "DesignDataItemPropertyType:Id_ItemPropertyType_Unidentified"
-                at.value = True
-                attributes.append(at)
-
-            # add all the attributes as hidden
-            for attr in item_attr:
-                at = ItemAttribute()
-                at.item_id = item.id
-                at.primary = attr.primary
-                at.property = "DesignDataItemPropertyType:Id_ItemPropertyType_Unidentified"
-                at.value = True
-                attributes.append(at)
-
-        res.stockList.append(
-            SMERCHANT_STOCK_BUY_ITEM_INFO(
-                stockBuyId=get_stockbuy_id(merchant.merchant, item.index),
-                stockUniqueId=get_stock_unique_id(merchant.merchant, item.index),
-                itemInfo=character.item_to_proto_item(item, attributes, False),
+            res.stockList.append(
+                SMERCHANT_STOCK_BUY_ITEM_INFO(
+                    stockBuyId=get_stockbuy_id(merchant.merchant, item.index),
+                    stockUniqueId=get_stock_unique_id(merchant.merchant, item.index),
+                    itemInfo=character.item_to_proto_item(item, attributes, False),
+                )
             )
-        )
+
+        else:
+            attributes = []
+
+            # add 1 primary and 1 secondary hidden property
+            for primary in [True, False]:
+                at = ItemAttribute()
+                at.item_id = item.id
+                at.primary = primary
+                at.property = "DesignDataItemPropertyType:Id_ItemPropertyType_Unidentified"
+                at.value = True
+                attributes.append(at)
+
+            # create a new item with the rarity set to common
+            it = Item()
+            it.id = item.id
+            it.character_id = item.character_id
+            it.item_id = re.sub("\\d001", "1001", item.item_id)
+            it.quantity = item.quantity
+            it.ammo_count = item.ammo_count
+            it.inv_count = item.inv_count
+
+            res.stockList.append(
+                SMERCHANT_STOCK_BUY_ITEM_INFO(
+                    stockBuyId=get_stockbuy_id(merchant.merchant, item.index),
+                    stockUniqueId=get_stock_unique_id(merchant.merchant, item.index),
+                    itemInfo=character.item_to_proto_item(it, attributes, False),
+                )
+            )
 
     # send stage 2 (data the merchant is selling)
     ctx.reply(res)
