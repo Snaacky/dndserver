@@ -8,7 +8,7 @@ def make_header(msg: bytes):
     """Create a D&D packet header."""
     # header: <packet length: short> 00 00 <packet id: short> 00 00
     packet_type = type(msg).__name__.replace("SS2C", "S2C").replace("SC2S", "C2S")
-    return struct.pack("<hxxhxx", len(msg.SerializeToString()) + 8, pc.PacketCommand.Value(packet_type))
+    return struct.pack("<HxxHxx", len(msg.SerializeToString()) + 8, pc.PacketCommand.Value(packet_type))
 
 
 def get_user(username: str = None, nickname: str = None, account_id: int = None):
