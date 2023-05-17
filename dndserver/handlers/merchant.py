@@ -253,7 +253,7 @@ def get_merchant_list(ctx, msg):
                 merchantId=MerchantClass(merchant.merchant).value,
                 faction=0,
                 remainTime=(merchant.refresh_time - arrow.utcnow()).seconds,
-                isUnidentified=1,
+                isUnidentified=0,
             ),
         )
 
@@ -302,8 +302,36 @@ def get_buy_list(ctx, msg):
         if item.remaining == 0:
             continue
 
-        # get the attributes for the item
-        attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
+        attributes = []
+
+        # check if we should show the attributes and stats
+        if merchant.merchant != MerchantClass.GOBLINMERCHANT:
+            # get the attributes for the item
+            attributes = db.query(ItemAttribute).filter_by(item_id=item.id).all()
+
+        else:
+            # we should not show the stats. Replace all the stats for "Unidentified"
+            item_attr = db.query(ItemAttribute).filter_by(item_id=item.id).all()
+
+            # make sure we have at least one primary item in the item attributes. Otherwise
+            # the game will show random stats
+            if not any(attr.primary for attr in item_attr):
+                # for some reason the item does not have a primary property. Add the unidentified here
+                at = ItemAttribute()
+                at.item_id = item.id
+                at.primary = True
+                at.property = "DesignDataItemPropertyType:Id_ItemPropertyType_Unidentified"
+                at.value = True
+                attributes.append(at)
+
+            # add all the attributes as hidden
+            for attr in item_attr:
+                at = ItemAttribute()
+                at.item_id = item.id
+                at.primary = attr.primary
+                at.property = "DesignDataItemPropertyType:Id_ItemPropertyType_Unidentified"
+                at.value = True
+                attributes.append(at)
 
         res.stockList.append(
             SMERCHANT_STOCK_BUY_ITEM_INFO(
