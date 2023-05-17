@@ -1,18 +1,17 @@
 import random
 
-from dndserver import objects
 from dndserver.data import perks as pk
 from dndserver.data import skills as sk
+from dndserver.data import spells as sp
 from dndserver.database import db
 from dndserver.enums.classes import CharacterClass, Gender
-from dndserver.handlers import inventory
-from dndserver.models import Character, Item, ItemAttribute
+from dndserver.handlers import inventory, merchant
+from dndserver.models import Character, Item, ItemAttribute, Spell
 from dndserver.persistent import sessions
 from dndserver.objects import items
 from dndserver.enums.items import ItemType, Rarity, Item as ItemEnum
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos import Item as pItem
-from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Account import (
     SC2S_ACCOUNT_CHARACTER_CREATE_REQ,
     SC2S_ACCOUNT_CHARACTER_DELETE_REQ,
@@ -31,24 +30,43 @@ from dndserver.protos.CharacterClass import (
     SS2C_CLASS_LEVEL_INFO_RES,
     SS2C_CLASS_PERK_LIST_RES,
     SS2C_CLASS_SKILL_LIST_RES,
+    SC2S_CLASS_SPELL_LIST_REQ,
+    SS2C_CLASS_SPELL_LIST_RES,
+    SC2S_CLASS_SPELL_SLOT_MOVE_REQ,
+    SS2C_CLASS_SPELL_SLOT_MOVE_RES,
 )
-from dndserver.protos.Customize import SS2C_CUSTOMIZE_CHARACTER_INFO_RES
+from dndserver.protos.Defines import Define_Message
+from dndserver.protos.Customize import (
+    SS2C_CUSTOMIZE_ACTION_INFO_RES,
+    SS2C_CUSTOMIZE_CHARACTER_INFO_RES,
+    SS2C_CUSTOMIZE_EMOTE_INFO_RES,
+    SS2C_CUSTOMIZE_ITEM_INFO_RES,
+    SS2C_CUSTOMIZE_LOBBY_EMOTE_INFO_RES,
+)
 from dndserver.protos.Defines import Define_Character, Define_Class, Define_Item
-from dndserver.protos.Item import SCUSTOMIZE_CHARACTER
+from dndserver.protos.Item import (
+    SCUSTOMIZE_ACTION,
+    SCUSTOMIZE_CHARACTER,
+    SCUSTOMIZE_ITEM,
+    SCUSTOMIZE_LOBBY_EMOTE,
+    SEMOTE,
+)
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 
 
-def item_to_proto_item(item, attributes):
+def item_to_proto_item(item, attributes, for_character=True):
     """Helper function to create a proto item from a database item and attributes"""
     ret = pItem.SItem()
 
     ret.itemUniqueId = item.id
     ret.itemId = item.item_id
     ret.itemCount = item.quantity
-    ret.inventoryId = item.inventory_id
-    ret.slotId = item.slot_id
     ret.itemAmmoCount = item.ammo_count
     ret.itemContentsCount = item.inv_count
+
+    if for_character:
+        ret.inventoryId = item.inventory_id
+        ret.slotId = item.slot_id
 
     for attribute in attributes:
         property = pItem.SItemProperty(propertyTypeId=attribute.property, propertyValue=attribute.value)
@@ -66,7 +84,7 @@ def list_characters(ctx, msg):
     req = SC2S_ACCOUNT_CHARACTER_LIST_REQ()
     req.ParseFromString(msg)
 
-    query = db.query(Character).filter_by(user_id=sessions[ctx.transport].account.id).all()
+    query = db.query(Character).filter_by(account_id=sessions[ctx.transport].account.id).all()
     res = SS2C_ACCOUNT_CHARACTER_LIST_RES(totalCharacterCount=len(query), pageIndex=req.pageIndex)
 
     start = (res.pageIndex - 1) * 7
@@ -85,10 +103,7 @@ def list_characters(ctx, msg):
             # lastloginDate=result.last_logged_at  # TODO: Need to implement access logs.
         )
 
-        for item, attributes in inventory.get_all_items(result.id):
-            if item.inventory_id != Define_Item.InventoryId.EQUIPMENT:
-                continue
-
+        for item, attributes in inventory.get_all_items(result.id, Define_Item.InventoryId.EQUIPMENT):
             info.equipItemList.append(item_to_proto_item(item, attributes))
 
         res.characterList.append(info)
@@ -117,7 +132,7 @@ def create_character(ctx, msg):
 
     char_class = CharacterClass(req.characterClass)
     char = Character(
-        user_id=sessions[ctx.transport].account.id,
+        account_id=sessions[ctx.transport].account.id,
         nickname=req.nickName,
         streaming_nickname=f"Fighter#{random.randrange(1000000, 1700000)}",
         gender=Gender(req.gender),
@@ -125,7 +140,7 @@ def create_character(ctx, msg):
     )
 
     # select the default perks and skills
-    char.perk0, char.perk1, char.perk2, char.perk3 = pk.perks[char_class][0:4]
+    char.perk0 = pk.perks[char_class][0]
     char.skill0, char.skill1 = sk.skills[char_class][0:2]
     char.save()
 
@@ -174,9 +189,12 @@ def delete_character(ctx, msg):
     res = SS2C_ACCOUNT_CHARACTER_DELETE_RES(result=pc.SUCCESS)
 
     # Prevents characters from maliciously deleting others characters.
-    if query.user_id != sessions[ctx.transport].account.id:
+    if query.account_id != sessions[ctx.transport].account.id:
         res.result = pc.FAIL_GENERAL
         return res
+
+    # delete all the merchants and items they have
+    merchant.delete_merchants(query.id)
 
     # also delete all the items this character has
     items = db.query(Item).filter_by(character_id=req.characterId)
@@ -188,6 +206,11 @@ def delete_character(ctx, msg):
             attribute.delete()
 
         item.delete()
+
+    # delete all the spells the character has
+    spells = db.query(Spell).filter_by(character_id=req.characterId)
+    for spell in spells:
+        spell.delete()
 
     # delete the character after we have removed all the other items
     query.delete()
@@ -219,7 +242,11 @@ def character_info(ctx, msg):
 
     # get all the items and attributes of the character
     for item, attributes in inventory.get_all_items(character.id):
-        char_info.CharacterItemList.append(item_to_proto_item(item, attributes))
+        # check if the item is in storage or not
+        if item.inventory_id >= Define_Item.InventoryId.STORAGE:
+            char_info.CharacterStorageItemList.append(item_to_proto_item(item, attributes))
+        else:
+            char_info.CharacterItemList.append(item_to_proto_item(item, attributes))
 
     res = SS2C_LOBBY_CHARACTER_INFO_RES(result=pc.SUCCESS, characterDataBase=char_info)
 
@@ -275,6 +302,142 @@ def list_skills(ctx, msg):
             index += 1
 
     return res
+
+
+def list_spells(ctx, msg):
+    """Occurs when the user loads opens the class menu."""
+    req = SC2S_CLASS_SPELL_LIST_REQ()
+    req.ParseFromString(msg)
+
+    char = sessions[ctx.transport].character
+
+    # make sure we only return the spells for the wizard and cleric
+    if char.character_class != CharacterClass.WIZARD and char.character_class != CharacterClass.CLERIC:
+        return SS2C_CLASS_SPELL_LIST_RES()
+
+    res = SS2C_CLASS_SPELL_LIST_RES()
+
+    # get the spells we have equiped and add them first
+    spells = list(db.query(Spell).filter_by(character_id=char.id).all())
+    for spell in spells:
+        res.spells.append(
+            pItem.SSpell(slotIndex=spell.slot_id, sequenceIndex=spell.sequence_id, spellId=spell.spell_id)
+        )
+
+    # add the other spells
+    for spell in sp.spells[char.character_class]:
+        # check if we have the spell equiped
+        if any(spell == s.spell_id for s in spells):
+            continue
+
+        # TODO: change the proto to allow signed numbers for the slot index. For now we trick the proto
+        # into setting the index and sequence to -1
+        res.spells.append(pItem.SSpell(slotIndex=0xFFFFFFFF, sequenceIndex=0xFFFFFFFF, spellId=spell))
+
+    return res
+
+
+def get_spells(character_id):
+    """Helper function to create the spell slot response"""
+    res = SS2C_CLASS_SPELL_SLOT_MOVE_RES()
+    res.result = pc.SUCCESS
+
+    # get all the spells we have equiped
+    spells = db.query(Spell).filter_by(character_id=character_id)
+
+    for spell in spells:
+        res.equipSpellList.append(
+            pItem.SSpell(slotIndex=spell.slot_id, sequenceIndex=spell.sequence_id, spellId=spell.spell_id)
+        )
+
+    return res
+
+
+def update_spell_sequence(update_from, character_id):
+    """Helper function to update the sequences above the update_from"""
+    spells = (
+        db.query(Spell)
+        .filter_by(character_id=character_id)
+        .filter(Spell.sequence_id > update_from)
+        .order_by(Spell.sequence_id.asc())
+    )
+
+    for index, spell in enumerate(spells):
+        spell.sequence_id = update_from + index
+
+
+def move_spell(ctx, msg):
+    """Occurs when the user moves a spell."""
+    req = SC2S_CLASS_SPELL_SLOT_MOVE_REQ()
+    req.ParseFromString(msg)
+
+    char = sessions[ctx.transport].character
+
+    # get the spell we are trying to move
+    target_spell = db.query(Spell).filter_by(character_id=char.id).filter_by(spell_id=req.spellId).first()
+
+    # check if we should remove the spell from the spell list
+    if req.dstSlotIndex < 0:
+        if target_spell is not None:
+            # update the sequence numbers above ourself
+            update_spell_sequence(target_spell.sequence_id, char.id)
+
+            # delete the spell
+            target_spell.delete()
+
+        # send the updated spell list
+        return get_spells(char.id)
+
+    target_location = db.query(Spell).filter_by(character_id=char.id).filter_by(slot_id=req.dstSlotIndex).first()
+
+    # check how we should process the spell request
+    if target_location is not None and target_spell is not None:
+        # we have a target spell and a spell at the target location. Swap the two spells around using the slot id
+        slot_id = target_spell.slot_id
+        target_spell.slot_id = target_location.slot_id
+        target_location.slot_id = slot_id
+
+    elif target_location is not None:
+        # we are swapping a spell from the spell list with a spell. Change the spell id and update the sequence
+        target_location.spell_id = req.spellId
+
+        # update the sequence
+        update_spell_sequence(target_location.sequence_id, char.id)
+
+        # get the highest sequence id
+        sequence = db.query(Spell).filter_by(character_id=char.id).order_by(Spell.sequence_id.desc()).first()
+
+        # set the sequence index
+        if sequence is None:
+            target_location.sequence_id = 0
+        else:
+            target_location.sequence_id = sequence.sequence_id + 1
+
+    elif target_spell is not None:
+        # we are moving a existing spell to a other empty spot. Change the slot id to the new location
+        # move the target spell to the slot
+        target_spell.slot_id = req.dstSlotIndex
+
+    else:
+        # We are moving a spell from the spell list to a empty slot create a new spell with a sequence id higher that
+        # the last spell
+        sequence = db.query(Spell).filter_by(character_id=char.id).order_by(Spell.sequence_id.desc()).first()
+
+        # create a new spell with the correct location
+        spell = Spell()
+        spell.character_id = char.id
+        spell.spell_id = req.spellId
+        spell.slot_id = req.dstSlotIndex
+
+        # set the sequence index
+        if sequence is None:
+            spell.sequence_id = 0
+        else:
+            spell.sequence_id = sequence.sequence_id + 1
+
+        spell.save()
+
+    return get_spells(char.id)
 
 
 def get_perks_and_skills(ctx, msg):
@@ -354,22 +517,22 @@ def create_items_per_class(char_class):
     match char_class:
         case CharacterClass.BARBARIAN:
             return [
-            items.generate_item(ItemEnum.BATTLEAXE, ItemType.WEAPONS, Rarity.JUNK, 3, 10),
-            items.generate_item(ItemEnum.LANTERN, ItemType.UTILITY, Rarity.JUNK, 3, 8),
-            items.generate_item(ItemEnum.FRANCISCAAXE, ItemType.UTILITY, Rarity.JUNK, 3, 14, 3),
-            items.generate_item(ItemEnum.HEAVYBOOTS, ItemType.ARMORS, Rarity.JUNK, 3, 5),
-            items.generate_item(ItemEnum.GJERMUNDBU, ItemType.ARMORS, Rarity.JUNK, 3, 1),
-            items.generate_item(ItemEnum.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4),
-            # TODO These are just for demo purposes, remove after
-            items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
-            items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
-            items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-            items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-            items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-            items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-            items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-            items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
-        ]
+                items.generate_item(ItemEnum.BATTLEAXE, ItemType.WEAPONS, Rarity.JUNK, 3, 10),
+                items.generate_item(ItemEnum.LANTERN, ItemType.UTILITY, Rarity.JUNK, 3, 8),
+                items.generate_item(ItemEnum.FRANCISCAAXE, ItemType.UTILITY, Rarity.JUNK, 3, 14, 3),
+                items.generate_item(ItemEnum.HEAVYBOOTS, ItemType.ARMORS, Rarity.JUNK, 3, 5),
+                items.generate_item(ItemEnum.GJERMUNDBU, ItemType.ARMORS, Rarity.JUNK, 3, 1),
+                items.generate_item(ItemEnum.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4),
+                # TODO These are just for demo purposes, remove after
+                items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
+                items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 2, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 3, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 4, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
+            ]
 
         case CharacterClass.BARD:
             return [
@@ -384,11 +547,11 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 2, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 3, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 4, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
             ]
 
         case CharacterClass.CLERIC:
@@ -405,11 +568,11 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 2, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 3, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 4, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
             ]
 
         case CharacterClass.FIGHTER:
@@ -425,11 +588,11 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 2, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 3, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 4, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
             ]
 
         case CharacterClass.RANGER:
@@ -447,11 +610,11 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 2, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 3, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 4, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
             ]
 
         case CharacterClass.ROGUE:
@@ -468,11 +631,11 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 2, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 3, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 4, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
             ]
 
         case CharacterClass.WIZARD:
@@ -489,10 +652,38 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
-                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 0),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 2, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 3, 10),
+                items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 4, 10),
+                items.generate_item(ItemEnum.GOLDCOINPURSE, ItemType.OTHERS, Rarity.NONE, 4, 5),
             ]
     return []
+
+def emote_info(ctx, msg):
+    custom = SEMOTE(emoteId="1", equipSlotIndex=1, isNew=1)
+    res = SS2C_CUSTOMIZE_EMOTE_INFO_RES()
+    res.loopFlag = Define_Message.LoopFlag.NONE
+    res.emotes.append(custom)
+    return res
+
+def lobby_emote_info(ctx, msg):
+    custom = SCUSTOMIZE_LOBBY_EMOTE(lobbyEmoteId="1", equipSlotIndex=1, isNew=1)
+    res = SS2C_CUSTOMIZE_LOBBY_EMOTE_INFO_RES()
+    res.loopFlag = Define_Message.LoopFlag.NONE
+    res.customizeLobbyEmoteIds.append(custom)
+    return res
+
+def item_info(ctx, msg):
+    custom = SCUSTOMIZE_ITEM(customizeItemId="1", isEquip=1, isNew=1)
+    res = SS2C_CUSTOMIZE_ITEM_INFO_RES()
+    res.loopFlag = Define_Message.LoopFlag.NONE
+    res.customizeItems.append(custom)
+    return res
+
+def action_info(ctx, msg):
+    custom = SCUSTOMIZE_ACTION(customizeActionId="1", isEquip=1, isNew=1)
+    res = SS2C_CUSTOMIZE_ACTION_INFO_RES()
+    res.loopFlag = Define_Message.LoopFlag.NONE
+    res.customizeActionIds.append(custom)
+    return res

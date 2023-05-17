@@ -41,6 +41,10 @@ class GameProtocol(Protocol):
     def connectionLost(self, reason):
         """Event for when a client disconnects from the server."""
         logger.debug(f"Lost connection to: {self.transport.client[0]}:{self.transport.client[1]}")
+
+        # cleanup anything left behind from the gathering hall
+        gatheringhall.cleanup(self)
+
         del sessions[self.transport]
 
     def dataReceived(self, data: bytes) -> None:
@@ -68,13 +72,23 @@ class GameProtocol(Protocol):
                 pc.C2S_ACCOUNT_CHARACTER_DELETE_REQ: character.delete_character,
                 pc.C2S_ACCOUNT_CHARACTER_LIST_REQ: character.list_characters,
                 pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.character_info,
+                pc.C2S_CUSTOMIZE_LOBBY_EMOTE_INFO_REQ: character.lobby_emote_info,
+                pc.C2S_CUSTOMIZE_EMOTE_INFO_REQ: character.emote_info,
+                pc.C2S_CUSTOMIZE_ITEM_INFO_REQ: character.item_info,
+                pc.C2S_CUSTOMIZE_ACTION_INFO_REQ: character.action_info,
                 pc.C2S_CLASS_PERK_LIST_REQ: character.list_perks,
                 pc.C2S_CLASS_SKILL_LIST_REQ: character.list_skills,
+                pc.C2S_CLASS_SPELL_LIST_REQ: character.list_spells,
+                pc.C2S_CLASS_SPELL_SLOT_MOVE_REQ: character.move_spell,
                 pc.C2S_CLASS_EQUIP_INFO_REQ: character.get_perks_and_skills,
                 pc.C2S_CLASS_ITEM_MOVE_REQ: character.move_perks_and_skills,
                 pc.C2S_CLASS_LEVEL_INFO_REQ: character.get_experience,
-                pc.C2S_INVENTORY_SINGLE_UPDATE_REQ: inventory.move_single_item,
-                pc.C2S_INVENTORY_MOVE_REQ: inventory.move_item,
+                pc.C2S_INVENTORY_SINGLE_UPDATE_REQ: inventory.move_single_request,
+                pc.C2S_INVENTORY_MOVE_REQ: inventory.move_request,
+                pc.C2S_INVENTORY_MERGE_REQ: inventory.merge_request,
+                pc.C2S_INVENTORY_SPLIT_MOVE_REQ: inventory.split_move_request,
+                pc.C2S_INVENTORY_SWAP_REQ: inventory.swap_request,
+                pc.C2S_INVENTORY_SPLIT_MERGE_REQ: inventory.split_merge_request,
                 pc.C2S_CHARACTER_SELECT_ENTER_REQ: lobby.enter_character_select,
                 pc.C2S_LOBBY_ENTER_REQ: lobby.enter_lobby,
                 pc.C2S_LOBBY_REGION_SELECT_REQ: lobby.region_select,
@@ -82,13 +96,20 @@ class GameProtocol(Protocol):
                 pc.C2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ: lobby.map_select,
                 pc.C2S_FRIEND_LIST_ALL_REQ: friends.list_friends,
                 pc.C2S_FRIEND_FIND_REQ: friends.find_user,
+                pc.C2S_BLOCK_CHARACTER_LIST_REQ: friends.get_blocked_users,
+                pc.C2S_BLOCK_CHARACTER_REQ: friends.block_user,
+                pc.C2S_UNBLOCK_CHARACTER_REQ: friends.unblock_user,
                 pc.C2S_META_LOCATION_REQ: menu.process_location,
                 pc.C2S_MERCHANT_LIST_REQ: merchant.get_merchant_list,
                 pc.C2S_MERCHANT_STOCK_BUY_ITEM_LIST_REQ: merchant.get_buy_list,
                 pc.C2S_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_REQ: merchant.get_sellback_list,
+                pc.C2S_MERCHANT_STOCK_BUY_REQ: merchant.buy_item,
+                pc.C2S_MERCHANT_STOCK_SELL_BACK_REQ: merchant.sellback_request,
                 pc.C2S_PARTY_INVITE_REQ: party.party_invite,
                 pc.C2S_PARTY_EXIT_REQ: party.leave_party,
                 pc.C2S_PARTY_INVITE_ANSWER_REQ: party.accept_invite,
+                pc.C2S_PARTY_READY_REQ: party.set_ready_state,
+                pc.C2S_PARTY_MEMBER_KICK_REQ: party.kick_member,
                 pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
                 pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
                 pc.C2S_RANKING_RANGE_REQ: ranking.get_ranking,
