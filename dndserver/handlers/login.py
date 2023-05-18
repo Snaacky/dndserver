@@ -10,6 +10,7 @@ from dndserver.persistent import sessions
 from dndserver.protos.Account import SC2S_ACCOUNT_LOGIN_REQ, SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES
 from dndserver.protos.Common import SS2C_SERVICE_POLICY_NOT, FSERVICE_POLICY
 
+
 def process_login(ctx, msg):
     """Occurs when the user attempts to login to the game server."""
     req = SC2S_ACCOUNT_LOGIN_REQ()
@@ -69,18 +70,13 @@ def process_login(ctx, msg):
 
     return res
 
-def service_policy_notification(ctx):
 
+def service_policy_notification(ctx):
     # Fix for Ante (High-Roller Entrance Fee)
     # Policy Type '7' referes to High-Roller
     # There's a lot more policy types, all with values, still unknown what each type does.
     # and therefore will not implement the rest yet.
-
-    policy = FSERVICE_POLICY(
-        policyType = 7,
-        policyValue = 100
-    ),
-    FSERVICE_POLICY ()
+    policy = [FSERVICE_POLICY(policyType=7, policyValue=100)]
 
     notify = SS2C_SERVICE_POLICY_NOT(policyList=policy)
     ctx.reply(notify)
