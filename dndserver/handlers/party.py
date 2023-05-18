@@ -245,14 +245,30 @@ def kick_member(ctx, msg):
     req.ParseFromString(msg)
     party = get_party(account_id=sessions[ctx.transport].account.id)
     if party.leader == sessions[ctx.transport]:
-        _, kicked_user = get_user(account_id=int(req.accountId))
+        kicked_user = None
+
+        # search for the player
+        for player in party.players:
+            if str(player.account.id) != req.accountId:
+                continue
+            kicked_user = player
+            break
+
+        # check if we have the player in the party
+        if kicked_user is None:
+            return SS2C_PARTY_MEMBER_KICK_RES(result=pc.FAIL_GENERAL)
+
         party.remove_member(kicked_user)
-        new_party = Party(player_1=kicked_user)
-        new_party.leader = kicked_user
-        kicked_user.party = new_party
-        parties.append(new_party)
+
+        # only update the new party if the player is not offline
+        if kicked_user.state.location != Define_Common.MetaLocation.OFFLINE:
+            new_party = Party(player_1=kicked_user)
+            new_party.leader = kicked_user
+            kicked_user.party = new_party
+            send_party_info_notification(new_party)
+            parties.append(new_party)
+
         send_party_info_notification(party)
-        send_party_info_notification(new_party)
         return SS2C_PARTY_MEMBER_KICK_RES(result=pc.SUCCESS)
     else:
         return SS2C_PARTY_MEMBER_KICK_RES(result=pc.FAIL_GENERAL)
@@ -264,7 +280,8 @@ def broadcast_chat(ctx, msg):
     header = make_header(res)
     for user in party.players:
         transport, _ = get_user(account_id=user.account.id)
-        transport.write(header + res.SerializeToString())
+        if transport is not None:
+            transport.write(header + res.SerializeToString())
 
 
 def chat(ctx, msg):
