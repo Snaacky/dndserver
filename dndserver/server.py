@@ -10,6 +10,7 @@ from dndserver.config import config
 from dndserver.protocol import GameFactory
 from dndserver.console import console
 
+
 async def main():
     """Entrypoint where the server first initializes"""
     signal.signal(signal.SIGINT, signal.default_int_handler)
