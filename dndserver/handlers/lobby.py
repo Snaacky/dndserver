@@ -99,8 +99,5 @@ def auto_match(ctx, msg):
     if len(party.players) > 1:
         for user in party.players:
             transport, _ = get_user(account_id=user.account.id)
-            if req.mode == SC2S_AUTO_MATCH_REG_REQ.MODE.REGISTER:
-                transport.write(header + matchteam.SerializeToString())
-            elif req.mode == SC2S_AUTO_MATCH_REG_REQ.MODE.CANCEL:
-                transport.write(header + matchteam.SerializeToString())
+            transport.write(header + matchteam.SerializeToString())
     return SS2C_AUTO_MATCH_REG_RES(result=SS2C_AUTO_MATCH_REG_RES.RESULT.SUCCESS)
