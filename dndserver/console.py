@@ -23,6 +23,7 @@ def enum(type, filter=None):
                 keys.append(key.name)
     logger.info(', '.join(keys))
 
+
 def help():
     logger.info("List of available commands:")
     for _, info in commands.items():
@@ -46,11 +47,12 @@ def give_item(user, item_name, item_type, rarity=Rarity.NONE, amount=1):
     it.slot_id = item.slotId
     it.save()
 
+
 def list(location=None):
     try:
         _, in_lobby, in_dungeon = count_friends()
-    except:
-        logger.info(f"No users currently online.")
+    except Exception:
+        logger.info("No users currently online.")
         return
     if location == 'lobby':
         logger.info(f"Currently in lobby : {in_lobby}")
@@ -59,8 +61,10 @@ def list(location=None):
     else:
         logger.info(f"Currently online : {in_lobby + in_dungeon}")
 
+
 def exit():
     sys.exit(0)
+
 
 commands = {
     "/help": {"function": help, "help": "/help - Show help"},

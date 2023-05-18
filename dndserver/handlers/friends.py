@@ -19,6 +19,7 @@ from dndserver.protos.Friend import SC2S_FRIEND_FIND_REQ, SS2C_FRIEND_FIND_RES, 
 from dndserver.utils import get_user
 from dndserver.handlers.party import get_party
 
+
 def count_friends():
     # counters for the lobby and the dungeon
     in_lobby = 0
