@@ -111,6 +111,7 @@ class GameProtocol(Protocol):
                 pc.C2S_PARTY_INVITE_ANSWER_REQ: party.accept_invite,
                 pc.C2S_PARTY_READY_REQ: party.set_ready_state,
                 pc.C2S_PARTY_MEMBER_KICK_REQ: party.kick_member,
+                pc.C2S_PARTY_CHAT_REQ: party.chat,
                 pc.C2S_TRADE_CHANNEL_CHAT_REQ: trade.chat,
                 pc.C2S_TRADE_CHANNEL_EXIT_REQ: trade.exit_channel,
                 pc.C2S_TRADE_CHANNEL_LIST_REQ: trade.get_channels,

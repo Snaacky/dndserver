@@ -31,6 +31,7 @@ $ git clone git@github.com:Snaacky/dndserver.git
 $ cd dndserver
 $ poetry install
 $ poetry shell
+$ pre-commit install
 $ alembic upgrade head
 $ python -m dndserver.server
 ```
