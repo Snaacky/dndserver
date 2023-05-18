@@ -12,7 +12,6 @@ from dndserver.protos.Party import (
     SC2S_PARTY_CHAT_REQ,
     SS2C_PARTY_CHAT_RES,
     SS2C_PARTY_CHAT_NOT,
-    SC2S_PARTY_EXIT_REQ,
     SC2S_PARTY_INVITE_ANSWER_REQ,
     SC2S_PARTY_INVITE_REQ,
     SC2S_PARTY_MEMBER_KICK_REQ,
@@ -45,12 +44,17 @@ def cleanup(ctx):
 
     # change the state to offline
     session.state.location = Define_Common.MetaLocation.OFFLINE
-
-    # notify the party the user has left
     send_party_location_notification(party, session)
 
-    # remove the user from the party
-    party.remove_member(session)
+    # party leader needs to be passed if the leader is leaving
+    if party.leader == session:
+        for user in party.players:
+            if user != session:
+                party.leader = user
+                break
+
+    # update the party with the new party leader
+    send_party_info_notification(party)
 
 
 def party_invite(ctx, msg):
@@ -196,9 +200,6 @@ def send_party_location_notification(party, session):
 
 def leave_party(ctx, msg):
     """Occurs when a user leaves the party."""
-    req = SC2S_PARTY_EXIT_REQ()
-    req.ParseFromString(msg)
-
     user_leaving = sessions[ctx.transport]
 
     party = get_party(account_id=user_leaving.account.id)
