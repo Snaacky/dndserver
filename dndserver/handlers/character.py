@@ -42,7 +42,6 @@ from dndserver.protos.Customize import (
     SS2C_CUSTOMIZE_EMOTE_INFO_RES,
     SS2C_CUSTOMIZE_ITEM_INFO_RES,
     SS2C_CUSTOMIZE_LOBBY_EMOTE_INFO_RES,
-    SS2C_CUSTOMIZE_ACTION_INFO_RES,
 )
 from dndserver.protos.Defines import Define_Character, Define_Class, Define_Item
 from dndserver.protos.Item import (

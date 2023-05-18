@@ -5,7 +5,6 @@ from dndserver.enums.items import ItemType, Material
 from dndserver.enums.classes import MerchantClass
 
 
-
 class Item:
     def __init__(
         self,
@@ -62,7 +61,7 @@ def item_parser(item_values, inventoryId, slotId, item_count):
             itemProperty = item.SItemProperty()
             itemProperty.propertyTypeId = property["propertyTypeId"]
             if type(property["propertyValue"]) == str:
-                itemProperty.propertyValue = int(property["propertyValue"][:-3])*10
+                itemProperty.propertyValue = int(property["propertyValue"][:-3]) * 10
             else:
                 itemProperty.propertyValue = property["propertyValue"]
             newItem.primaryPropertyArray.append(itemProperty)
