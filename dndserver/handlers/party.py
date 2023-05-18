@@ -7,7 +7,7 @@ from dndserver.persistent import parties, sessions
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Defines import Define_Item, Define_Common
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_PARTY_INFO
-from dndserver.protos.Chat import SCHATDATA, SCHATDATA_PIECE, SCHATDATA_PIECE_ITEM, SCHATDATA_PIECE_ITEM_PROPERTY
+from dndserver.protos.Chat import SCHATDATA, SCHATDATA_PIECE
 from dndserver.protos.Party import (
     SC2S_PARTY_CHAT_REQ,
     SS2C_PARTY_CHAT_RES,
