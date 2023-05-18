@@ -9,6 +9,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
     
     - name: Setup poetry
       uses: abatilo/actions-poetry@v2
