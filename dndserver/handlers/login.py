@@ -5,10 +5,11 @@ import argon2
 import arrow
 
 from dndserver.database import db
-from dndserver.models import Account, Login
+from dndserver.models import Hwid, Account, Login
 from dndserver.persistent import sessions
 from dndserver.protos.Account import SC2S_ACCOUNT_LOGIN_REQ, SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES
 from dndserver.protos.Common import SS2C_SERVICE_POLICY_NOT, FSERVICE_POLICY
+
 
 def process_login(ctx, msg):
     """Occurs when the user attempts to login to the game server."""
@@ -37,12 +38,17 @@ def process_login(ctx, msg):
         )
         account.save()
 
-        # TODO: Create new hwid objects and save them to the db here
         res.secretToken = account.secret_token
 
     # # add a new login
     login = Login(account_id=account.id, login_time=arrow.utcnow())
     login.save()
+
+    # Check if an hwId is associated to an account_id, if not add to db
+    for hwid in req.hwIds:
+        if not db.query(Hwid).filter_by(hwid=hwid).filter_by(account_id=account.id).first():
+            hwid = Hwid(account_id=account.id, hwid=hwid, seen_at=arrow.utcnow())
+            hwid.save()
 
     # Return FAIL_PASSWORD on invalid password.
     try:
@@ -68,18 +74,13 @@ def process_login(ctx, msg):
 
     return res
 
-def service_policy_notification(ctx):
 
+def service_policy_notification(ctx):
     # Fix for Ante (High-Roller Entrance Fee)
     # Policy Type '7' referes to High-Roller
     # There's a lot more policy types, all with values, still unknown what each type does.
     # and therefore will not implement the rest yet.
-
-    policy = FSERVICE_POLICY(
-        policyType = 7,
-        policyValue = 100
-    ),
-    FSERVICE_POLICY ()
+    policy = [FSERVICE_POLICY(policyType=7, policyValue=100)]
 
     notify = SS2C_SERVICE_POLICY_NOT(policyList=policy)
     ctx.reply(notify)

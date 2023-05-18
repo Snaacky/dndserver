@@ -667,12 +667,14 @@ def create_items_per_class(char_class):
             ]
     return []
 
+
 def emote_info(ctx, msg):
     custom = SEMOTE(emoteId="1", equipSlotIndex=1, isNew=1)
     res = SS2C_CUSTOMIZE_EMOTE_INFO_RES()
     res.loopFlag = Define_Message.LoopFlag.NONE
     res.emotes.append(custom)
     return res
+
 
 def lobby_emote_info(ctx, msg):
     custom = SCUSTOMIZE_LOBBY_EMOTE(lobbyEmoteId="1", equipSlotIndex=1, isNew=1)
@@ -681,12 +683,14 @@ def lobby_emote_info(ctx, msg):
     res.customizeLobbyEmoteIds.append(custom)
     return res
 
+
 def item_info(ctx, msg):
     custom = SCUSTOMIZE_ITEM(customizeItemId="1", isEquip=1, isNew=1)
     res = SS2C_CUSTOMIZE_ITEM_INFO_RES()
     res.loopFlag = Define_Message.LoopFlag.NONE
     res.customizeItems.append(custom)
     return res
+
 
 def action_info(ctx, msg):
     custom = SCUSTOMIZE_ACTION(customizeActionId="1", isEquip=1, isNew=1)
