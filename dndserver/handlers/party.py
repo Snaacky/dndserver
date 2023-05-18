@@ -30,6 +30,29 @@ from dndserver.protos.Party import (
 from dndserver.utils import get_party, get_user, make_header
 
 
+def cleanup(ctx):
+    """Helper function to cleanup the party after the user exits"""
+    session = sessions[ctx.transport]
+
+    if not all([session.account, session.state]):
+        return
+
+    party = get_party(account_id=sessions[ctx.transport].account.id)
+
+    # check if the user was in a party
+    if party is None:
+        return
+
+    # change the state to offline
+    session.state.location = Define_Common.MetaLocation.OFFLINE
+
+    # notify the party the user has left
+    send_party_location_notification(party, session)
+
+    # remove the user from the party
+    party.remove_member(session)
+
+
 def party_invite(ctx, msg):
     """Occurs when a user sends a party to another user."""
     req = SC2S_PARTY_INVITE_REQ()
@@ -99,11 +122,15 @@ def send_invite_notification(ctx, req):
     # TODO: This can probably be refactored in a cleaner way in protocol.py.
     header = make_header(notify)
     transport, _ = get_user(nickname=req.findNickName.originalNickName)
-    transport.write(header + notify.SerializeToString())
+    if transport is not None:
+        transport.write(header + notify.SerializeToString())
 
 
 def send_accept_notification(ctx, req):
     transport, _ = get_user(account_id=int(req.returnAccountId))
+    if transport is None:
+        return
+
     notify = SS2C_PARTY_INVITE_ANSWER_RESULT_NOT(
         nickName=SACCOUNT_NICKNAME(
             originalNickName=sessions[ctx.transport].character.nickname,
@@ -145,7 +172,8 @@ def send_party_info_notification(party):
     header = make_header(notify)
     for user in party.players:
         transport, _ = get_user(account_id=user.account.id)
-        transport.write(header + notify.SerializeToString())
+        if transport is not None:
+            transport.write(header + notify.SerializeToString())
 
 
 def send_party_location_notification(party, session):
@@ -162,7 +190,8 @@ def send_party_location_notification(party, session):
             continue
 
         transport, _ = get_user(account_id=user.account.id)
-        transport.write(header + notify.SerializeToString())
+        if transport is not None:
+            transport.write(header + notify.SerializeToString())
 
 
 def leave_party(ctx, msg):
