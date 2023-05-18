@@ -116,7 +116,6 @@ def chat(ctx, msg):
     req.ParseFromString(msg)
 
     character = sessions[ctx.transport].character
-    query = db.query(Character).filter_by(id=character.id).first()
 
     chat_type = req.chat.chatType
     chat_str = req.chat.chatData.chatDataPieceArray[0].chatStr
@@ -134,7 +133,9 @@ def chat(ctx, msg):
     chat_piece.chatStr = chat_str
     chat_piece.chatDataPieceItem.CopyFrom(chat_piece_item_obj)
 
-    nickName = SACCOUNT_NICKNAME(originalNickName=query.nickname, streamingModeNickName=query.streaming_nickname)
+    nickName = SACCOUNT_NICKNAME(
+        originalNickName=character.nickname, streamingModeNickName=character.streaming_nickname
+    )
     chat_data = SCHATDATA()
     chat_data.accountId = str(sessions[ctx.transport].account.id)
     chat_data.characterId = str(sessions[ctx.transport].character.id)
