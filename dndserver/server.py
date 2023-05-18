@@ -5,10 +5,10 @@ from loguru import logger
 from twisted.internet import reactor
 import threading
 
-
 from dndserver.config import config
 from dndserver.protocol import GameFactory
 from dndserver.console import console
+from dndserver.matchmaking import matchmaking
 
 
 async def main():
@@ -22,6 +22,10 @@ async def main():
     # Sets up the factory for the game server traffic.
     tcpFactory = GameFactory()
     reactor.listenTCP(config.server.port, tcpFactory)
+
+    # Start the matchmaking function in a separate thread
+    matchmaking_thread = threading.Thread(target=matchmaking)
+    matchmaking_thread.start()
 
     # Start the console function in a separate thread
     console_thread = threading.Thread(target=console)

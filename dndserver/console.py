@@ -3,6 +3,17 @@ from dndserver.objects import items
 from dndserver.enums.items import ItemType, Rarity, Item as ItemEnum
 from dndserver.models import Item
 from dndserver.utils import get_user
+from dndserver.matchmaking import virtualServers
+from dndserver.protos.Defines import Define_Game
+
+
+def list_servers():
+    for difficulty, servers in virtualServers.items():
+        print(f"Servers for Difficulty: {Define_Game.DifficultyType.Name(difficulty)}")
+        for server in servers:
+            print(
+                f"IP: {server.ip}:{server.port}, Capacity: {server.slots}, Players: {len(server.players)}"
+            )
 
 
 def list_items(filter=None):
@@ -54,6 +65,7 @@ commands = {
     "/give_item": {"function": give_item, "help": "/give_item <user> <item_name> <rarity> [amount]"},
     "/list_items": {"function": list_items, "help": "/list_items [filter]"},
     "/list_rarity": {"function": list_rarity, "help": "/list_rarity [filter]"},
+    "/servers": {"function": list_servers, "help": "/servers - display every server available"},
     "/exit": {"function": exit, "help": "/exit"}
     # add more commands here
 }
