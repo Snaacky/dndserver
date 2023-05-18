@@ -283,7 +283,7 @@ def get_empty_slot(character_id, size=(1, 1)):
     for index, (item, _) in enumerate(items):
         # TODO: get the size of the current item and use the size of the item we want to place
         if item is None or index != item.slot_id:
-            return (Define_Item.InventoryId.BAG, index + 1)
+            return (Define_Item.InventoryId.BAG, index)
 
     # do the same thing for the storage
     items = inventory.get_all_items(character_id, Define_Item.InventoryId.STORAGE)
