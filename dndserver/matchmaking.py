@@ -1,48 +1,57 @@
 import time
+from enum import Enum
 from dndserver.persistent import matchmaking_users
-from dndserver.protos.InGame import SS2C_FLOOR_MATCHMAKED_NOT, SS2C_ENTER_GAME_SERVER_NOT, SS2C_AUTO_MATCH_REG_TEAM_NOT
+from dndserver.protos.InGame import SS2C_FLOOR_MATCHMAKED_NOT, SS2C_ENTER_GAME_SERVER_NOT
 from dndserver.protos.Character import SACCOUNT_NICKNAME
-from dndserver.utils import make_header
 from dndserver.protos.Defines import Define_Game
 from dndserver.utils import get_user, make_header
 
 
+class ServerStatus(Enum):
+    OFF = 0
+    STARTED = 1
+
+
 class Server:
-    def __init__(self, ip, port, slots, players):
+    def __init__(self, ip, port, slots, players, status):
         self.ip = ip
         self.port = port
         self.slots = slots
         self.players = players
+        self.status = status
 
 
 virtualServers = {
     Define_Game.DifficultyType.NORMAL: [
-        Server("127.0.0.1", 7777, 10, []),
-        Server("127.0.0.1", 10002, 10, []),
-        Server("127.0.0.1", 10003, 10, []),
+        Server("127.0.0.1", 7777, 10, [], ServerStatus.STARTED),
+        Server("127.0.0.1", 10002, 10, [], ServerStatus.STARTED),
+        Server("127.0.0.1", 10003, 10, [], ServerStatus.STARTED),
     ],
     Define_Game.DifficultyType.HIGH_ROLLER: [
-        Server("127.0.0.1", 7777, 10, []),
-        Server("127.0.0.1", 20002, 10, []),
-        Server("127.0.0.1", 20003, 10, []),
+        Server("127.0.0.1", 7777, 10, [], ServerStatus.STARTED),
+        Server("127.0.0.1", 20002, 10, [], ServerStatus.STARTED),
+        Server("127.0.0.1", 20003, 10, [], ServerStatus.STARTED),
     ],
     Define_Game.DifficultyType.GOBLIN: [
-        Server("127.0.0.1", 7777, 10, []),
-        Server("127.0.0.1", 30002, 10, []),
-        Server("127.0.0.1", 30003, 10, []),
+        Server("127.0.0.1", 7777, 10, [], ServerStatus.STARTED),
+        Server("127.0.0.1", 30002, 10, [], ServerStatus.STARTED),
+        Server("127.0.0.1", 30003, 10, [], ServerStatus.STARTED),
     ],
     Define_Game.DifficultyType.RUINS: [
-        Server("127.0.0.1", 7777, 10, []),
-        Server("127.0.0.1", 40002, 10, []),
-        Server("127.0.0.1", 40003, 10, []),
+        Server("127.0.0.1", 7777, 10, [], ServerStatus.STARTED),
+        Server("127.0.0.1", 40002, 10, [], ServerStatus.STARTED),
+        Server("127.0.0.1", 40003, 10, [], ServerStatus.STARTED),
     ],
 }
 
 
 def get_available_server(party):
+    """Gets the available servers, taking into account the party size"""
+    """and the difficulty (gamemode)"""
     playerCount = len(party["party"].players)
     availableServers = list(
-        filter(lambda x: len(x.players) + playerCount <= x.slots, virtualServers[party["difficulty"]])
+        filter(lambda x: len(x.players) + playerCount <= x.slots and
+               x.status == ServerStatus.STARTED, virtualServers[party["difficulty"]])
     )
     if len(availableServers) > 0:
         return availableServers[0]
@@ -51,6 +60,7 @@ def get_available_server(party):
 
 
 def matchmaking():
+    """Main loop for the matchmaking thread"""
     while True:
         time.sleep(2)
         for party in matchmaking_users:

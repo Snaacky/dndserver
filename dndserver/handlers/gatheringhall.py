@@ -18,7 +18,6 @@ from dndserver.protos.GatheringHall import (
     SS2C_GATHERING_HALL_CHANNEL_SELECT_RES,
     SS2C_GATHERING_HALL_TARGET_EQUIPPED_ITEM_RES,
 )
-from dndserver.matchmaking import virtualServers
 
 channels = {}
 for i in range(1, 7):
@@ -70,11 +69,6 @@ def cleanup(ctx):
     # remove the client from the channel if the client was in a channel
     if current_channel:
         channels[current_channel]["clients"].remove(ctx)
-
-    # for _, servers in virtualServers.items():
-    #     for server in servers:
-    #         if sessions[ctx.transport] in server.players:
-    #             server.players.remove(sessions[ctx.transport])
 
 
 def gathering_hall_channel_exit(ctx, msg):

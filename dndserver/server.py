@@ -11,7 +11,6 @@ from dndserver.console import console
 from dndserver.matchmaking import matchmaking
 
 
-
 async def main():
     """Entrypoint where the server first initializes"""
     signal.signal(signal.SIGINT, signal.default_int_handler)
