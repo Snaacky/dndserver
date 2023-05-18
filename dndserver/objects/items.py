@@ -1,6 +1,7 @@
 from dndserver.handlers.item import generate_new_item
 from dndserver.protos import Item as item
 
+
 class Item:
     def __init__(
         self,
