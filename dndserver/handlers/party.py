@@ -1,3 +1,4 @@
+from datetime import datetime
 from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.handlers import inventory
 from dndserver.handlers import character as Char
@@ -6,7 +7,11 @@ from dndserver.persistent import parties, sessions
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Defines import Define_Item, Define_Common
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_PARTY_INFO
+from dndserver.protos.Chat import SCHATDATA, SCHATDATA_PIECE
 from dndserver.protos.Party import (
+    SC2S_PARTY_CHAT_REQ,
+    SS2C_PARTY_CHAT_RES,
+    SS2C_PARTY_CHAT_NOT,
     SC2S_PARTY_EXIT_REQ,
     SC2S_PARTY_INVITE_ANSWER_REQ,
     SC2S_PARTY_INVITE_REQ,
@@ -72,6 +77,10 @@ def accept_invite(ctx, msg):
     sessions[ctx.transport].party = party
 
     send_party_info_notification(party)
+
+    # send the location of everyone to everyone
+    for user in party.players:
+        send_party_location_notification(party, user)
 
     return SS2C_PARTY_INVITE_ANSWER_RES(result=pc.SUCCESS)
 
@@ -217,3 +226,32 @@ def kick_member(ctx, msg):
         return SS2C_PARTY_MEMBER_KICK_RES(result=pc.SUCCESS)
     else:
         return SS2C_PARTY_MEMBER_KICK_RES(result=pc.FAIL_GENERAL)
+
+
+def broadcast_chat(ctx, msg):
+    res = SS2C_PARTY_CHAT_NOT(chatData=msg, time=int(round(datetime.now().timestamp() * 1000)))
+    party = get_party(account_id=sessions[ctx.transport].account.id)
+    header = make_header(res)
+    for user in party.players:
+        transport, _ = get_user(account_id=user.account.id)
+        transport.write(header + res.SerializeToString())
+
+
+def chat(ctx, msg):
+    req = SC2S_PARTY_CHAT_REQ()
+    req.ParseFromString(msg)
+    character = sessions[ctx.transport].character
+    chat_str = req.chatData.chatDataPieceArray[0].chatStr
+    chat_piece = SCHATDATA_PIECE()
+    chat_piece.chatStr = chat_str
+    nickName = SACCOUNT_NICKNAME(
+        originalNickName=character.nickname, streamingModeNickName=character.streaming_nickname
+    )
+    chat_data = SCHATDATA()
+    chat_data.accountId = str(sessions[ctx.transport].account.id)
+    chat_data.characterId = str(sessions[ctx.transport].character.id)
+    chat_data.nickname.CopyFrom(nickName)
+    chat_data.partyId = str(sessions[ctx.transport].party.id)
+    chat_data.chatDataPieceArray.append(chat_piece)
+    broadcast_chat(ctx, chat_data)
+    return SS2C_PARTY_CHAT_RES(result=1)

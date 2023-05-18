@@ -53,7 +53,7 @@ class GameProtocol(Protocol):
 
         # Only begin parsing the message if there's at least enough data for the header to be present
         while len(self.buffer) >= 8:
-            length, _id = struct.unpack("<hxxhxx", self.buffer[:8])
+            length, _id = struct.unpack("<HxxHxx", self.buffer[:8])
 
             # Break if there is not enough data in the buffer yet to parse the full message.
             if len(self.buffer) < length:
@@ -72,6 +72,8 @@ class GameProtocol(Protocol):
                 pc.C2S_ACCOUNT_CHARACTER_DELETE_REQ: character.delete_character,
                 pc.C2S_ACCOUNT_CHARACTER_LIST_REQ: character.list_characters,
                 pc.C2S_CUSTOMIZE_CHARACTER_INFO_REQ: character.character_info,
+                pc.C2S_CUSTOMIZE_LOBBY_EMOTE_INFO_REQ: character.lobby_emote_info,
+                pc.C2S_CUSTOMIZE_EMOTE_INFO_REQ: character.emote_info,
                 pc.C2S_CUSTOMIZE_ITEM_INFO_REQ: character.item_info,
                 pc.C2S_CUSTOMIZE_ACTION_INFO_REQ: character.action_info,
                 pc.C2S_CLASS_PERK_LIST_REQ: character.list_perks,
@@ -109,6 +111,7 @@ class GameProtocol(Protocol):
                 pc.C2S_PARTY_INVITE_ANSWER_REQ: party.accept_invite,
                 pc.C2S_PARTY_READY_REQ: party.set_ready_state,
                 pc.C2S_PARTY_MEMBER_KICK_REQ: party.kick_member,
+                pc.C2S_PARTY_CHAT_REQ: party.chat,
                 pc.C2S_TRADE_MEMBERSHIP_REQUIREMENT_REQ: trade.get_trade_reqs,
                 pc.C2S_TRADE_MEMBERSHIP_REQ: trade.process_membership,
                 pc.C2S_RANKING_RANGE_REQ: ranking.get_ranking,

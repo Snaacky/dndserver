@@ -5,6 +5,7 @@ from dndserver.enums.items import ItemType, Material
 from dndserver.enums.classes import MerchantClass
 
 
+
 class Item:
     def __init__(
         self,
