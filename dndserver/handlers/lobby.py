@@ -88,7 +88,6 @@ def auto_match(ctx, msg):
     req.ParseFromString(msg)
     party = get_party(account_id=sessions[ctx.transport].account.id)
     matchteam = SS2C_AUTO_MATCH_REG_TEAM_NOT(result=pc.SUCCESS, mode=req.mode)
-    header = make_header(matchteam)
     if req.mode == SC2S_AUTO_MATCH_REG_REQ.MODE.REGISTER:
         matchmaking_users.append({"party": party, "difficulty": req.mode})
     elif req.mode == SC2S_AUTO_MATCH_REG_REQ.MODE.CANCEL:
@@ -97,6 +96,7 @@ def auto_match(ctx, msg):
         except ValueError:
             pass
     if len(party.players) > 1:
+        header = make_header(matchteam)
         for user in party.players:
             transport, _ = get_user(account_id=user.account.id)
             transport.write(header + matchteam.SerializeToString())
