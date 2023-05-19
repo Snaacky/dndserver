@@ -61,6 +61,29 @@ def search_for_old_party(account_id):
     return None
 
 
+def cleanup(ctx):
+    """Helper function to cleanup the party after the user exits"""
+    session = sessions[ctx.transport]
+
+    # check if we have a valid user, state and have a party
+    if not all([session.account, session.state, session.party]):
+        return
+
+    # change the state to offline
+    session.state.location = Define_Common.MetaLocation.OFFLINE
+    send_party_location_notification(session.party, session)
+
+    # party leader needs to be passed if the leader is leaving
+    if session.party.leader == session:
+        for user in session.party.players:
+            if user != session:
+                session.party.leader = user
+                break
+
+    # update the party with the new party leader
+    send_party_info_notification(session.party)
+
+
 def party_invite(ctx, msg):
     """Occurs when a user sends a party to another user."""
     req = SC2S_PARTY_INVITE_REQ()
@@ -129,11 +152,15 @@ def send_invite_notification(ctx, req):
     # TODO: This can probably be refactored in a cleaner way in protocol.py.
     header = make_header(notify)
     transport, _ = get_user(nickname=req.findNickName.originalNickName)
-    transport.write(header + notify.SerializeToString())
+    if transport is not None:
+        transport.write(header + notify.SerializeToString())
 
 
 def send_accept_notification(ctx, req):
     transport, _ = get_user(account_id=int(req.returnAccountId))
+    if transport is None:
+        return
+
     notify = SS2C_PARTY_INVITE_ANSWER_RESULT_NOT(
         nickName=SACCOUNT_NICKNAME(
             originalNickName=sessions[ctx.transport].character.nickname,
@@ -175,7 +202,8 @@ def send_party_info_notification(party):
     header = make_header(notify)
     for user in party.players:
         transport, _ = get_user(account_id=user.account.id)
-        transport.write(header + notify.SerializeToString())
+        if transport is not None:
+            transport.write(header + notify.SerializeToString())
 
 
 def send_party_location_notification(party, session):
@@ -192,7 +220,8 @@ def send_party_location_notification(party, session):
             continue
 
         transport, _ = get_user(account_id=user.account.id)
-        transport.write(header + notify.SerializeToString())
+        if transport is not None:
+            transport.write(header + notify.SerializeToString())
 
 
 def leave_party(ctx, msg):
@@ -244,18 +273,33 @@ def kick_member(ctx, msg):
     req.ParseFromString(msg)
 
     party = sessions[ctx.transport].party
-    if party.leader == sessions[ctx.transport]:
-        _, kicked_user = get_user(account_id=int(req.accountId))
-        party.remove_member(kicked_user)
+    if party.leader != sessions[ctx.transport]:
+        return SS2C_PARTY_MEMBER_KICK_RES(result=pc.FAIL_GENERAL)
+
+    # search for the player we want to kick in the party
+    kicked_user = None
+    for player in party.players:
+        if str(player.account.id) != req.accountId:
+            continue
+        kicked_user = player
+        break
+
+    # check if we have the player in the party
+    if kicked_user is None:
+        return SS2C_PARTY_MEMBER_KICK_RES(result=pc.FAIL_GENERAL)
+
+    # kick the party member
+    party.remove_member(kicked_user)
+
+    # if the party member is offline we dont send a update to the user
+    if kicked_user.state.location != Define_Common.MetaLocation.OFFLINE:
         new_party = Party(player_1=kicked_user)
         new_party.leader = kicked_user
         kicked_user.party = new_party
-        send_party_info_notification(party)
         send_party_info_notification(new_party)
 
-        return SS2C_PARTY_MEMBER_KICK_RES(result=pc.SUCCESS)
-    else:
-        return SS2C_PARTY_MEMBER_KICK_RES(result=pc.FAIL_GENERAL)
+    send_party_info_notification(party)
+    return SS2C_PARTY_MEMBER_KICK_RES(result=pc.SUCCESS)
 
 
 def broadcast_chat(ctx, msg):
@@ -264,7 +308,8 @@ def broadcast_chat(ctx, msg):
 
     for user in sessions[ctx.transport].party.players:
         transport, _ = get_user(account_id=user.account.id)
-        transport.write(header + res.SerializeToString())
+        if transport is not None:
+            transport.write(header + res.SerializeToString())
 
 
 def chat(ctx, msg):

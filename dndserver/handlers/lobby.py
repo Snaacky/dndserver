@@ -43,12 +43,13 @@ def enter_lobby(ctx, msg):
         old = hParty.search_for_old_party(sessions[ctx.transport].account.id)
 
         if old is not None:
-            # replace the previous session with the current session
-            for player in old.players:
+            # search for the old session in the party
+            for index, player in enumerate(old.players):
                 if player.account.id != sessions[ctx.transport].account.id:
                     continue
 
-                player = sessions[ctx.transport]
+                # replace the old session with the new one
+                old.players[index] = sessions[ctx.transport]
                 break
 
             sessions[ctx.transport].party = old
