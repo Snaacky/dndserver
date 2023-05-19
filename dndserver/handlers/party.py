@@ -244,7 +244,7 @@ def leave_party(ctx, msg):
     # Party leader needs to be passed if the leader is leaving..
     if user_leaving.party.leader == user_leaving:
         for user in user_leaving.party.players:
-            if user != user_leaving:
+            if user != user_leaving and user.state.location != Define_Common.MetaLocation.OFFLINE:
                 user_leaving.party.leader = user
                 break
 
@@ -254,9 +254,9 @@ def leave_party(ctx, msg):
 
     # give the leaving member a new party
     new_party = Party(player_1=user_leaving)
-    new_party.leader = user_leaving
     user_leaving.party = new_party
     send_party_info_notification(new_party)
+
     return SS2C_PARTY_EXIT_RES(result=pc.SUCCESS)
 
 
