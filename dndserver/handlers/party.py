@@ -69,6 +69,13 @@ def cleanup(ctx):
     if not all([session.account, session.state, session.party]):
         return
 
+    if len(session.party.players) <= 1:
+        return
+
+    # check if we have any online players in the party
+    if not has_online_players(session.party, [session]):
+        return
+
     # change the state to offline
     session.state.location = Define_Common.MetaLocation.OFFLINE
     send_party_location_notification(session.party, session)
@@ -76,7 +83,7 @@ def cleanup(ctx):
     # party leader needs to be passed if the leader is leaving
     if session.party.leader == session:
         for user in session.party.players:
-            if user != session:
+            if user != session and user.state.location != Define_Common.MetaLocation.OFFLINE:
                 session.party.leader = user
                 break
 
