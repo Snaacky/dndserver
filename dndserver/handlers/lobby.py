@@ -3,7 +3,7 @@ from dndserver.handlers import character
 from dndserver.models import Character
 from dndserver.objects.party import Party
 from dndserver.objects.state import State
-from dndserver.persistent import parties, sessions
+from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Account import SC2S_LOBBY_ENTER_REQ, SS2C_LOBBY_ENTER_RES
 from dndserver.protos.Lobby import (
@@ -29,9 +29,10 @@ def enter_lobby(ctx, msg):
     sessions[ctx.transport].character = query
     sessions[ctx.transport].state = State()
 
-    party = Party(player_1=sessions[ctx.transport])
-    sessions[ctx.transport].party = party
-    parties.append(party)
+    # do not update the party if we are switching characters
+    if sessions[ctx.transport].party is None:
+        party = Party(player_1=sessions[ctx.transport])
+        sessions[ctx.transport].party = party
 
     ctx.reply(character.character_info(ctx, msg))
 

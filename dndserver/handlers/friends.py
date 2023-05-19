@@ -17,7 +17,6 @@ from dndserver.protos.Common import (
 from dndserver.protos.Defines import Define_Message
 from dndserver.protos.Friend import SC2S_FRIEND_FIND_REQ, SS2C_FRIEND_FIND_RES, SS2C_FRIEND_LIST_ALL_RES
 from dndserver.utils import get_user
-from dndserver.handlers.party import get_party
 
 
 def list_friends(ctx, msg):
@@ -51,8 +50,7 @@ def list_friends(ctx, msg):
         friend_info.level = user.character.level
 
         # get information about the party of the user
-        party = get_party(account_id=user.account.id)
-        is_solo = len(party.players) <= 1
+        is_solo = len(user.party.players) <= 1
         location = (
             Friend_Location.Friend_Location_DUNGEON
             if user.state.location == Define_Common.MetaLocation.INGAME
@@ -62,7 +60,7 @@ def list_friends(ctx, msg):
         friend_info.locationStatus = location
 
         # Set the member count and max member count (special case for solo, that should be 0 not 1)
-        friend_info.PartyMemeberCount = len(party.players) if not is_solo else 0
+        friend_info.PartyMemeberCount = len(user.party.players) if not is_solo else 0
         friend_info.PartyMaxMemeberCount = 3 if not is_solo else 0
 
         # update the players in the dungeon and lobby
@@ -105,8 +103,7 @@ def find_user(ctx, msg):
     _, session = get_user(nickname=req.nickName.originalNickName)
     if session:
         # get information about the account we are requesting
-        party = get_party(account_id=sessions[ctx.transport].account.id)
-        is_solo = len(party.players) <= 1
+        is_solo = len(sessions[ctx.transport].party.players) <= 1
         location = (
             Friend_Location.Friend_Location_DUNGEON
             if session.state.location == Define_Common.MetaLocation.INGAME
@@ -125,7 +122,7 @@ def find_user(ctx, msg):
             gender=Gender(session.character.gender).value,
             level=session.character.level,
             locationStatus=location,
-            PartyMemeberCount=len(party.players) if not is_solo else 0,
+            PartyMemeberCount=len(sessions[ctx.transport].party.players) if not is_solo else 0,
             PartyMaxMemeberCount=3 if not is_solo else 0,
         )
         res.friendInfo.CopyFrom(friend)

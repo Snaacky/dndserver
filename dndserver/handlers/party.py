@@ -3,7 +3,7 @@ from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.handlers import inventory
 from dndserver.handlers import character as Char
 from dndserver.objects.party import Party
-from dndserver.persistent import parties, sessions
+from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Defines import Define_Item, Define_Common
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_PARTY_INFO
@@ -67,7 +67,6 @@ def accept_invite(ctx, msg):
 
     # delete empty party if the user joining the party was the only member
     if len(sessions[ctx.transport].party.players) == 1:
-        del parties[sessions[ctx.transport].party.id - 1]
         del sessions[ctx.transport].party
 
     # add user to the inviters party object
@@ -172,24 +171,24 @@ def leave_party(ctx, msg):
 
     user_leaving = sessions[ctx.transport]
 
-    party = get_party(account_id=user_leaving.account.id)
-    if not party:
+    if not user_leaving.party:
         return SS2C_PARTY_EXIT_RES(result=pc.FAIL_GENERAL)
 
     # Party leader needs to be passed if the leader is leaving..
-    if party.leader == user_leaving:
-        for user in party.players:
+    if user_leaving.party.leader == user_leaving:
+        for user in user_leaving.party.players:
             if user != user_leaving:
-                party.leader = user
+                user_leaving.party.leader = user
                 break
 
-    party.remove_member(user_leaving)
-    new_party = Party(player_1=sessions[ctx.transport])
-    new_party.leader = user_leaving
-    parties.append(new_party)
-    sessions[ctx.transport].party = new_party
+    # leave the party and update the other users
+    user_leaving.party.remove_member(user_leaving)
+    send_party_info_notification(user_leaving.party)
 
-    send_party_info_notification(party)
+    # give the leaving member a new party
+    new_party = Party(player_1=user_leaving)
+    new_party.leader = user_leaving
+    user_leaving.party = new_party
     send_party_info_notification(new_party)
     return SS2C_PARTY_EXIT_RES(result=pc.SUCCESS)
 
@@ -203,8 +202,7 @@ def set_ready_state(ctx, msg):
     sessions[ctx.transport].state.is_ready = req.isReady
 
     # notify the party with the change to the ready state
-    party = get_party(account_id=sessions[ctx.transport].account.id)
-    send_party_info_notification(party)
+    send_party_info_notification(sessions[ctx.transport].party)
 
     return SS2C_PARTY_READY_RES(result=pc.SUCCESS)
 
@@ -213,16 +211,17 @@ def kick_member(ctx, msg):
     """Occurs when party leader clicks on Kick"""
     req = SC2S_PARTY_MEMBER_KICK_REQ()
     req.ParseFromString(msg)
-    party = get_party(account_id=sessions[ctx.transport].account.id)
+
+    party = sessions[ctx.transport].party
     if party.leader == sessions[ctx.transport]:
         _, kicked_user = get_user(account_id=int(req.accountId))
         party.remove_member(kicked_user)
         new_party = Party(player_1=kicked_user)
         new_party.leader = kicked_user
         kicked_user.party = new_party
-        parties.append(new_party)
         send_party_info_notification(party)
         send_party_info_notification(new_party)
+
         return SS2C_PARTY_MEMBER_KICK_RES(result=pc.SUCCESS)
     else:
         return SS2C_PARTY_MEMBER_KICK_RES(result=pc.FAIL_GENERAL)
@@ -230,9 +229,9 @@ def kick_member(ctx, msg):
 
 def broadcast_chat(ctx, msg):
     res = SS2C_PARTY_CHAT_NOT(chatData=msg, time=int(round(datetime.now().timestamp() * 1000)))
-    party = get_party(account_id=sessions[ctx.transport].account.id)
     header = make_header(res)
-    for user in party.players:
+
+    for user in sessions[ctx.transport].party.players:
         transport, _ = get_user(account_id=user.account.id)
         transport.write(header + res.SerializeToString())
 
