@@ -1,5 +1,6 @@
 from dndserver.database import db
 from dndserver.handlers import character
+from dndserver.handlers import party as hParty
 from dndserver.models import Character
 from dndserver.objects.party import Party
 from dndserver.objects.state import State
@@ -29,10 +30,38 @@ def enter_lobby(ctx, msg):
     sessions[ctx.transport].character = query
     sessions[ctx.transport].state = State()
 
-    # do not update the party if we are switching characters
-    if sessions[ctx.transport].party is None:
-        party = Party(player_1=sessions[ctx.transport])
-        sessions[ctx.transport].party = party
+    # check if we need to create a new party for the user
+    if sessions[ctx.transport].party is not None:
+        # do not update the party if we are switching characters but update the
+        # party we have a new character
+        if len(sessions[ctx.transport].party.players) > 1 and hParty.has_online_players(
+            sessions[ctx.transport].party, [sessions[ctx.transport]]
+        ):
+            hParty.send_party_info_notification(sessions[ctx.transport].party)
+    else:
+        # check if we had a old party
+        old = hParty.search_for_old_party(sessions[ctx.transport].account.id)
+
+        if old is not None:
+            # replace the previous session with the current session
+            for player in old.players:
+                if player.account.id != sessions[ctx.transport].account.id:
+                    continue
+
+                player = sessions[ctx.transport]
+                break
+
+            sessions[ctx.transport].party = old
+
+            # send a update to the old party
+            hParty.send_party_info_notification(old)
+        else:
+            # create a new party for the user if we cannot find anything
+            party = Party(player_1=sessions[ctx.transport])
+            sessions[ctx.transport].party = party
+
+            # send a update to the user it doesnt have a party
+            hParty.send_party_info_notification(party)
 
     ctx.reply(character.character_info(ctx, msg))
 

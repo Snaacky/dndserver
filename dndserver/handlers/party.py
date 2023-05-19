@@ -30,6 +30,37 @@ from dndserver.protos.Party import (
 from dndserver.utils import get_party, get_user, make_header
 
 
+def has_online_players(party, exclude=[]):
+    """Helper function to check if we have online players in a party excluding the exclude list"""
+    for player in party.players:
+        if player in exclude:
+            continue
+
+        if player.state.location != Define_Common.MetaLocation.OFFLINE:
+            return True
+
+    return False
+
+
+def search_for_old_party(account_id):
+    """Helper function to search for the old party of the user"""
+    for session in sessions.values():
+        if session.party is None:
+            continue
+
+        if len(session.party.players) <= 1:
+            continue
+
+        if session.party.leader != session:
+            continue
+
+        for player in session.party.players:
+            if account_id == player.account.id:
+                return session.party
+
+    return None
+
+
 def party_invite(ctx, msg):
     """Occurs when a user sends a party to another user."""
     req = SC2S_PARTY_INVITE_REQ()
