@@ -524,7 +524,6 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.GJERMUNDBU, ItemType.ARMORS, Rarity.JUNK, 3, 1),
                 items.generate_item(ItemEnum.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4),
                 # TODO These are just for demo purposes, remove after
-                items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
@@ -544,7 +543,6 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4),
                 items.generate_item(ItemEnum.WANDERERATTIRE, ItemType.ARMORS, Rarity.JUNK, 3, 2),
                 # TODO These are just for demo purposes, remove after
-                items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
@@ -560,12 +558,10 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.BUCKLER, ItemType.WEAPONS, Rarity.JUNK, 3, 11),
                 items.generate_item(ItemEnum.WIZARDSTAFF, ItemType.WEAPONS, Rarity.JUNK, 3, 12),
                 items.generate_item(ItemEnum.LANTERN, ItemType.UTILITY, Rarity.JUNK, 3, 8),
-                items.generate_item(ItemEnum.BANDAGE, ItemType.UTILITY, Rarity.JUNK, 3, 14),
                 items.generate_item(ItemEnum.FROCK, ItemType.ARMORS, Rarity.JUNK, 3, 2),
                 items.generate_item(ItemEnum.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4),
                 items.generate_item(ItemEnum.BANDAGE, ItemType.CONSUMABLES, Rarity.JUNK, 3, 14),
                 # TODO These are just for demo purposes, remove after
-                items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
@@ -585,7 +581,6 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.PADDEDTUNIC, ItemType.ARMORS, Rarity.JUNK, 3, 2),
                 items.generate_item(ItemEnum.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4),
                 # TODO These are just for demo purposes, remove after
-                items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
@@ -607,7 +602,6 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.RANGERHOOD, ItemType.ARMORS, Rarity.JUNK, 3, 1),
                 items.generate_item(ItemEnum.ARROW, ItemType.CONSUMABLES, Rarity.JUNK, 2, 0, 15),
                 # TODO These are just for demo purposes, remove after
-                items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
@@ -628,7 +622,6 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4),
                 items.generate_item(ItemEnum.ROGUECOWL, ItemType.ARMORS, Rarity.JUNK, 3, 1),
                 # TODO These are just for demo purposes, remove after
-                items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),
@@ -649,7 +642,6 @@ def create_items_per_class(char_class):
                 items.generate_item(ItemEnum.WIZARDHAT, ItemType.ARMORS, Rarity.JUNK, 3, 1),
                 items.generate_item(ItemEnum.WIZARDSHOES, ItemType.ARMORS, Rarity.JUNK, 3, 5),
                 # TODO These are just for demo purposes, remove after
-                items.generate_item(ItemEnum.OXPENDANT, ItemType.JEWELRY, Rarity.UNIQUE, 3, 19),
                 items.generate_item(ItemEnum.ALE, ItemType.CONSUMABLES, Rarity.LEGENDARY, 3, 9),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 0, 10),
                 items.generate_item(ItemEnum.GOLDCOINS, ItemType.LOOTABLES, Rarity.NONE, 4, 1, 10),

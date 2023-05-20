@@ -1,0 +1,1 @@
+{"name": "CobaltFrock", "classes": ["Id_PlayerCharacter_Wizard", "Id_PlayerCharacter_Cleric"], "type": "Chest","material": "Cloth", "stats": {"4": {"Id_ItemPropertyType_Effect_ArmorRating": [22, 23, 0], "Id_ItemPropertyType_Effect_MoveSpeed": [-5, -5, 0], "Id_ItemPropertyType_Effect_MagicRegistance": [20, 20, 0]}}}

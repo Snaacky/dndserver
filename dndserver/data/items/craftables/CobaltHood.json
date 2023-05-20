@@ -1,0 +1,1 @@
+{"name": "CobaltHood", "classes": ["Id_PlayerCharacter_Rogue", "Id_PlayerCharacter_Ranger"], "type": "Head","material": "Leather", "stats": {"4": {"Id_ItemPropertyType_Effect_ArmorRating": [15, 16, 0], "Id_ItemPropertyType_Effect_HeadshotReductionMod": ["4.0%", "4.0%", 0], "Id_ItemPropertyType_Effect_MoveSpeed": [-5, -5, 0]}}}

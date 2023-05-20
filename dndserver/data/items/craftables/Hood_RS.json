@@ -1,0 +1,1 @@
+{"name": "Hood_RS", "classes": ["Id_PlayerCharacter_Wizard", "Id_PlayerCharacter_Cleric"], "type": "Head", "material": "Cloth", "stats": {"5": {"Id_ItemPropertyType_Effect_ArmorRating": [17, 18, 0], "Id_ItemPropertyType_Effect_HeadshotReductionMod": ["4.0%", "4.0%", 0], "Id_ItemPropertyType_Effect_MoveSpeed": [-5, -5, 0]}}}
