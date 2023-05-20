@@ -27,6 +27,18 @@ class Account(base):
         db.commit()
 
 
+class IPAddress(base):
+    __tablename__ = "ip_addresses"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    address = Column(String(45), nullable=False)
+    account_id = Column(Integer, nullable=True)
+
+    def save(self):
+        db.add(self)
+        db.commit()
+
+
 class Character(base):
     __tablename__ = "characters"
 

@@ -5,7 +5,7 @@ import argon2
 import arrow
 
 from dndserver.database import db
-from dndserver.models import Hwid, Account
+from dndserver.models import Hwid, Account, IPAddress
 from dndserver.persistent import sessions
 from dndserver.protos.Account import SC2S_ACCOUNT_LOGIN_REQ, SLOGIN_ACCOUNT_INFO, SS2C_ACCOUNT_LOGIN_RES
 from dndserver.protos.Common import SS2C_SERVICE_POLICY_NOT, FSERVICE_POLICY
@@ -39,6 +39,12 @@ def process_login(ctx, msg):
         account.save()
 
         res.secretToken = account.secret_token
+
+    # Retrive ip address and associate the ip address to the account id
+    ip_address = ctx.transport.client[0]
+    if not db.query(IPAddress).filter_by(address=ip_address).filter_by(account_id=account.id).first():
+        address = IPAddress(account_id=account.id, address=ip_address)
+        address.save()
 
     # Check if an hwId is associated to an account_id, if not add to db
     for hwid in req.hwIds:
