@@ -4,6 +4,7 @@
         "Id_PlayerCharacter_Bard"
     ],
     "type": "Chest",
+    "material": "Cloth",
     "stats": {
         "0": {
             "Id_ItemPropertyType_Effect_ArmorRating": [

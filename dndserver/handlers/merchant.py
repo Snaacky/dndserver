@@ -150,18 +150,9 @@ def db_create_merchant_item(merchant_id, item, index, remaining, character_id):
         attr.save()
 
 
-def generate_items_merchant(merchant, merchant_id, remaining, character_id):
+def generate_items_merchant(merchant, merchant_id, character_id):
     """Helper to generate items for a merchant"""
-    # TODO: this should generate items specific for the merchant
-    items = [
-        ObjItems.generate_item(eItem.BANDAGE, ItemType.CONSUMABLES, Rarity.JUNK, 3, 14, 1, 1111111),
-        ObjItems.generate_item(eItem.TORCH, ItemType.WEAPONS, Rarity.JUNK, 3, 13, 1, 1111112),
-        ObjItems.generate_item(eItem.ROUNDSHIELD, ItemType.WEAPONS, Rarity.JUNK, 3, 11, 1, 1111113),
-        ObjItems.generate_item(eItem.LANTERN, ItemType.UTILITY, Rarity.JUNK, 3, 8, 1, 1111114),
-        ObjItems.generate_item(eItem.ARMINGSWORD, ItemType.WEAPONS, Rarity.JUNK, 3, 10, 1, 1111115),
-        ObjItems.generate_item(eItem.CLOTHPANTS, ItemType.ARMORS, Rarity.JUNK, 3, 4, 1, 1111116),
-    ]
-
+    items = ObjItems.generate_merch_items(merchant)
     # get the stock index map for the current merchant (never add 2 items within the
     # same index in the map. The game will only return 1 index)
     merchant_map = MerchantData.buy_mapping[merchant]
@@ -169,7 +160,7 @@ def generate_items_merchant(merchant, merchant_id, remaining, character_id):
     # TODO: every merchant has its own index. Convert the item to a merchant index. Prices
     # are determined by the offet from the start of the merchant stock id. For now we map
     # the index to the first stock id. Prices are determined from the stock id.
-    for (index, variations), item in zip(merchant_map, items):
+    for (index, variations), (item, remaining) in zip(merchant_map, items):
         # create the default items for every merchant
         db_create_merchant_item(merchant_id, item, index, remaining, character_id)
 
@@ -285,11 +276,8 @@ def get_buy_list(ctx, msg):
 
     # check if we have any items to show. If we dont we regenerate them
     if len(items) == 0:
-        # TODO: unhardcode this
-        items_remaining = 3
-
         # we have no items regenerate them
-        generate_items_merchant(merchant.merchant, merchant.id, items_remaining, char.id)
+        generate_items_merchant(merchant.merchant, merchant.id, char.id)
 
         # requery the items to fetch all the new items
         items = db.query(Item).filter_by(merchant_id=merchant.id).all()

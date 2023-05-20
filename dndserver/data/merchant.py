@@ -116,3 +116,46 @@ buy_mapping = {
         (148, 4), (152, 3), (155, 4), (159, 4), (163, 2)
     ],
 }
+
+
+fixed_items = {
+    MerchantClass.SURGEON: [
+        ("DesignDataItem:Id_Item_Bandage_0001", 1, 3), ("DesignDataItem:Id_Item_Bandage_2001", 1, 3),
+        ("DesignDataItem:Id_Item_Bandage_1001", 3, 3), ("DesignDataItem:Id_Item_Bandage_2001", 3, 3)
+    ],
+    MerchantClass.SANTA: [
+        ("DesignDataItem:Id_Item_CandyCane", 1, 50), ("DesignDataItem:Id_Item_CandyCorns", 1, 50)
+    ],
+    MerchantClass.WOODSMAN: [
+        ("DesignDataItem:Id_Item_Arrow_0001", 15, 50), ("DesignDataItem:Id_Item_Bolt_0001", 15, 50),
+        ("DesignDataItem:Id_Item_FranciscaAxe_1001", 3, 3), ("DesignDataItem:Id_Item_CampfireKit_1001", 1, 3),
+        ("DesignDataItem:Id_Item_ThrowingKnife_1001", 3, 3), ("DesignDataItem:Id_Item_HuntingTrap_1001", 1, 3),
+        ("DesignDataItem:Id_Item_CampfireKit_2001", 1, 3), ("DesignDataItem:Id_Item_HuntingTrap_2001", 1, 3),
+        ("DesignDataItem:Id_Item_Pickaxe_2001", 1, 3), ("DesignDataItem:Id_Item_Torch", 1, 3),
+        ("DesignDataItem:Id_Item_OilLantern", 1, 3)
+    ],
+    MerchantClass.TAILOR: [],
+    MerchantClass.TREASURER: [
+        ("DesignDataItem:Id_Item_GoldCoins", 1, 50), ("DesignDataItem:Id_Item_GoldCoins", 5, 50),
+        ("DesignDataItem:Id_Item_GoldCoins", 10, 50), ("DesignDataItem:Id_Item_GoldCoinPurse", 1, 50)
+    ],
+    MerchantClass.LEATHERSMITH: [],
+    MerchantClass.ARMOURER: [],
+    MerchantClass.THECOLLECTOR: [],
+    MerchantClass.ALCHEMIST: [
+        ("DesignDataItem:Id_Item_HealingPotion_1001", 1, 3), ("DesignDataItem:Id_Item_HealingPotion_2001", 1, 3),
+        ("DesignDataItem:Id_Item_HealingPotion_1001", 3, 3), ("DesignDataItem:Id_Item_HealingPotion_2001", 3, 3),
+        ("DesignDataItem:Id_Item_ProtectionPotion_1001", 1, 3), ("DesignDataItem:Id_Item_ClarityPotion_1001", 1, 3)
+    ],
+    MerchantClass.TAVERNMASTER: [
+        ("DesignDataItem:Id_Item_Ale_1001", 1, 3), ("DesignDataItem:Id_Item_Ale_2001", 1, 3),
+        ("DesignDataItem:Id_Item_Ale_3001", 1, 3)
+    ],
+    MerchantClass.WEAPONSMITH: [],
+    MerchantClass.GOBLINMERCHANT: [],
+    MerchantClass.VALENTINE: [],
+    MerchantClass.PUMPKINMAN: [
+        ("DesignDataItem:Id_Item_SkullKey", 1, 3), ("DesignDataItem:Id_Item_TrollBlood_5001", 1, 3),
+        ("DesignDataItem:Id_Item_ValentineCandies", 1, 3)
+    ],
+}
