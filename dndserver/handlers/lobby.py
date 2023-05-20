@@ -1,6 +1,7 @@
+import arrow
 from dndserver.database import db
 from dndserver.handlers import character
-from dndserver.models import Character
+from dndserver.models import Character, Login
 from dndserver.objects.party import Party
 from dndserver.objects.state import State
 from dndserver.persistent import parties, sessions
@@ -28,6 +29,11 @@ def enter_lobby(ctx, msg):
 
     sessions[ctx.transport].character = query
     sessions[ctx.transport].state = State()
+
+    # update the last login time of the character and Login table
+    query.last_login = arrow.utcnow()
+    q_login = Login(account_id=query.account_id, login_time=arrow.utcnow(), character_id=query.id)
+    q_login.save()
 
     party = Party(player_1=sessions[ctx.transport])
     sessions[ctx.transport].party = party
