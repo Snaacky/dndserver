@@ -20,17 +20,10 @@ from dndserver.utils import get_user
 from dndserver.handlers.party import get_party
 
 
-def list_friends(ctx, msg):
-    # send the loop start
-    ctx.reply(SS2C_FRIEND_LIST_ALL_RES(loopFlag=Define_Message.LoopFlag.BEGIN))
-
-    res = SS2C_FRIEND_LIST_ALL_RES()
-    res.loopFlag = Define_Message.LoopFlag.PROGRESS
-
+def count_friends():
     # counters for the lobby and the dungeon
     in_lobby = 0
     in_dungeon = 0
-
     # process every character that is online. The client side will not show the current user in the list. So no need
     # to filter it out
     for user in sessions.values():
@@ -70,13 +63,21 @@ def list_friends(ctx, msg):
             in_dungeon += 1
         else:
             in_lobby += 1
+    return friend_info, in_lobby, in_dungeon
 
-        # add the user information to the friend list
-        res.friendInfoList.append(friend_info)
 
+def list_friends(ctx, msg):
+    # send the loop start
+    ctx.reply(SS2C_FRIEND_LIST_ALL_RES(loopFlag=Define_Message.LoopFlag.BEGIN))
+
+    res = SS2C_FRIEND_LIST_ALL_RES()
+    res.loopFlag = Define_Message.LoopFlag.PROGRESS
+
+    friend_info, in_lobby, in_dungeon = count_friends()
     # set the total amount of users. TODO: Not sure if this is the correct location to set it
     res.totalUserCount = len(res.friendInfoList)
-
+    # add the user information to the friend list
+    res.friendInfoList.append(friend_info)
     # send all the friend data
     ctx.reply(res)
 
