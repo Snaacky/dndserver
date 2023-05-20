@@ -38,7 +38,7 @@ class GameProtocol(Protocol):
         user = User()
         sessions[self.transport] = user
 
-    def connectionLost(self, reason):
+    def connectionLost(self, reason) -> None:
         """Event for when a client disconnects from the server."""
         logger.debug(f"Lost connection to: {self.transport.client[0]}:{self.transport.client[1]}")
 
@@ -133,16 +133,16 @@ class GameProtocol(Protocol):
             res = handlers[handler[0]](self, msg)
             self.reply(msg=res)
 
-    def heartbeat(self):
+    def heartbeat(self) -> None:
         """Send a D&D keepalive packet."""
         self.transport.write(pc.SS2C_ALIVE_RES().SerializeToString())
 
-    def reply(self, msg: bytes):
+    def reply(self, msg: bytes) -> None:
         """Send a D&D packet to the current context transport."""
         header = make_header(msg)
         self.transport.write(header + msg.SerializeToString())
 
-    def send(self, transport, msg: bytes):
+    def send(self, transport, msg: bytes) -> None:
         """Send a D&D packet to a specific transport."""
         header = make_header(msg)
         sessions[transport].write(header + msg.SerializeToString())

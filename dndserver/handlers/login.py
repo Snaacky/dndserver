@@ -11,7 +11,7 @@ from dndserver.protos.Account import SC2S_ACCOUNT_LOGIN_REQ, SLOGIN_ACCOUNT_INFO
 from dndserver.protos.Common import SS2C_SERVICE_POLICY_NOT, FSERVICE_POLICY
 
 
-def process_login(ctx, msg):
+def process_login(ctx, msg) -> SS2C_ACCOUNT_LOGIN_RES:
     """Occurs when the user attempts to login to the game server."""
     req = SC2S_ACCOUNT_LOGIN_REQ()
     req.ParseFromString(msg)
@@ -71,7 +71,7 @@ def process_login(ctx, msg):
     return res
 
 
-def service_policy_notification(ctx):
+def service_policy_notification(ctx) -> None:
     # Fix for Ante (High-Roller Entrance Fee)
     # Policy Type '7' referes to High-Roller
     # There's a lot more policy types, all with values, still unknown what each type does.
@@ -82,7 +82,7 @@ def service_policy_notification(ctx):
     ctx.reply(notify)
 
 
-def kick_concurrent_user(newly_connected_account):
+def kick_concurrent_user(newly_connected_account) -> None:
     """Searches for already connected account and kicks if a match is found."""
     for transport, user in sessions.items():
         # case where a duplicate account is found

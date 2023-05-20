@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from dndserver.config import config
 from dndserver.database import db
 from dndserver.enums.classes import CharacterClass, Gender
@@ -20,7 +22,7 @@ from dndserver.utils import get_user
 from dndserver.handlers.party import get_party
 
 
-def count_friends():
+def count_friends() -> Tuple[SCHARACTER_FRIEND_INFO, int, int]:
     # counters for the lobby and the dungeon
     in_lobby = 0
     in_dungeon = 0
@@ -66,7 +68,7 @@ def count_friends():
     return friend_info, in_lobby, in_dungeon
 
 
-def list_friends(ctx, msg):
+def list_friends(ctx, msg) -> SS2C_FRIEND_LIST_ALL_RES:
     # send the loop start
     ctx.reply(SS2C_FRIEND_LIST_ALL_RES(loopFlag=Define_Message.LoopFlag.BEGIN))
 
@@ -87,7 +89,7 @@ def list_friends(ctx, msg):
     )
 
 
-def find_user(ctx, msg):
+def find_user(ctx, msg) -> SS2C_FRIEND_FIND_RES:
     # message SC2S_FRIEND_FIND_REQ {
     #   .DC.Packet.SACCOUNT_NICKNAME nickName = 1;
     # }
@@ -134,7 +136,7 @@ def find_user(ctx, msg):
     return res
 
 
-def block_user(ctx, msg):
+def block_user(ctx, msg) -> SS2C_BLOCK_CHARACTER_RES:
     """Occurs when a character blocks another character."""
     req = SC2S_BLOCK_CHARACTER_REQ()
     req.ParseFromString(msg)
@@ -179,7 +181,7 @@ def block_user(ctx, msg):
     return res
 
 
-def unblock_user(ctx, msg):
+def unblock_user(ctx, msg) -> SS2C_UNBLOCK_CHARACTER_RES:
     """Occurs when a character unblocks another character."""
     # message SC2S_UNBLOCK_CHARACTER_REQ {
     #   string targetAccountId = 1;
@@ -203,7 +205,7 @@ def unblock_user(ctx, msg):
     return SS2C_UNBLOCK_CHARACTER_RES(result=pc.SUCCESS, targetCharacterId=req.targetCharacterId)
 
 
-def get_blocked_users(ctx, msg):
+def get_blocked_users(ctx, msg) -> SS2C_BLOCK_CHARACTER_LIST_RES:
     # message SC2S_BLOCK_CHARACTER_LIST_REQ {}
     req = SC2S_BLOCK_CHARACTER_LIST_REQ()
     req.ParseFromString(msg)

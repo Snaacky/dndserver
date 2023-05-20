@@ -1,3 +1,5 @@
+from typing import Tuple, List
+
 from dndserver.database import db
 from dndserver.models import Character, Item, ItemAttribute
 from dndserver.persistent import sessions
@@ -17,9 +19,10 @@ from dndserver.protos.Inventory import (
     SS2C_INVENTORY_SWAP_RES,
     SS2C_INVENTORY_SPLIT_MERGE_RES,
 )
+from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 
 
-def get_all_items(character_id, inventory_id=None, slot_id=None):
+def get_all_items(character_id, inventory_id=None, slot_id=None) -> List[Tuple[Item, List[ItemAttribute]]]:
     """Helper function to get all items for a character id"""
     query = db.query(Item).filter_by(character_id=character_id).filter_by(index=0)
 
@@ -41,7 +44,7 @@ def get_all_items(character_id, inventory_id=None, slot_id=None):
     return ret
 
 
-def delete_item(character_id, item, is_query=False):
+def delete_item(character_id, item, is_query=False) -> bool:
     """Helper function to remove a item from a character"""
     if is_query:
         query = item
@@ -63,7 +66,7 @@ def delete_item(character_id, item, is_query=False):
     return True
 
 
-def add_item(item):
+def add_item(item) -> None:
     """Helper function to add a item to a character"""
     it, attributes = item
 
@@ -74,7 +77,7 @@ def add_item(item):
         attribute.save()
 
 
-def get_stack_limit(item):
+def get_stack_limit(item) -> int:
     """Helper function to the get the amount we can stack a item"""
     # TODO: this should be read from the item directly
     if "Id_Item_Bandage" in item or "Potion" in item or "Id_Item_ThrowingKnife" in item:
@@ -89,7 +92,7 @@ def get_stack_limit(item):
         return 0
 
 
-def get_inv_limit(item):
+def get_inv_limit(item) -> int:
     """Helper function to get the max inventory count for a item"""
     # TODO: get real values for limits
     if "Id_Item_GoldCoinPurse" in item:
@@ -102,7 +105,7 @@ def get_inv_limit(item):
         return 0
 
 
-def split_item(from_item, item_id, to_inventory, to_slot, quantity, character_id, from_is_persistent=True):
+def split_item(from_item, item_id, to_inventory, to_slot, quantity, character_id, from_is_persistent=True) -> int:
     """Helper function to split a item and generate a new item at the provided location"""
     it = Item()
     it.character_id = character_id
@@ -149,7 +152,7 @@ def split_item(from_item, item_id, to_inventory, to_slot, quantity, character_id
     return it.id
 
 
-def merge_items(from_item, to_item, amount, character_id, from_is_persistent=True):
+def merge_items(from_item, to_item, amount, character_id, from_is_persistent=True) -> bool:
     """Helper function to merge two items."""
     # Check how we can merge the two items
     if get_inv_limit(from_item.item_id) and get_inv_limit(to_item.item_id):
@@ -194,7 +197,7 @@ def merge_items(from_item, to_item, amount, character_id, from_is_persistent=Tru
     return True
 
 
-def merge_request(ctx, msg):
+def merge_request(ctx, msg) -> SS2C_LOBBY_CHARACTER_INFO_RES:
     """Occurs when the user drags an item on another in the merchant screen."""
     req = SC2S_INVENTORY_MERGE_REQ()
     req.ParseFromString(msg)
@@ -217,7 +220,7 @@ def merge_request(ctx, msg):
     return HCharacter.character_info(ctx, bytearray())
 
 
-def split_move_request(ctx, msg):
+def split_move_request(ctx, msg) -> SS2C_LOBBY_CHARACTER_INFO_RES:
     """Occurs when the user wants to split an item in the merchant screen."""
     req = SC2S_INVENTORY_SPLIT_MOVE_REQ()
     req.ParseFromString(msg)
@@ -255,7 +258,7 @@ def split_move_request(ctx, msg):
     return HCharacter.character_info(ctx, bytearray())
 
 
-def swap_request(ctx, msg):
+def swap_request(ctx, msg) -> SS2C_LOBBY_CHARACTER_INFO_RES:
     """Occurs when the user wants to swap two items in the merchant screen."""
     req = SC2S_INVENTORY_SWAP_REQ()
     req.ParseFromString(msg)
@@ -279,7 +282,7 @@ def swap_request(ctx, msg):
     return HCharacter.character_info(ctx, bytearray())
 
 
-def split_merge_request(ctx, msg):
+def split_merge_request(ctx, msg) -> SS2C_LOBBY_CHARACTER_INFO_RES:
     """Occurs when the user wants to split and merge the result on another item in the merchant screen."""
     req = SC2S_INVENTORY_SPLIT_MERGE_REQ()
     req.ParseFromString(msg)
@@ -315,7 +318,7 @@ def split_merge_request(ctx, msg):
     return HCharacter.character_info(ctx, bytearray())
 
 
-def move_request(ctx, msg):
+def move_request(ctx, msg) -> SS2C_LOBBY_CHARACTER_INFO_RES:
     """Occurs when the user moves an item at a merchant"""
     req = SC2S_INVENTORY_MOVE_REQ()
     req.ParseFromString(msg)
@@ -341,7 +344,7 @@ def move_request(ctx, msg):
     return HCharacter.character_info(ctx, bytearray())
 
 
-def move_single_request(ctx, msg):
+def move_single_request(ctx, msg) -> SS2C_LOBBY_CHARACTER_INFO_RES:
     """Occurs when the user moves an item in the stash (only in the stash screen)"""
     req = SC2S_INVENTORY_SINGLE_UPDATE_REQ()
     req.ParseFromString(msg)

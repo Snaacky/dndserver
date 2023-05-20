@@ -30,7 +30,7 @@ from dndserver.protos.Party import (
 from dndserver.utils import get_party, get_user, make_header
 
 
-def party_invite(ctx, msg):
+def party_invite(ctx, msg) -> SS2C_PARTY_INVITE_RES:
     """Occurs when a user sends a party to another user."""
     req = SC2S_PARTY_INVITE_REQ()
     req.ParseFromString(msg)
@@ -44,7 +44,7 @@ def party_invite(ctx, msg):
     return SS2C_PARTY_INVITE_RES(result=pc.SUCCESS)
 
 
-def accept_invite(ctx, msg):
+def accept_invite(ctx, msg) -> SS2C_PARTY_INVITE_ANSWER_RES:
     """Occurs when a user accepts a party invite."""
     # req.returnAccountId == inviter
     # sessions[ctx.transport].account.id == invitee
@@ -85,7 +85,7 @@ def accept_invite(ctx, msg):
     return SS2C_PARTY_INVITE_ANSWER_RES(result=pc.SUCCESS)
 
 
-def send_invite_notification(ctx, req):
+def send_invite_notification(ctx, req) -> None:
     notify = SS2C_PARTY_INVITE_NOT(
         InviteeNickName=SACCOUNT_NICKNAME(
             originalNickName=sessions[ctx.transport].character.nickname,
@@ -102,7 +102,7 @@ def send_invite_notification(ctx, req):
     transport.write(header + notify.SerializeToString())
 
 
-def send_accept_notification(ctx, req):
+def send_accept_notification(ctx, req) -> None:
     transport, _ = get_user(account_id=int(req.returnAccountId))
     notify = SS2C_PARTY_INVITE_ANSWER_RESULT_NOT(
         nickName=SACCOUNT_NICKNAME(
@@ -116,7 +116,7 @@ def send_accept_notification(ctx, req):
     transport.write(header + notify.SerializeToString())
 
 
-def send_party_info_notification(party):
+def send_party_info_notification(party) -> None:
     """Notification sent to all players in the lobby that updates the current party player list."""
     notify = SS2C_PARTY_MEMBER_INFO_NOT()
     for user in party.players:
@@ -148,7 +148,7 @@ def send_party_info_notification(party):
         transport.write(header + notify.SerializeToString())
 
 
-def send_party_location_notification(party, session):
+def send_party_location_notification(party, session) -> None:
     """Notification send the other party members that updates the location of the provided user"""
     notify = SS2C_PARTY_LOCATION_UPDATE_NOT()
     notify.accountId = str(session.account.id)
@@ -165,7 +165,7 @@ def send_party_location_notification(party, session):
         transport.write(header + notify.SerializeToString())
 
 
-def leave_party(ctx, msg):
+def leave_party(ctx, msg) -> SS2C_PARTY_EXIT_RES:
     """Occurs when a user leaves the party."""
     req = SC2S_PARTY_EXIT_REQ()
     req.ParseFromString(msg)
@@ -194,7 +194,7 @@ def leave_party(ctx, msg):
     return SS2C_PARTY_EXIT_RES(result=pc.SUCCESS)
 
 
-def set_ready_state(ctx, msg):
+def set_ready_state(ctx, msg) -> SS2C_PARTY_READY_RES:
     """Occurs when a user presses the ready button in a party."""
     req = SC2S_PARTY_READY_REQ()
     req.ParseFromString(msg)
@@ -209,7 +209,7 @@ def set_ready_state(ctx, msg):
     return SS2C_PARTY_READY_RES(result=pc.SUCCESS)
 
 
-def kick_member(ctx, msg):
+def kick_member(ctx, msg) -> SS2C_PARTY_MEMBER_KICK_RES:
     """Occurs when party leader clicks on Kick"""
     req = SC2S_PARTY_MEMBER_KICK_REQ()
     req.ParseFromString(msg)
@@ -228,7 +228,7 @@ def kick_member(ctx, msg):
         return SS2C_PARTY_MEMBER_KICK_RES(result=pc.FAIL_GENERAL)
 
 
-def broadcast_chat(ctx, msg):
+def broadcast_chat(ctx, msg) -> None:
     res = SS2C_PARTY_CHAT_NOT(chatData=msg, time=int(round(datetime.now().timestamp() * 1000)))
     party = get_party(account_id=sessions[ctx.transport].account.id)
     header = make_header(res)
@@ -237,7 +237,7 @@ def broadcast_chat(ctx, msg):
         transport.write(header + res.SerializeToString())
 
 
-def chat(ctx, msg):
+def chat(ctx, msg) -> SS2C_PARTY_CHAT_RES:
     req = SC2S_PARTY_CHAT_REQ()
     req.ParseFromString(msg)
     character = sessions[ctx.transport].character

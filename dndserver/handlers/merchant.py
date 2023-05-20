@@ -26,9 +26,10 @@ from dndserver.protos.Merchant import (
     SS2C_MERCHANT_STOCK_SELL_BACK_RES,
 )
 from dndserver.handlers import character, inventory
+from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 
 
-def delete_items_merchant(merchant_id):
+def delete_items_merchant(merchant_id) -> None:
     """Helper function to delete all items a merchant has"""
     items = db.query(Item).filter_by(merchant_id=merchant_id).all()
 
@@ -42,7 +43,7 @@ def delete_items_merchant(merchant_id):
         item.delete()
 
 
-def delete_merchants(character_id):
+def delete_merchants(character_id) -> None:
     """Helper function to delete all merchants and items they have"""
     merchants = db.query(Merchant).filter_by(character_id=character_id).all()
 
@@ -54,7 +55,7 @@ def delete_merchants(character_id):
         merchant.delete()
 
 
-def create_merchants(character_id):
+def create_merchants(character_id) -> None:
     """Helper function to create merchants for a character"""
     # create all the merchants for the user
     for merchant in MerchantClass:
@@ -62,7 +63,7 @@ def create_merchants(character_id):
         db_create_merchant(character_id, merchant, arrow.utcnow().shift(minutes=15))
 
 
-def get_stockbuy_id(merchant, index):
+def get_stockbuy_id(merchant, index) -> str:
     """Helper to create the string for the stockbuy id"""
     ret = "DesignDataStockBuy:Id_StockBuy_"
 
@@ -98,13 +99,13 @@ def get_stockbuy_id(merchant, index):
     return ret + "_{0:0>2}".format(index)
 
 
-def get_stock_unique_id(merchant, index):
+def get_stock_unique_id(merchant, index) -> int:
     """Helper function to get the stock unique id for the merchant and index"""
     # TODO: use the mapping for the stock unique id. For now use the index
     return index
 
 
-def db_create_merchant(character_id, merchant_class, refresh_time):
+def db_create_merchant(character_id, merchant_class, refresh_time) -> None:
     """Helper function to create a merchant in the database"""
     merchant = Merchant()
     merchant.character_id = character_id
@@ -114,7 +115,7 @@ def db_create_merchant(character_id, merchant_class, refresh_time):
     merchant.save()
 
 
-def db_create_merchant_item(merchant_id, item, index, remaining, character_id):
+def db_create_merchant_item(merchant_id, item, index, remaining, character_id) -> None:
     """Creates a database entry for the merchant with item attributes and the amount remaining"""
     it = Item()
     it.character_id = character_id
@@ -150,7 +151,7 @@ def db_create_merchant_item(merchant_id, item, index, remaining, character_id):
         attr.save()
 
 
-def generate_items_merchant(merchant, merchant_id, character_id):
+def generate_items_merchant(merchant, merchant_id, character_id) -> None:
     """Helper to generate items for a merchant"""
     items = ObjItems.generate_merch_items(merchant)
     # get the stock index map for the current merchant (never add 2 items within the
@@ -165,7 +166,7 @@ def generate_items_merchant(merchant, merchant_id, character_id):
         db_create_merchant_item(merchant_id, item, index, remaining, character_id)
 
 
-def add_to_inventory_merchant(unique_id, info, character_id):
+def add_to_inventory_merchant(unique_id, info, character_id) -> bool:
     """Helper function to add a bought item to the inventory of the character"""
     # get the selected item from the database
     item = db.query(Item).filter_by(character_id=character_id).filter_by(index=unique_id).first()
@@ -212,7 +213,7 @@ def add_to_inventory_merchant(unique_id, info, character_id):
     return True
 
 
-def get_merchant_list(ctx, msg):
+def get_merchant_list(ctx, msg) -> SS2C_MERCHANT_LIST_RES:
     """Occurs when the user opens the merchant menu"""
     # get all the times for every merchant
     merchants = db.query(Merchant).filter_by(character_id=sessions[ctx.transport].character.id).all()
@@ -252,7 +253,7 @@ def get_merchant_list(ctx, msg):
     return res
 
 
-def get_buy_list(ctx, msg):
+def get_buy_list(ctx, msg) -> SS2C_MERCHANT_STOCK_BUY_ITEM_LIST_RES:
     """Occurs when the user opens one of the merchant menus"""
     # To list the stock we need to send 3 messages.
     # 1 for starting, 1 with the actual data and the last for the end
@@ -342,7 +343,7 @@ def get_buy_list(ctx, msg):
     )
 
 
-def buy_item(ctx, msg):
+def buy_item(ctx, msg) -> SS2C_LOBBY_CHARACTER_INFO_RES:
     """Occurs when the user buys a item from the merchant"""
     req = SC2S_MERCHANT_STOCK_BUY_REQ()
     req.ParseFromString(msg)
@@ -382,7 +383,7 @@ def buy_item(ctx, msg):
     return character.character_info(ctx=ctx, msg=bytearray())
 
 
-def get_sellback_list(ctx, msg):
+def get_sellback_list(ctx, msg) -> SS2C_MERCHANT_STOCK_SELL_BACK_ITEM_LIST_RES:
     """Occurs when the user opens one of the merchant menus"""
     # To send the items we can sell back to the merchant we need to send 3 messages.
     # 1 for starting, 1 with the actual data and the last for the end
@@ -418,7 +419,7 @@ def get_sellback_list(ctx, msg):
     )
 
 
-def sellback_request(ctx, msg):
+def sellback_request(ctx, msg) -> SS2C_LOBBY_CHARACTER_INFO_RES:
     """Occurs when the user requests to sellback to one of the merchants."""
     req = SC2S_MERCHANT_STOCK_SELL_BACK_REQ()
     req.ParseFromString(msg)
