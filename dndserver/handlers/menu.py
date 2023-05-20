@@ -3,7 +3,7 @@ from dndserver.persistent import sessions
 from dndserver.handlers.party import get_party, send_party_location_notification
 
 
-def process_location(ctx, msg) -> SS2C_META_LOCATION_RES:
+def process_location(ctx, msg: bytes) -> SS2C_META_LOCATION_RES:
     # get the location from the message.
     req = SC2S_META_LOCATION_REQ()
     req.ParseFromString(msg)

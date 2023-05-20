@@ -11,7 +11,7 @@ from dndserver.protos.Account import SC2S_ACCOUNT_LOGIN_REQ, SLOGIN_ACCOUNT_INFO
 from dndserver.protos.Common import SS2C_SERVICE_POLICY_NOT, FSERVICE_POLICY
 
 
-def process_login(ctx, msg) -> SS2C_ACCOUNT_LOGIN_RES:
+def process_login(ctx, msg: bytes) -> SS2C_ACCOUNT_LOGIN_RES:
     """Occurs when the user attempts to login to the game server."""
     req = SC2S_ACCOUNT_LOGIN_REQ()
     req.ParseFromString(msg)
@@ -82,7 +82,7 @@ def service_policy_notification(ctx) -> None:
     ctx.reply(notify)
 
 
-def kick_concurrent_user(newly_connected_account) -> None:
+def kick_concurrent_user(newly_connected_account: Account) -> None:
     """Searches for already connected account and kicks if a match is found."""
     for transport, user in sessions.items():
         # case where a duplicate account is found

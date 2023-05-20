@@ -10,6 +10,7 @@ from dndserver.enums.items import (
     EnhancementMagicWeapon,
     MagicWeapon,
     EnhancementArmor,
+    Material,
 )
 
 # TODO We might want to store this somewhere else, and only call it once, when server starts
@@ -34,7 +35,7 @@ def load_json_data() -> None:
 load_json_data()
 
 
-def get_content(name, type, rarity) -> dict:
+def get_content(name: str, type: ItemType, rarity: Rarity) -> dict:
     """Gets the relevant data depending on the item name and type"""
 
     content = {}
@@ -54,7 +55,7 @@ def get_content(name, type, rarity) -> dict:
     return content
 
 
-def get_content_based_on(material, item_type) -> Dict[str, Any]:
+def get_content_based_on(material: Material, item_type: ItemType) -> Dict[str, Any]:
     """Gets the relevant data depending on the material and type"""
 
     obj = {}
@@ -68,7 +69,7 @@ def get_content_based_on(material, item_type) -> Dict[str, Any]:
     return obj
 
 
-def random_gear(content, how_many) -> dict:
+def random_gear(content: dict, how_many: int) -> dict:
     """Return a random dictionary of how many items you want from a list of dictionaries (content)"""
 
     new_result = {}
@@ -81,7 +82,7 @@ def random_gear(content, how_many) -> dict:
     return new_result
 
 
-def random_item_list(type, material, item_count) -> List[Dict[str, Any]]:
+def random_item_list(type: ItemType, material: Material, item_count: int) -> List[Dict[str, Any]]:
     """Produce a list of random weapon or armor for merchants"""
     final_data = []
 
@@ -100,7 +101,7 @@ def random_item_list(type, material, item_count) -> List[Dict[str, Any]]:
     return final_data
 
 
-def random_rarity(list_of_rarity) -> Rarity:
+def random_rarity(list_of_rarity: List[Rarity]) -> Rarity:
     """Produce a random rarity for gear:
     gray = 45%; white = 35%; green = 24.50%; blue = 15.50%; purple = 8%;"""
 
@@ -117,7 +118,7 @@ def random_rarity(list_of_rarity) -> Rarity:
     return random.choices(list_of_rarity[1:-2], list_of_chance, k=1)[0]
 
 
-def generate_new_item(name, type, rarity, item_count=1) -> dict[str, Any]:
+def generate_new_item(name: str, type: ItemType, rarity: Rarity, item_count: int = 1) -> dict[str, Any]:
     """Function to be called in order to create an item"""
 
     final_data = {}
@@ -132,7 +133,7 @@ def generate_new_item(name, type, rarity, item_count=1) -> dict[str, Any]:
     return final_data
 
 
-def format_other_data(data, name, rarity, item_count) -> Dict[str, str]:
+def format_other_data(data: dict, name: str, rarity: Rarity, item_count: int) -> Dict[str, str]:
     """Raw data for non weapons/armors are different, so need to be fetched differently"""
 
     item_id = f"DesignDataItem:Id_Item_{name}_{rarity}001"
@@ -147,7 +148,7 @@ def format_other_data(data, name, rarity, item_count) -> Dict[str, str]:
     return final_data
 
 
-def parse_properties_to_array(data, rarity) -> List[dict]:
+def parse_properties_to_array(data: dict, rarity: str) -> List[dict]:
     """Gets the stat properties of the item data and formats it to be consumed"""
 
     properties = data["stats"][rarity]
@@ -158,7 +159,7 @@ def parse_properties_to_array(data, rarity) -> List[dict]:
     return properties_array
 
 
-def parse_secondary_properties_to_array(rarity, item_type, name) -> List[dict]:
+def parse_secondary_properties_to_array(rarity: str, item_type: ItemType, name: str) -> List[dict]:
     """Prepare the data for secondary property to be consumed"""
     rarity = int(rarity)
 
@@ -175,7 +176,7 @@ def parse_secondary_properties_to_array(rarity, item_type, name) -> List[dict]:
     return []
 
 
-def effects_based_on(rarity, item_type, name) -> List[dict]:
+def effects_based_on(rarity: str, item_type: ItemType, name: str) -> List[dict]:
     """Select random sencondary effects for weapons and armors"""
 
     properties_array = []
@@ -208,7 +209,7 @@ def effects_based_on(rarity, item_type, name) -> List[dict]:
     return properties_array
 
 
-def adjust_stats_based_on_ranges(property_array) -> List[dict]:
+def adjust_stats_based_on_ranges(property_array: List[dict]) -> List[dict]:
     """Generates the stats values depending on the value ranges in the data"""
 
     new_property_array = []
@@ -234,7 +235,7 @@ def adjust_stats_based_on_ranges(property_array) -> List[dict]:
     return new_property_array
 
 
-def format_data(data, name, rarity, item_type) -> dict:
+def format_data(data: dict, name: str, rarity: str, item_type: ItemType) -> dict:
     """Formats the itemId and properties by calling other formatters, formats the response to be consumed"""
 
     item_id = f"DesignDataItem:Id_Item_{name}_{rarity}001"

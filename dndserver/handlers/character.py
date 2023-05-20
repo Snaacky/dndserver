@@ -55,7 +55,7 @@ from dndserver.protos.Item import (
 from dndserver.protos.Lobby import SS2C_LOBBY_CHARACTER_INFO_RES
 
 
-def item_to_proto_item(item, attributes, for_character=True) -> pItem.SItem:
+def item_to_proto_item(item: Item, attributes: List[ItemAttribute], for_character: bool = True) -> pItem.SItem:
     """Helper function to create a proto item from a database item and attributes"""
     ret = pItem.SItem()
 
@@ -80,7 +80,7 @@ def item_to_proto_item(item, attributes, for_character=True) -> pItem.SItem:
     return ret
 
 
-def list_characters(ctx, msg) -> SS2C_ACCOUNT_CHARACTER_LIST_RES:
+def list_characters(ctx, msg: bytes) -> SS2C_ACCOUNT_CHARACTER_LIST_RES:
     """Occurs when the user loads in to the character selection screen."""
     req = SC2S_ACCOUNT_CHARACTER_LIST_REQ()
     req.ParseFromString(msg)
@@ -112,7 +112,7 @@ def list_characters(ctx, msg) -> SS2C_ACCOUNT_CHARACTER_LIST_RES:
     return res
 
 
-def create_character(ctx, msg) -> SS2C_ACCOUNT_CHARACTER_CREATE_RES:
+def create_character(ctx, msg: bytes) -> SS2C_ACCOUNT_CHARACTER_CREATE_RES:
     """Occurs when the user attempts to create a new character."""
     req = SC2S_ACCOUNT_CHARACTER_CREATE_REQ()
     req.ParseFromString(msg)
@@ -181,7 +181,7 @@ def create_character(ctx, msg) -> SS2C_ACCOUNT_CHARACTER_CREATE_RES:
     return res
 
 
-def delete_character(ctx, msg) -> SS2C_ACCOUNT_CHARACTER_DELETE_RES:
+def delete_character(ctx, msg: bytes) -> SS2C_ACCOUNT_CHARACTER_DELETE_RES:
     """Occurs when the user attempts to delete a character."""
     req = SC2S_ACCOUNT_CHARACTER_DELETE_REQ()
     req.ParseFromString(msg)
@@ -218,7 +218,7 @@ def delete_character(ctx, msg) -> SS2C_ACCOUNT_CHARACTER_DELETE_RES:
     return res
 
 
-def customise_character_info(ctx, msg) -> SS2C_CUSTOMIZE_CHARACTER_INFO_RES:
+def customise_character_info(ctx, msg: bytes) -> SS2C_CUSTOMIZE_CHARACTER_INFO_RES:
     custom = SCUSTOMIZE_CHARACTER(customizeCharacterId="1", isEquip=1, isNew=1)
     res = SS2C_CUSTOMIZE_CHARACTER_INFO_RES()
     res.loopFlag = 0
@@ -226,7 +226,7 @@ def customise_character_info(ctx, msg) -> SS2C_CUSTOMIZE_CHARACTER_INFO_RES:
     return res
 
 
-def character_info(ctx, msg) -> SS2C_LOBBY_CHARACTER_INFO_RES:
+def character_info(ctx, msg: bytes) -> SS2C_LOBBY_CHARACTER_INFO_RES:
     """Occurs when the user loads into the lobby/tavern."""
     character = sessions[ctx.transport].character
 
@@ -254,7 +254,7 @@ def character_info(ctx, msg) -> SS2C_LOBBY_CHARACTER_INFO_RES:
     return res
 
 
-def get_experience(ctx, msg) -> SS2C_CLASS_LEVEL_INFO_RES:
+def get_experience(ctx, msg: bytes) -> SS2C_CLASS_LEVEL_INFO_RES:
     """Occurs when the user loads into the lobby."""
     character = sessions[ctx.transport].character
     res = SS2C_CLASS_LEVEL_INFO_RES()
@@ -269,7 +269,7 @@ def get_experience(ctx, msg) -> SS2C_CLASS_LEVEL_INFO_RES:
     return res
 
 
-def list_perks(ctx, msg) -> SS2C_CLASS_PERK_LIST_RES:
+def list_perks(ctx, msg: bytes) -> SS2C_CLASS_PERK_LIST_RES:
     """Occurs when user selects the class menu."""
     character = sessions[ctx.transport].character
     selected_perks = [character.perk0, character.perk1, character.perk2, character.perk3]
@@ -287,7 +287,7 @@ def list_perks(ctx, msg) -> SS2C_CLASS_PERK_LIST_RES:
     return res
 
 
-def list_skills(ctx, msg) -> SS2C_CLASS_SKILL_LIST_RES:
+def list_skills(ctx, msg: bytes) -> SS2C_CLASS_SKILL_LIST_RES:
     """Occurs when user selects the class menu."""
     character = sessions[ctx.transport].character
     selected_skills = [character.skill0, character.skill1]
@@ -305,7 +305,7 @@ def list_skills(ctx, msg) -> SS2C_CLASS_SKILL_LIST_RES:
     return res
 
 
-def list_spells(ctx, msg) -> SS2C_CLASS_SPELL_LIST_RES:
+def list_spells(ctx, msg: bytes) -> SS2C_CLASS_SPELL_LIST_RES:
     """Occurs when the user loads opens the class menu."""
     req = SC2S_CLASS_SPELL_LIST_REQ()
     req.ParseFromString(msg)
@@ -338,7 +338,7 @@ def list_spells(ctx, msg) -> SS2C_CLASS_SPELL_LIST_RES:
     return res
 
 
-def get_spells(character_id) -> SS2C_CLASS_SPELL_SLOT_MOVE_RES:
+def get_spells(character_id: int) -> SS2C_CLASS_SPELL_SLOT_MOVE_RES:
     """Helper function to create the spell slot response"""
     res = SS2C_CLASS_SPELL_SLOT_MOVE_RES()
     res.result = pc.SUCCESS
@@ -354,7 +354,7 @@ def get_spells(character_id) -> SS2C_CLASS_SPELL_SLOT_MOVE_RES:
     return res
 
 
-def update_spell_sequence(update_from, character_id) -> None:
+def update_spell_sequence(update_from: int, character_id: int) -> None:
     """Helper function to update the sequences above the update_from"""
     spells = (
         db.query(Spell)
@@ -367,7 +367,7 @@ def update_spell_sequence(update_from, character_id) -> None:
         spell.sequence_id = update_from + index
 
 
-def move_spell(ctx, msg) -> SS2C_CLASS_SPELL_SLOT_MOVE_RES:
+def move_spell(ctx, msg: bytes) -> SS2C_CLASS_SPELL_SLOT_MOVE_RES:
     """Occurs when the user moves a spell."""
     req = SC2S_CLASS_SPELL_SLOT_MOVE_REQ()
     req.ParseFromString(msg)
@@ -441,7 +441,7 @@ def move_spell(ctx, msg) -> SS2C_CLASS_SPELL_SLOT_MOVE_RES:
     return get_spells(char.id)
 
 
-def get_perks_and_skills(ctx, msg) -> SS2C_CLASS_EQUIP_INFO_RES:
+def get_perks_and_skills(ctx, msg: bytes) -> SS2C_CLASS_EQUIP_INFO_RES:
     """Occurs when the user loads in the game or loads into the class menu."""
     character = sessions[ctx.transport].character
     res = SS2C_CLASS_EQUIP_INFO_RES()
@@ -475,7 +475,7 @@ def get_perks_and_skills(ctx, msg) -> SS2C_CLASS_EQUIP_INFO_RES:
     return res
 
 
-def move_perks_and_skills(ctx, msg) -> SS2C_CLASS_ITEM_MOVE_RES:
+def move_perks_and_skills(ctx, msg: bytes) -> SS2C_CLASS_ITEM_MOVE_RES:
     """Occurs when the user tries to move either a perk or a skill."""
     req = SC2S_CLASS_ITEM_MOVE_REQ()
     req.ParseFromString(msg)
@@ -514,7 +514,7 @@ def move_perks_and_skills(ctx, msg) -> SS2C_CLASS_ITEM_MOVE_RES:
     return SS2C_CLASS_ITEM_MOVE_RES(result=pc.SUCCESS, oldMove=req.oldMove, newMove=req.newMove)
 
 
-def create_items_per_class(char_class) -> List[pItem.SItem]:
+def create_items_per_class(char_class: CharacterClass) -> List[pItem.SItem]:
     match char_class:
         case CharacterClass.BARBARIAN:
             return [
@@ -654,7 +654,7 @@ def create_items_per_class(char_class) -> List[pItem.SItem]:
     return []
 
 
-def emote_info(ctx, msg) -> SS2C_CUSTOMIZE_EMOTE_INFO_RES:
+def emote_info(ctx, msg: bytes) -> SS2C_CUSTOMIZE_EMOTE_INFO_RES:
     custom = SEMOTE(emoteId="1", equipSlotIndex=1, isNew=1)
     res = SS2C_CUSTOMIZE_EMOTE_INFO_RES()
     res.loopFlag = Define_Message.LoopFlag.NONE
@@ -662,7 +662,7 @@ def emote_info(ctx, msg) -> SS2C_CUSTOMIZE_EMOTE_INFO_RES:
     return res
 
 
-def lobby_emote_info(ctx, msg) -> SS2C_CUSTOMIZE_LOBBY_EMOTE_INFO_RES:
+def lobby_emote_info(ctx, msg: bytes) -> SS2C_CUSTOMIZE_LOBBY_EMOTE_INFO_RES:
     custom = SCUSTOMIZE_LOBBY_EMOTE(lobbyEmoteId="1", equipSlotIndex=1, isNew=1)
     res = SS2C_CUSTOMIZE_LOBBY_EMOTE_INFO_RES()
     res.loopFlag = Define_Message.LoopFlag.NONE
@@ -670,7 +670,7 @@ def lobby_emote_info(ctx, msg) -> SS2C_CUSTOMIZE_LOBBY_EMOTE_INFO_RES:
     return res
 
 
-def item_info(ctx, msg) -> SS2C_CUSTOMIZE_ITEM_INFO_RES:
+def item_info(ctx, msg: bytes) -> SS2C_CUSTOMIZE_ITEM_INFO_RES:
     custom = SCUSTOMIZE_ITEM(customizeItemId="1", isEquip=1, isNew=1)
     res = SS2C_CUSTOMIZE_ITEM_INFO_RES()
     res.loopFlag = Define_Message.LoopFlag.NONE
@@ -678,7 +678,7 @@ def item_info(ctx, msg) -> SS2C_CUSTOMIZE_ITEM_INFO_RES:
     return res
 
 
-def action_info(ctx, msg) -> SS2C_CUSTOMIZE_ACTION_INFO_RES:
+def action_info(ctx, msg: bytes) -> SS2C_CUSTOMIZE_ACTION_INFO_RES:
     custom = SCUSTOMIZE_ACTION(customizeActionId="1", isEquip=1, isNew=1)
     res = SS2C_CUSTOMIZE_ACTION_INFO_RES()
     res.loopFlag = Define_Message.LoopFlag.NONE

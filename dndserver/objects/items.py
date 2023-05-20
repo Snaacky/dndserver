@@ -1,10 +1,11 @@
-from typing import Tuple, List
+from typing import Tuple, List, Any
 
 from dndserver.handlers import item as hItem
 from dndserver.protos import Item as item
 from dndserver.data import merchant
-from dndserver.enums.items import ItemType, Material
+from dndserver.enums.items import ItemType, Material, Rarity, Item as ItemEnum
 from dndserver.enums.classes import MerchantClass
+from dndserver.protos.Defines import Define_Item, Define_Equipment
 
 
 class Item:
@@ -46,11 +47,20 @@ class Item:
             new_item.secondaryPropertyArray.append(new_prop)
 
 
-def generate_item(name, type, rarity, inventoryId, slotId, item_count=1) -> item.SItem:
+def generate_item(
+    name: ItemEnum,
+    type: ItemType,
+    rarity: Rarity,
+    inventoryId: Define_Item.InventoryId,
+    slotId: Define_Equipment.SlotId,
+    item_count: int = 1,
+) -> item.SItem:
     return item_parser(hItem.generate_new_item(name.value, type, rarity, item_count), inventoryId, slotId, item_count)
 
 
-def item_parser(item_values, inventoryId, slotId, item_count) -> item.SItem:
+def item_parser(
+    item_values: dict[str, Any], inventoryId: Define_Item.InventoryId, slotId: Define_Equipment.SlotId, item_count: int
+) -> item.SItem:
     newItem = item.SItem()
     newItem.inventoryId = inventoryId
     newItem.slotId = slotId
@@ -78,7 +88,7 @@ def item_parser(item_values, inventoryId, slotId, item_count) -> item.SItem:
     return newItem
 
 
-def generate_random_item(merch_id, amount) -> List[Tuple[item.SItem, int]]:
+def generate_random_item(merch_id: MerchantClass, amount: int) -> List[Tuple[item.SItem, int]]:
     ret = []
 
     # TODO: Add Merchants when we know what they sell
@@ -125,7 +135,7 @@ def generate_random_item(merch_id, amount) -> List[Tuple[item.SItem, int]]:
     return sorted_ret
 
 
-def generate_merch_items(merch_id) -> List[Tuple[item.SItem, int]]:
+def generate_merch_items(merch_id: MerchantClass) -> List[Tuple[item.SItem, int]]:
     items = merchant.fixed_items[merch_id]
     ret = []
 
