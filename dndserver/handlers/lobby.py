@@ -1,9 +1,10 @@
 from dndserver.database import db
 from dndserver.handlers import character
+from dndserver.handlers import party as hParty
 from dndserver.models import Character
 from dndserver.objects.party import Party
 from dndserver.objects.state import State
-from dndserver.persistent import parties, sessions
+from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Account import SC2S_LOBBY_ENTER_REQ, SS2C_LOBBY_ENTER_RES
 from dndserver.protos.Lobby import (
@@ -29,9 +30,39 @@ def enter_lobby(ctx, msg):
     sessions[ctx.transport].character = query
     sessions[ctx.transport].state = State()
 
-    party = Party(player_1=sessions[ctx.transport])
-    sessions[ctx.transport].party = party
-    parties.append(party)
+    # check if we need to create a new party for the user
+    if sessions[ctx.transport].party is not None:
+        # do not update the party if we are switching characters but update the
+        # party we have a new character
+        if len(sessions[ctx.transport].party.players) > 1 and hParty.has_online_players(
+            sessions[ctx.transport].party, [sessions[ctx.transport]]
+        ):
+            hParty.send_party_info_notification(sessions[ctx.transport].party)
+    else:
+        # check if we had a old party
+        old = hParty.search_for_old_party(sessions[ctx.transport].account.id)
+
+        if old is not None:
+            # search for the old session in the party
+            for index, player in enumerate(old.players):
+                if player.account.id != sessions[ctx.transport].account.id:
+                    continue
+
+                # replace the old session with the new one
+                old.players[index] = sessions[ctx.transport]
+                break
+
+            sessions[ctx.transport].party = old
+
+            # send a update to the old party
+            hParty.send_party_info_notification(old)
+        else:
+            # create a new party for the user if we cannot find anything
+            party = Party(player_1=sessions[ctx.transport])
+            sessions[ctx.transport].party = party
+
+            # send a update to the user it doesnt have a party
+            hParty.send_party_info_notification(party)
 
     ctx.reply(character.character_info(ctx, msg))
 

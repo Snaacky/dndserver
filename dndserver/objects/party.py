@@ -1,10 +1,15 @@
 from dndserver.objects.user import User
-from dndserver.persistent import parties
+
+# starting id of the parties
+party_id = 0
 
 
 class Party:
     def __init__(self, player_1: User) -> None:
-        self.id = len(parties) + 1
+        global party_id
+        party_id += 1
+        self.id = party_id
+
         self.players = [player_1]
         self.leader = player_1
 
