@@ -13,6 +13,129 @@ class Rarity(Enum):
     UNIQUE = 7
 
 
+class EnhancementArmor(Enum):
+    ARMOR_RATING_ADD = "Effect_ArmorRatingAdd"
+    SPELL_CAPACITY_ADD = "Effect_SpellCapacityAdd"
+    PHYSICAL_DAMAGE_ADD = "Effect_PhysicalDamageAdd"
+    MAGICAL_HEALING = "Effect_MagicalHealing"
+    PHYSICAL_HEALING = "Effect_PhysicalHealing"
+    AGILITY = "Effect_Agility"
+    PHYSICAL_DAMAGE_TRUE = "Effect_PhysicalDamageTrue"
+    KNOWLEDGE = "Effect_Knowledge"
+    PHYSICAL_WEAPON_DAMAGE_ADD = "Effect_PhysicalWeaponDamageAdd"
+    PRIMITIVE = "Effect_Primitive"
+    MAGICAL_DAMAGE_ADD = "Effect_MagicalDamageAdd"
+    MAGICAL_POWER = "Effect_MagicalPower"
+    MAX_HEAL_ADD = "Effect_MaxHealthAdd"
+    WILL = "Effect_Will"
+    STRENGTH = "Effect_Strength"
+    RESOURCEFULNESS = "Effect_Resourcefulness"
+
+    _MAX_HEAL_BONUS = "Effect_MaxHealthBonus"
+    _BUFF_DURATION_BONUS = "Effect_BuffDurationBonus"
+    _PHYSICAL_DAMAGE_REDUCTION = "Effect_PhysicalDamageReduction"
+    _MAGICAL_DAMAGE_REDUCTION = "Effect_MagicalDamageReduction"
+    _SPELL_CAPACITY_BONUS = "Effect_SpellCapacityBonus"
+    _ITEM_EQUIP_SPEED = "Effect_ItemEquipSpeed"
+    _ARMOR_PENETRATION = "Effect_ArmorPenetration"
+    _MAGICAL_INTERACTION_SPEED = "Effect_MagicalInteractionSpeed"
+    _MAGICAL_DAMAGE_BONUS = "Effect_MagicalDamageBonus"
+    _MAGIC_PENETRATION = "Effect_MagicPenetration"
+    _REGULAR_INTERACTION_SPEED = "Effect_RegularInteractionSpeed"
+    _MOVE_SPEED_BONUS = "Effect_MoveSpeedBonus"
+    _ACTION_SPEED = "Effect_ActionSpeed"
+    _DEBUFF_DURATION_BONUS = "Effect_DebuffDurationBonus"
+    _PHYSICAL_DAMAGE_BONUS = "Effect_PhysicalDamageBonus"
+    _SPELL_CASTING_SPEED = "Effect_SpellCastingSpeed"
+
+    # unsure
+    # PHYSICAL_POWER = "Effect_PhysicalPower"
+
+
+class EnhancementPhysicalWeapon(Enum):
+    AGILITY = "Effect_Agility"
+    KNOWLEDGE = "Effect_Knowledge"
+    MAX_HEAL_ADD = "Effect_MaxHealthAdd"
+    MOVE_SPEED = "Effect_MoveSpeed"
+    PHYSICAL_DAMAGE_ADD = "Effect_PhysicalDamageAdd"  # only physical_weapon
+    PHYSICAL_DAMAGE_TRUE = "Effect_PhysicalDamageTrue"  # only physical_weapon
+    PHYSICAL_WEAPON_DAMAGE_ADD = "Effect_PhysicalWeaponDamageAdd"  # only physical_weapon
+    RESOURCEFULNESS = "Effect_Resourcefulness"
+    STRENGTH = "Effect_Strength"
+    WILL = "Effect_Will"
+    PRIMITIVE = "Effect_Primitive"
+    PHYSICAL_POWER = "Effect_PhysicalPower"  # only physical_weapon
+
+    _MAX_HEAL_BONUS = "Effect_MaxHealthBonus"
+    _MOVE_SPEED_BONUS = "Effect_MoveSpeedBonus"
+    _ACTION_SPEED = "Effect_ActionSpeed"
+    _PHYSICAL_DAMAGE_BONUS = "Effect_PhysicalDamageBonus"  # only physical_weapon
+    _REGULAR_INTERACTION_SPEED = "Effect_RegularInteractionSpeed"
+    _ARMOR_PENETRATION = "Effect_ArmorPenetration"  # only physical_weapon
+    _BUFF_DURATION_BONUS = "Effect_BuffDurationBonus"
+    _DEBUFF_DURATION_BONUS = "Effect_DebuffDurationBonus"
+
+    # unsure
+    _ITEM_EQUIP_SPEED = "Effect_ItemEquipSpeed"
+
+
+class EnhancementMagicWeapon(Enum):
+    AGILITY = "Effect_Agility"
+    KNOWLEDGE = "Effect_Knowledge"
+    MAX_HEAL_ADD = "Effect_MaxHealthAdd"
+    MOVE_SPEED = "Effect_MoveSpeed"
+    RESOURCEFULNESS = "Effect_Resourcefulness"
+    STRENGTH = "Effect_Strength"
+    WILL = "Effect_Will"
+    PRIMITIVE = "Effect_Primitive"
+    MAGICAL_DAMAGE_ADD = "Effect_MagicalDamageAdd"  # only weapons for cleric/mage
+    MAGICAL_DAMAGE_TRUE = "Effect_MagicalDamageTrue"    # only weapons for cleric/mage
+    MAGICAL_POWER = "Effect_MagicalPower"  # only weapons for cleric/mage
+    _MAX_HEAL_BONUS = "Effect_MaxHealthBonus"
+    _MOVE_SPEED_BONUS = "Effect_MoveSpeedBonus"
+    _ACTION_SPEED = "Effect_ActionSpeed"
+    _MAGICAL_INTERACTION_SPEED = "Effect_MagicalInteractionSpeed"  # only weapons for cleric/mage
+    _MAGIC_PENETRATION = "Effect_MagicPenetration"  # only weapons for cleric/mage
+    _SPELL_CASTING_SPEED = "Effect_SpellCastingSpeed"  # only weapons for cleric/mage
+    _MAGICAL_DAMAGE_BONUS = "Effect_MagicalDamageBonus"  # only weapons for cleric/mage
+    _BUFF_DURATION_BONUS = "Effect_BuffDurationBonus"
+    _DEBUFF_DURATION_BONUS = "Effect_DebuffDurationBonus"
+
+
+class MagicWeapon(Enum):
+    BUCKLER = "Buckler"
+    CRYSTALBALL = "CrystalBall"
+    CRYSTALSWORD = "CrystalSword"
+    MAGICWAND = "MagicWand"
+    SPELLBOOK = "Spellbook"
+    WIZARDSTAFF = "WizardStaff"
+    QUARTERSTAFF = "Quarterstaff"
+    RONDELDAGGER = "RondelDagger"
+
+
+class RangedWeapon(Enum):
+    CROSSBOW = "Crossbow"
+    HANDCROSSBOW = "HandCrossbow"
+    LONGBOW = "Longbow"
+    RECURVEBOW = "RecurveBow"
+    SURVIVALBOW = "SurvivalBow"
+    WINDLASSCROSSBOW = "WindlassCrossbow"
+
+
+class ShieldWeapon(Enum):
+    BUCKLER = "Buckler"
+    HEATERSHIELD = "HeaterShield"
+    ROUNDSHIELD = "RoundShield"
+    PAVISE = "Pavise"
+
+
+class Material(Enum):
+    NONE = "NONE"
+    CLOTH = "Cloth"
+    LEATHER = "Leather"
+    PLATE = "Plate"
+
+
 class ItemType(Enum):
     WEAPONS = "weapons"
     ARMORS = "armors"
