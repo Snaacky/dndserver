@@ -1,8 +1,11 @@
+from typing import Tuple, List, Any
+
 from dndserver.handlers import item as hItem
 from dndserver.protos import Item as item
 from dndserver.data import merchant
-from dndserver.enums.items import ItemType, Material
+from dndserver.enums.items import ItemType, Material, Rarity, Item as ItemEnum
 from dndserver.enums.classes import MerchantClass
+from dndserver.protos.Defines import Define_Item, Define_Equipment
 
 
 class Item:
@@ -44,11 +47,20 @@ class Item:
             new_item.secondaryPropertyArray.append(new_prop)
 
 
-def generate_item(name, type, rarity, inventoryId, slotId, item_count=1):
+def generate_item(
+    name: ItemEnum,
+    type: ItemType,
+    rarity: Rarity,
+    inventoryId: Define_Item.InventoryId,
+    slotId: Define_Equipment.SlotId,
+    item_count: int = 1,
+) -> item.SItem:
     return item_parser(hItem.generate_new_item(name.value, type, rarity, item_count), inventoryId, slotId, item_count)
 
 
-def item_parser(item_values, inventoryId, slotId, item_count):
+def item_parser(
+    item_values: dict[str, Any], inventoryId: Define_Item.InventoryId, slotId: Define_Equipment.SlotId, item_count: int
+) -> item.SItem:
     newItem = item.SItem()
     newItem.inventoryId = inventoryId
     newItem.slotId = slotId
@@ -76,7 +88,7 @@ def item_parser(item_values, inventoryId, slotId, item_count):
     return newItem
 
 
-def generate_random_item(merch_id, amount):
+def generate_random_item(merch_id: MerchantClass, amount: int) -> List[Tuple[item.SItem, int]]:
     ret = []
 
     # TODO: Add Merchants when we know what they sell
@@ -123,7 +135,7 @@ def generate_random_item(merch_id, amount):
     return sorted_ret
 
 
-def generate_merch_items(merch_id):
+def generate_merch_items(merch_id: MerchantClass) -> List[Tuple[item.SItem, int]]:
     items = merchant.fixed_items[merch_id]
     ret = []
 
@@ -134,24 +146,3 @@ def generate_merch_items(merch_id):
         ret.append((newItem, item_merch[2]))
 
     return ret + generate_random_item(merch_id, len(merchant.buy_mapping[merch_id]) - len(items))
-
-
-def generate_reckless():
-    skills = item.SSkill()
-    skills.index = 1
-    skills.skillId = "DesignDataSkill:Id_Skill_RecklessAttack"
-    return skills
-
-
-def generate_adrenaline():
-    skills = item.SSkill()
-    skills.index = 2
-    skills.skillId = "DesignDataSkill:Id_Skill_AdenalineRush"
-    return skills
-
-
-def generate_two_hander():
-    skills = item.SPerk()
-    skills.index = 1
-    skills.perkId = "DesignDataPerk:Id_Perk_TwoHander"
-    return skills

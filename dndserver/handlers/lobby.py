@@ -19,7 +19,7 @@ from dndserver.protos.Lobby import (
 )
 
 
-def enter_lobby(ctx, msg):
+def enter_lobby(ctx, msg: bytes) -> SS2C_LOBBY_ENTER_RES:
     """Occurs when loading into the lobby from the character selection screen."""
     req = SC2S_LOBBY_ENTER_REQ()
     req.ParseFromString(msg)
@@ -69,7 +69,7 @@ def enter_lobby(ctx, msg):
     return res
 
 
-def region_select(ctx, msg):
+def region_select(ctx, msg: bytes) -> SS2C_LOBBY_REGION_SELECT_RES:
     """Occurs when a user changes the game server region."""
     req = SC2S_LOBBY_REGION_SELECT_REQ()
     req.ParseFromString(msg)
@@ -77,7 +77,7 @@ def region_select(ctx, msg):
     return res
 
 
-def start(ctx, msg):
+def start(ctx, msg: bytes) -> SS2C_CHARACTER_SELECT_ENTER_RES:
     """Currently unused."""
     req = SC2S_CHARACTER_SELECT_ENTER_REQ()
     req.ParseFromString(msg)
@@ -85,13 +85,13 @@ def start(ctx, msg):
     return res
 
 
-def enter_character_select(ctx, msg):
+def enter_character_select(ctx, msg: bytes) -> SS2C_CHARACTER_SELECT_ENTER_RES:
     """Occurs when client enter in the characters selection menu."""
     res = SS2C_CHARACTER_SELECT_ENTER_RES(result=1)
     return res
 
 
-def map_select(ctx, msg):
+def map_select(ctx, msg: bytes) -> SS2C_LOBBY_GAME_DIFFICULTY_SELECT_RES:
     """Occurs when client selects a map."""
     req = SC2S_LOBBY_GAME_DIFFICULTY_SELECT_REQ()
     req.ParseFromString(msg)
@@ -99,7 +99,7 @@ def map_select(ctx, msg):
     return res
 
 
-def open_map_select(ctx, msg):
+def open_map_select(ctx, msg: bytes) -> SS2C_OPEN_LOBBY_MAP_RES:
     """Occurs when client opens the map selector."""
     req = SC2S_OPEN_LOBBY_MAP_REQ()
     req.ParseFromString(msg)

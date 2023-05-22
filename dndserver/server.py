@@ -11,7 +11,7 @@ from dndserver.protocol import GameFactory
 from dndserver.console import console
 
 
-async def main():
+async def main() -> None:
     """Entrypoint where the server first initializes"""
     signal.signal(signal.SIGINT, signal.default_int_handler)
     # Stop the server from executing if the database is missing.

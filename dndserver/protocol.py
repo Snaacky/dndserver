@@ -1,7 +1,10 @@
 import struct
+from typing import Optional
 
 from loguru import logger
 from twisted.internet.protocol import Factory, Protocol
+from twisted.internet.interfaces import IAddress, ITransport
+from twisted.python import failure
 
 from dndserver.handlers import (
     character,
@@ -23,7 +26,7 @@ from dndserver.utils import make_header
 
 
 class GameFactory(Factory):
-    def buildProtocol(self, addr) -> Protocol:
+    def buildProtocol(self, addr: IAddress) -> Optional[Protocol]:
         return GameProtocol()
 
 
@@ -38,7 +41,7 @@ class GameProtocol(Protocol):
         user = User()
         sessions[self.transport] = user
 
-    def connectionLost(self, reason):
+    def connectionLost(self, reason: failure.Failure) -> None:
         """Event for when a client disconnects from the server."""
         logger.debug(f"Lost connection to: {self.transport.client[0]}:{self.transport.client[1]}")
 
@@ -134,16 +137,16 @@ class GameProtocol(Protocol):
             res = handlers[handler[0]](self, msg)
             self.reply(msg=res)
 
-    def heartbeat(self):
+    def heartbeat(self) -> None:
         """Send a D&D keepalive packet."""
         self.transport.write(pc.SS2C_ALIVE_RES().SerializeToString())
 
-    def reply(self, msg: bytes):
+    def reply(self, msg: bytes) -> None:
         """Send a D&D packet to the current context transport."""
         header = make_header(msg)
         self.transport.write(header + msg.SerializeToString())
 
-    def send(self, transport, msg: bytes):
+    def send(self, transport: ITransport, msg: bytes) -> None:
         """Send a D&D packet to a specific transport."""
         header = make_header(msg)
         sessions[transport].write(header + msg.SerializeToString())
