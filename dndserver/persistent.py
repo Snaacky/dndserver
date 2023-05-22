@@ -1,2 +1,1 @@
-parties = []
 sessions = {}
