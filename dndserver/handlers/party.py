@@ -3,12 +3,8 @@ from dndserver.enums.classes import CharacterClass, Gender
 from dndserver.handlers import inventory
 from dndserver.handlers import character as Char
 from dndserver.objects.party import Party
-<<<<<<< HEAD
 from dndserver.objects.user import User
 from dndserver.persistent import parties, sessions
-=======
-from dndserver.persistent import sessions
->>>>>>> master
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Defines import Define_Item, Define_Common
 from dndserver.protos.Character import SACCOUNT_NICKNAME, SCHARACTER_PARTY_INFO
