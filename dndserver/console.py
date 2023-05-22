@@ -7,7 +7,7 @@ from dndserver.handlers.friends import count_friends
 from loguru import logger
 
 
-def enum(type, filter=None):
+def enum(type, filter=None) -> None:
     keys = []
     if type == "rarity":
         for key in Rarity:
@@ -21,16 +21,16 @@ def enum(type, filter=None):
                 keys.append(key.name)
             elif not filter:
                 keys.append(key.name)
-    logger.info(', '.join(keys))
+    logger.info(", ".join(keys))
 
 
-def help():
+def help() -> None:
     logger.info("List of available commands:")
     for _, info in commands.items():
         logger.info(info["help"])
 
 
-def give_item(user, item_name, item_type, rarity=Rarity.NONE, amount=1):
+def give_item(user, item_name, item_type, rarity=Rarity.NONE, amount=1) -> None:
     _, userAccount = get_user(nickname=user)
     if not userAccount:
         logger.debug("User is not online")
@@ -48,21 +48,21 @@ def give_item(user, item_name, item_type, rarity=Rarity.NONE, amount=1):
     it.save()
 
 
-def list(location=None):
+def list(location=None) -> None:
     try:
         _, in_lobby, in_dungeon = count_friends()
     except Exception:
         logger.info("No users currently online.")
         return
-    if location == 'lobby':
+    if location == "lobby":
         logger.info(f"Currently in lobby : {in_lobby}")
-    elif location == 'dungeon':
+    elif location == "dungeon":
         logger.info(f"Currently in dungeon : {in_dungeon}")
     else:
         logger.info(f"Currently online : {in_lobby + in_dungeon}")
 
 
-def exit():
+def exit() -> None:
     sys.exit(0)
 
 
@@ -76,7 +76,7 @@ commands = {
 }
 
 
-def console():
+def console() -> None:
     line = None
     while True:
         try:

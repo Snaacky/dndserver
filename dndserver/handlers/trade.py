@@ -299,7 +299,7 @@ def get_empty_slot(character_id, size=(1, 1)):
     return (None, None)
 
 
-def get_trade_reqs(ctx, msg):
+def get_trade_reqs(ctx, msg: bytes) -> SS2C_TRADE_MEMBERSHIP_REQUIREMENT_RES:
     """Occurs when the user is not a trader and opens the trade screen"""
     return SS2C_TRADE_MEMBERSHIP_REQUIREMENT_RES(
         requirements=[
@@ -730,7 +730,7 @@ def chat(ctx, msg):
     return SS2C_TRADE_CHANNEL_CHAT_RES(result=pc.SUCCESS, chats=[chat_trade])
 
 
-def process_membership(ctx, msg):
+def process_membership(ctx, msg: bytes) -> SS2C_TRADE_MEMBERSHIP_RES:
     """Occurs when the user tries to become a trader"""
     char = sessions[ctx.transport].character
 

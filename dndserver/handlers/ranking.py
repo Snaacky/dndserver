@@ -14,7 +14,7 @@ from dndserver.protos.Ranking import (
 )
 
 
-def get_character_ranking(ctx, msg):
+def get_character_ranking(ctx, msg: bytes) -> SS2C_RANKING_CHARACTER_RES:
     """Occurs when the user opens the leaderboards to view the rank in the leaderboard."""
     req = SC2S_RANKING_CHARACTER_REQ()
     req.ParseFromString(msg)
@@ -45,7 +45,7 @@ def get_character_ranking(ctx, msg):
     return res
 
 
-def get_ranking(ctx, msg):
+def get_ranking(ctx, msg: bytes) -> SS2C_RANKING_RANGE_RES:
     """Occurs when the user opens the leaderboards."""
     req = SC2S_RANKING_RANGE_REQ()
     req.ParseFromString(msg)

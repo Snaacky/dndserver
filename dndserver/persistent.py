@@ -1,3 +1,2 @@
-parties = []
 sessions = {}
 trades = []

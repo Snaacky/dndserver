@@ -22,7 +22,7 @@ class Account(base):
     created_at = Column(ArrowType, default=arrow.utcnow())
     ban_type = Column(Integer)
 
-    def save(self):
+    def save(self) -> None:
         db.add(self)
         db.commit()
 
@@ -58,11 +58,11 @@ class Character(base):
     ranking_ghostking = Column(Integer, default=0)
     # TODO: store all logins in a database and grab the latest from that
 
-    def save(self):
+    def save(self) -> None:
         db.add(self)
         db.commit()
 
-    def delete(self):
+    def delete(self) -> None:
         db.delete(self)
         db.commit()
 
@@ -76,11 +76,11 @@ class Spell(base):
     slot_id = Column(Integer)
     sequence_id = Column(Integer)
 
-    def save(self):
+    def save(self) -> None:
         db.add(self)
         db.commit()
 
-    def delete(self):
+    def delete(self) -> None:
         db.delete(self)
         db.commit()
 
@@ -104,11 +104,11 @@ class Item(base):
     remaining = Column(Integer, default=0)
     index = Column(Integer, default=0)
 
-    def save(self):
+    def save(self) -> None:
         db.add(self)
         db.commit()
 
-    def delete(self):
+    def delete(self) -> None:
         db.delete(self)
         db.commit()
 
@@ -122,11 +122,11 @@ class ItemAttribute(base):
     property = Column(String)
     value = Column(Integer)
 
-    def save(self):
+    def save(self) -> None:
         db.add(self)
         db.commit()
 
-    def delete(self):
+    def delete(self) -> None:
         db.delete(self)
         db.commit()
 
@@ -139,11 +139,11 @@ class Merchant(base):
     merchant = Column(Enum(MerchantClass))
     refresh_time = Column(ArrowType, default=arrow.utcnow())
 
-    def save(self):
+    def save(self) -> None:
         db.add(self)
         db.commit()
 
-    def delete(self):
+    def delete(self) -> None:
         db.delete(self)
         db.commit()
 
@@ -157,11 +157,11 @@ class Hwid(base):
     is_banned = Column(Boolean)
     seen_at = Column(ArrowType, default=arrow.utcnow())
 
-    def save(self):
+    def save(self) -> None:
         db.add(self)
         db.commit()
 
-    def delete(self):
+    def delete(self) -> None:
         db.delete(self)
         db.commit()
 
@@ -178,11 +178,11 @@ class BlockedUser(base):
     character_class = Column(Enum(CharacterClass))
     blocked_at = Column(ArrowType, default=arrow.utcnow())
 
-    def save(self):
+    def save(self) -> None:
         db.add(self)
         db.commit()
 
-    def delete(self):
+    def delete(self) -> None:
         db.delete(self)
         db.commit()
 
@@ -196,11 +196,11 @@ class ChatLog(base):
     chat_index = Column(Integer)
     sent_at = Column(ArrowType, default=arrow.utcnow())
 
-    def save(self):
+    def save(self) -> None:
         db.add(self)
         db.commit()
 
-    def delete(self):
+    def delete(self) -> None:
         db.delete(self)
         db.commit()
 

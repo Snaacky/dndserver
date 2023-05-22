@@ -19,12 +19,13 @@ from dndserver.protos.GatheringHall import (
     SS2C_GATHERING_HALL_TARGET_EQUIPPED_ITEM_RES,
 )
 
+
 channels = {}
 for i in range(1, 7):
     channels[f"channel{i}"] = {"index": i, "clients": []}
 
 
-def gathering_hall_channel_list(ctx, msg):
+def gathering_hall_channel_list(ctx, msg: bytes) -> SS2C_GATHERING_HALL_CHANNEL_LIST_RES:
     req = SC2S_GATHERING_HALL_CHANNEL_LIST_REQ()
     req.ParseFromString(msg)
     res = SS2C_GATHERING_HALL_CHANNEL_LIST_RES()
@@ -40,14 +41,14 @@ def gathering_hall_channel_list(ctx, msg):
     return res
 
 
-def gathering_hall_select_channel(ctx, msg):
+def gathering_hall_select_channel(ctx, msg: bytes) -> SS2C_GATHERING_HALL_CHANNEL_SELECT_RES:
     req = SC2S_GATHERING_HALL_CHANNEL_SELECT_REQ()
     req.ParseFromString(msg)
     channels[f"channel{req.channelIndex}"]["clients"].append(ctx)
     return SS2C_GATHERING_HALL_CHANNEL_SELECT_RES(result=pc.SUCCESS)
 
 
-def gathering_hall_equip(ctx, msg):
+def gathering_hall_equip(ctx, msg: bytes) -> SS2C_GATHERING_HALL_TARGET_EQUIPPED_ITEM_RES:
     req = SC2S_GATHERING_HALL_TARGET_EQUIPPED_ITEM_REQ()
     req.ParseFromString(msg)
     query = db.query(Character).filter_by(id=req.characterId).first()
@@ -58,7 +59,7 @@ def gathering_hall_equip(ctx, msg):
     return SS2C_GATHERING_HALL_TARGET_EQUIPPED_ITEM_RES(result=pc.SUCCESS, equippedItems=None, characterInfo=charinfo)
 
 
-def cleanup(ctx):
+def cleanup(ctx) -> None:
     # Find the client's channel
     current_channel = None
     for ch in channels:
@@ -71,7 +72,7 @@ def cleanup(ctx):
         channels[current_channel]["clients"].remove(ctx)
 
 
-def gathering_hall_channel_exit(ctx, msg):
+def gathering_hall_channel_exit(ctx, msg: bytes) -> SS2C_GATHERING_HALL_CHANNEL_EXIT_RES:
     req = SC2S_GATHERING_HALL_CHANNEL_EXIT_REQ()
     req.ParseFromString(msg)
 
@@ -93,7 +94,7 @@ def gathering_hall_channel_exit(ctx, msg):
     return res
 
 
-def broadcast_chat(ctx, msg):
+def broadcast_chat(ctx, msg: bytes) -> None:
     # Broadcast the message to other clients
     res = SS2C_GATHERING_HALL_CHANNEL_CHAT_RES(result=pc.SUCCESS, chats=msg)
 
@@ -111,7 +112,7 @@ def broadcast_chat(ctx, msg):
                 client.reply(res)
 
 
-def chat(ctx, msg):
+def chat(ctx, msg: bytes) -> SS2C_GATHERING_HALL_CHANNEL_CHAT_RES:
     req = SC2S_GATHERING_HALL_CHANNEL_CHAT_REQ()
     req.ParseFromString(msg)
 

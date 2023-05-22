@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from dndserver.config import config
 from dndserver.database import db
 from dndserver.enums.classes import CharacterClass, Gender
@@ -17,10 +19,9 @@ from dndserver.protos.Common import (
 from dndserver.protos.Defines import Define_Message
 from dndserver.protos.Friend import SC2S_FRIEND_FIND_REQ, SS2C_FRIEND_FIND_RES, SS2C_FRIEND_LIST_ALL_RES
 from dndserver.utils import get_user
-from dndserver.handlers.party import get_party
 
 
-def count_friends():
+def count_friends() -> Tuple[SCHARACTER_FRIEND_INFO, int, int]:
     # counters for the lobby and the dungeon
     in_lobby = 0
     in_dungeon = 0
@@ -44,8 +45,7 @@ def count_friends():
         friend_info.level = user.character.level
 
         # get information about the party of the user
-        party = get_party(account_id=user.account.id)
-        is_solo = len(party.players) <= 1
+        is_solo = len(user.party.players) <= 1
         location = (
             Friend_Location.Friend_Location_DUNGEON
             if user.state.location == Define_Common.MetaLocation.INGAME
@@ -55,7 +55,7 @@ def count_friends():
         friend_info.locationStatus = location
 
         # Set the member count and max member count (special case for solo, that should be 0 not 1)
-        friend_info.PartyMemeberCount = len(party.players) if not is_solo else 0
+        friend_info.PartyMemeberCount = len(user.party.players) if not is_solo else 0
         friend_info.PartyMaxMemeberCount = 3 if not is_solo else 0
 
         # update the players in the dungeon and lobby
@@ -66,7 +66,7 @@ def count_friends():
     return friend_info, in_lobby, in_dungeon
 
 
-def list_friends(ctx, msg):
+def list_friends(ctx, msg: bytes) -> SS2C_FRIEND_LIST_ALL_RES:
     # send the loop start
     ctx.reply(SS2C_FRIEND_LIST_ALL_RES(loopFlag=Define_Message.LoopFlag.BEGIN))
 
@@ -87,7 +87,7 @@ def list_friends(ctx, msg):
     )
 
 
-def find_user(ctx, msg):
+def find_user(ctx, msg: bytes) -> SS2C_FRIEND_FIND_RES:
     # message SC2S_FRIEND_FIND_REQ {
     #   .DC.Packet.SACCOUNT_NICKNAME nickName = 1;
     # }
@@ -106,8 +106,7 @@ def find_user(ctx, msg):
     _, session = get_user(nickname=req.nickName.originalNickName)
     if session:
         # get information about the account we are requesting
-        party = get_party(account_id=sessions[ctx.transport].account.id)
-        is_solo = len(party.players) <= 1
+        is_solo = len(sessions[ctx.transport].party.players) <= 1
         location = (
             Friend_Location.Friend_Location_DUNGEON
             if session.state.location == Define_Common.MetaLocation.INGAME
@@ -126,7 +125,7 @@ def find_user(ctx, msg):
             gender=Gender(session.character.gender).value,
             level=session.character.level,
             locationStatus=location,
-            PartyMemeberCount=len(party.players) if not is_solo else 0,
+            PartyMemeberCount=len(sessions[ctx.transport].party.players) if not is_solo else 0,
             PartyMaxMemeberCount=3 if not is_solo else 0,
         )
         res.friendInfo.CopyFrom(friend)
@@ -134,7 +133,7 @@ def find_user(ctx, msg):
     return res
 
 
-def block_user(ctx, msg):
+def block_user(ctx, msg: bytes) -> SS2C_BLOCK_CHARACTER_RES:
     """Occurs when a character blocks another character."""
     req = SC2S_BLOCK_CHARACTER_REQ()
     req.ParseFromString(msg)
@@ -179,7 +178,7 @@ def block_user(ctx, msg):
     return res
 
 
-def unblock_user(ctx, msg):
+def unblock_user(ctx, msg: bytes) -> SS2C_UNBLOCK_CHARACTER_RES:
     """Occurs when a character unblocks another character."""
     # message SC2S_UNBLOCK_CHARACTER_REQ {
     #   string targetAccountId = 1;
@@ -203,7 +202,7 @@ def unblock_user(ctx, msg):
     return SS2C_UNBLOCK_CHARACTER_RES(result=pc.SUCCESS, targetCharacterId=req.targetCharacterId)
 
 
-def get_blocked_users(ctx, msg):
+def get_blocked_users(ctx, msg: bytes) -> SS2C_BLOCK_CHARACTER_LIST_RES:
     # message SC2S_BLOCK_CHARACTER_LIST_REQ {}
     req = SC2S_BLOCK_CHARACTER_LIST_REQ()
     req.ParseFromString(msg)
