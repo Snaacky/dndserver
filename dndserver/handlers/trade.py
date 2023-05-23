@@ -1,9 +1,10 @@
 import arrow
+from typing import Optional, Tuple, List
 
 from dndserver.database import db
 from dndserver.handlers import inventory
 from dndserver.handlers import character as HCharacter
-from dndserver.models import Item, ItemAttribute
+from dndserver.models import Item, ItemAttribute, Character
 from dndserver.persistent import sessions
 from dndserver.protos import PacketCommand as pc
 from dndserver.protos.Trade import (
@@ -44,10 +45,10 @@ from dndserver.protos.Trade import (
     SS2C_TRADING_RESULT_NOT,
 )
 from dndserver.protos.Chat import SCHATDATA, SCHATDATA_PIECE, SCHATDATA_PIECE_ITEM, SCHATDATA_PIECE_ITEM_PROPERTY
-from dndserver.protos.Character import SCHARACTER_TRADE_INFO
-from dndserver.protos.Character import SACCOUNT_NICKNAME
-from dndserver.protos.Defines import Define_Trade, Define_Message, Define_Item
+from dndserver.protos.Character import SCHARACTER_TRADE_INFO, SACCOUNT_NICKNAME
+from dndserver.protos.Defines import Define_Trade, Define_Message, Define_Item, Define_Equipment
 from dndserver.objects.trade import Trade, TradeParty
+from dndserver.objects.user import User
 from dndserver.persistent import trades
 from dndserver.enums import classes
 
@@ -62,7 +63,7 @@ for index, name in enumerate(channel_names):
     channels.append({"name": name, "index": index + 1, "clients": []})
 
 
-def get_current_channel(ctx):
+def get_current_channel(ctx) -> dict:
     """Helper function to get the current channel the user is in"""
     for ch in channels:
         if ctx in ch["clients"]:
@@ -71,7 +72,7 @@ def get_current_channel(ctx):
     return None
 
 
-def get_user_in_channel(channel, account_id):
+def get_user_in_channel(channel: dict, account_id: int) -> User:
     """Helper function to find the transport of a account id"""
     # search for the other player we want to send the notification to
     for client in channel["clients"]:
@@ -83,7 +84,7 @@ def get_user_in_channel(channel, account_id):
     return None
 
 
-def find_trade(ctx):
+def find_trade(ctx) -> Tuple[Trade, TradeParty, TradeParty]:
     """Helper function to find the current trade"""
     for trade in trades:
         if trade.user0.ctx == ctx:
@@ -94,7 +95,7 @@ def find_trade(ctx):
     return (None, None, None)
 
 
-def broadcast_chat(ctx, msg):
+def broadcast_chat(ctx, msg: STRADE_CHAT_S2C) -> None:
     """Helper function to broadcast a chat message to all the participants in a channel"""
     # Broadcast the message to other clients
     res = SS2C_TRADE_CHANNEL_CHAT_RES(result=pc.SUCCESS, chats=msg)
@@ -109,7 +110,7 @@ def broadcast_chat(ctx, msg):
                 client.reply(res)
 
 
-def leave_channel(ctx, channel):
+def leave_channel(ctx, channel: int) -> None:
     """Helper function to have a player 'leave' a channel"""
     # remove the player from the client list
     channel["clients"].remove(ctx)
@@ -129,7 +130,7 @@ def leave_channel(ctx, channel):
         )
 
 
-def cleanup(ctx):
+def cleanup(ctx) -> None:
     """Helper function to cleanup anything left when the client crashes or alt-f4s"""
     # check if the user is in any active trades
     trade, _, other = find_trade(ctx)
@@ -146,7 +147,7 @@ def cleanup(ctx):
         leave_channel(ctx, channel)
 
 
-def get_trader_info(char, account_id):
+def get_trader_info(char: Character, account_id: int) -> SCHARACTER_TRADE_INFO:
     """Helper function to create trader information from the character and account id"""
     nickname = SACCOUNT_NICKNAME(originalNickName=char.nickname, streamingModeNickName=char.streaming_nickname)
 
@@ -162,7 +163,7 @@ def get_trader_info(char, account_id):
     return trader
 
 
-def get_trading_info(ctx):
+def get_trading_info(ctx) -> STRADING_USER_INFO:
     """Helper function to get the trading info for a user"""
     char = sessions[ctx.transport].character
     nickname = SACCOUNT_NICKNAME(originalNickName=char.nickname, streamingModeNickName=char.streaming_nickname)
@@ -174,7 +175,7 @@ def get_trading_info(ctx):
     return trader
 
 
-def create_chat_data(ctx, req):
+def create_chat_data(ctx, req: SC2S_TRADE_CHANNEL_CHAT_REQ | SC2S_TRADING_CHAT_REQ) -> SCHATDATA:
     """Helper function to create chat data"""
     character = sessions[ctx.transport].character
 
@@ -206,7 +207,7 @@ def create_chat_data(ctx, req):
     return chat_data
 
 
-def get_all_gold(character_id, exclude=[]):
+def get_all_gold(character_id: int, exclude: List[Tuple[Item, List[ItemAttribute]]] = []) -> Tuple[int, List[Item]]:
     """Helper that gets all the gold items in the inventory of a user"""
     items = inventory.get_all_items(character_id)
     gold_items = []
@@ -231,14 +232,14 @@ def get_all_gold(character_id, exclude=[]):
     return total, gold_items
 
 
-def has_gold_amount(character_id, amount, exclude=[]):
+def has_gold_amount(character_id: int, amount: int, exclude: List[Tuple[Item, List[ItemAttribute]]] = []) -> bool:
     """Helper to check if a the user has at least amount of gold"""
     total, _ = get_all_gold(character_id, exclude)
 
     return total >= amount
 
 
-def deduct_gold(character_id, deduct_amount):
+def deduct_gold(character_id: int, deduct_amount: int) -> bool:
     """Helper function to deduct gold from the user"""
     total, items = get_all_gold(character_id)
 
@@ -273,11 +274,14 @@ def deduct_gold(character_id, deduct_amount):
     return True
 
 
-def get_empty_slot(character_id, size=(1, 1)):
+def get_empty_slot(
+    character_id: int, size: Tuple[int, int] = (1, 1)
+) -> Tuple[Define_Item.InventoryId, Define_Equipment.SlotId]:
     """Helper function get a empty slot in the inventory"""
-    # get the items from the bag and sort them
+    # get the items from the bag and sort them (extend the list with the amount of
+    # items that fit in the inventory)
     items = inventory.get_all_items(character_id, Define_Item.InventoryId.BAG)
-    items.sort(key=lambda i: i[0].slot_id, reverse=True)
+    items.sort(key=lambda i: i[0].slot_id, reverse=False)
     items.extend([(None, None)] * (50 - len(items)))
 
     for index, (item, _) in enumerate(items):
@@ -287,7 +291,7 @@ def get_empty_slot(character_id, size=(1, 1)):
 
     # do the same thing for the storage
     items = inventory.get_all_items(character_id, Define_Item.InventoryId.STORAGE)
-    items.sort(key=lambda i: i[0].slot_id, reverse=True)
+    items.sort(key=lambda i: i[0].slot_id, reverse=False)
     items.extend([(None, None)] * (240 - len(items)))
 
     for index, (item, _) in enumerate(items):
@@ -316,7 +320,7 @@ def get_trade_reqs(ctx, msg: bytes) -> SS2C_TRADE_MEMBERSHIP_REQUIREMENT_RES:
     )
 
 
-def get_channels(ctx, msg):
+def get_channels(ctx, msg: bytes) -> SS2C_TRADE_CHANNEL_LIST_RES:
     """Occurs when the user is a trader and opens the trader screen"""
     res = SS2C_TRADE_CHANNEL_LIST_RES()
     res.isTrader = sessions[ctx.transport].character.is_trader
@@ -336,7 +340,7 @@ def get_channels(ctx, msg):
     return res
 
 
-def select_channel(ctx, msg):
+def select_channel(ctx, msg: bytes) -> SS2C_TRADE_CHANNEL_SELECT_RES:
     """Occurs when the user selects a trading channel"""
     req = SC2S_TRADE_CHANNEL_SELECT_REQ()
     req.ParseFromString(msg)
@@ -382,7 +386,7 @@ def select_channel(ctx, msg):
     return SS2C_TRADE_CHANNEL_SELECT_RES(result=pc.SUCCESS)
 
 
-def exit_channel(ctx, msg):
+def exit_channel(ctx, msg: bytes) -> SS2C_TRADE_CHANNEL_EXIT_RES:
     """Occurs when the player exits a channel"""
     # find the client's channel
     channel = get_current_channel(ctx)
@@ -410,7 +414,7 @@ def exit_channel(ctx, msg):
     return SS2C_TRADE_CHANNEL_EXIT_RES(result=pc.SUCCESS)
 
 
-def trade_request(ctx, msg):
+def trade_request(ctx, msg: bytes) -> SS2C_TRADE_REQUEST_RES:
     """Occurs when a trade request is send by a user"""
     req = SC2S_TRADE_REQUEST_REQ()
     req.ParseFromString(msg)
@@ -444,7 +448,7 @@ def trade_request(ctx, msg):
     return SS2C_TRADE_REQUEST_RES(result=pc.SUCCESS, requestNickName=req.nickName)
 
 
-def cancel_trade(ctx, msg):
+def cancel_trade(ctx, msg: bytes) -> SS2C_TRADING_CLOSE_RES:
     """Occurs when the user cancels a trade"""
     # get the other player to send a stop message
     trade, _, other = find_trade(ctx)
@@ -458,7 +462,7 @@ def cancel_trade(ctx, msg):
     return SS2C_TRADING_CLOSE_RES(result=pc.SUCCESS)
 
 
-def ready(ctx, msg):
+def ready(ctx, msg: bytes) -> SS2C_TRADING_READY_RES:
     """Occurs when a user presses ready on the first trader menu"""
     req = SC2S_TRADING_READY_REQ()
     req.ParseFromString(msg)
@@ -503,7 +507,7 @@ def ready(ctx, msg):
     return SS2C_TRADING_READY_RES(result=pc.SUCCESS)
 
 
-def confirm(ctx, msg):
+def confirm(ctx, msg: bytes) -> Optional[SS2C_TRADING_CONFIRM_READY_RES]:
     """Occurs when a user presses confirm on the second trader menu"""
     req = SC2S_TRADING_CONFIRM_READY_REQ()
     req.ParseFromString(msg)
@@ -512,7 +516,7 @@ def confirm(ctx, msg):
     trade, current, other = find_trade(ctx)
 
     if not all([trade, current, other]):
-        return SS2C_TRADING_READY_RES(result=pc.FAIL_GENERAL)
+        return SS2C_TRADING_CONFIRM_READY_RES(result=pc.FAIL_GENERAL)
 
     # send the ready change to all the parties
     for client in [current, other]:
@@ -524,6 +528,8 @@ def confirm(ctx, msg):
 
     # update the internal state of the trade
     current.is_ready = req.isReady
+
+    # TODO: check if we can send this after we have processed everything
     ctx.reply(SS2C_TRADING_CONFIRM_READY_RES(result=pc.SUCCESS))
 
     # check if we need to send the confirm message
@@ -568,7 +574,7 @@ def confirm(ctx, msg):
     return None
 
 
-def cancel_confirm(ctx, msg):
+def cancel_confirm(ctx, msg: bytes) -> SS2C_TRADING_CONFIRM_CANCEL_RES:
     """Occurs when a user cancels a trade in the confirm stage"""
     # get the current trade
     _, current, other = find_trade(ctx)
@@ -584,7 +590,7 @@ def cancel_confirm(ctx, msg):
     return SS2C_TRADING_CONFIRM_CANCEL_RES(result=pc.SUCCESS)
 
 
-def accept_invite(ctx, msg):
+def accept_invite(ctx, msg: bytes) -> SS2C_TRADE_ANSWER_RES:
     """Occurs when the user accepts/refuses a trading invite"""
     req = SC2S_TRADE_ANSWER_REQ()
     req.ParseFromString(msg)
@@ -634,7 +640,7 @@ def accept_invite(ctx, msg):
     return SS2C_TRADE_ANSWER_RES(result=pc.SUCCESS)
 
 
-def move_item(ctx, msg):
+def move_item(ctx, msg: bytes) -> SS2C_TRADING_ITEM_UPDATE_RES:
     """Occurs when the user moves items in/out of the trading inventory"""
     req = SC2S_TRADING_ITEM_UPDATE_REQ()
     req.ParseFromString(msg)
@@ -691,7 +697,7 @@ def move_item(ctx, msg):
     return res
 
 
-def private_chat(ctx, msg):
+def private_chat(ctx, msg: bytes) -> None:
     """Occurs when the user sends a message in the trading chat"""
     req = SC2S_TRADING_CHAT_REQ()
     req.ParseFromString(msg)
@@ -713,7 +719,7 @@ def private_chat(ctx, msg):
     return None
 
 
-def chat(ctx, msg):
+def chat(ctx, msg: bytes) -> SS2C_TRADE_CHANNEL_CHAT_RES:
     """Occurs when a user sends a message in the channel chat"""
     req = SC2S_TRADE_CHANNEL_CHAT_REQ()
     req.ParseFromString(msg)
